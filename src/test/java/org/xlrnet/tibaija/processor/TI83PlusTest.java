@@ -114,11 +114,40 @@ public class TI83PlusTest {
         verifyLastResultValue(579);
     }
 
-
     @Test
     public void testInterpret_validProgram_addition_complex() throws Exception {
         calculator.interpret("1+2+3i+4i");
         verifyLastResultValue(3.0, 7.0);
+    }
+
+    @Test
+    public void testInterpret_validProgram_complex_number() throws Exception {
+        calculator.interpret("456i");
+        verifyLastResultValue(0, 456);
+    }
+
+    @Test
+    public void testInterpret_validProgram_cubicroot_1() throws Exception {
+        calculator.interpret("³√(27");
+        verifyLastResultValue(3);
+    }
+
+    @Test
+    public void testInterpret_validProgram_cubicroot_2() throws Exception {
+        calculator.interpret("³√(√(729");
+        verifyLastResultValue(3);
+    }
+
+    @Test
+    public void testInterpret_validProgram_cubicroot_ambiguity() throws Exception {
+        calculator.interpret("3³√(54");         // Ambiguous clause can mean (3^3)*sqrt(54) or 3*qubicroot(54) -> ???
+        verifyLastResultValue(54);
+    }
+
+    @Test
+    public void testInterpret_validProgram_cubicroot_power() throws Exception {
+        calculator.interpret("³√(81^3");
+        verifyLastResultValue(81);
     }
 
     @Test
@@ -134,7 +163,7 @@ public class TI83PlusTest {
     }
 
     @Test
-    public void testInterpret_validProgram_faculty() throws Exception {
+    public void testInterpret_validProgram_factorial() throws Exception {
         calculator.interpret("4!");
         verifyLastResultValue(24);
     }
@@ -209,6 +238,12 @@ public class TI83PlusTest {
     public void testInterpret_validProgram_power_complex() throws Exception {
         calculator.interpret("5^3i*9");
         verifyLastResultValue(0, 1125);
+    }
+
+    @Test
+    public void testInterpret_validProgram_simple_number() throws Exception {
+        calculator.interpret("123");
+        verifyLastResultValue(123);
     }
 
     @Test

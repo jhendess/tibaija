@@ -102,17 +102,38 @@ public class ContextUtilsTest {
     }
 
     @Test
-    public void testExtractNumericalValueFromNumberContext_one_imaginary_negative() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("‾1i").number();
+    public void testExtractNumericalValueFromNumberContext_ten_imaginary_negative() throws Exception {
+        TIBasicParser.NumberContext ctx = TestUtils.createParser("‾10i").number();
         Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, -1);
+        assertComplexValue(value, 0, -10);
     }
 
     @Test
-    public void testExtractNumericalValueFromNumberContext_one_negative() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("‾1").number();
+    public void testExtractNumericalValueFromNumberContext_ten_negative() throws Exception {
+        TIBasicParser.NumberContext ctx = TestUtils.createParser("‾10").number();
         Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, -1, 0);
+        assertComplexValue(value, -10, 0);
+    }
+
+    @Test
+    public void testExtractNumericalValueFromNumberContext_twelve() throws Exception {
+        TIBasicParser.NumberContext ctx = TestUtils.createParser("12").number();
+        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
+        assertComplexValue(value, 12, 0);
+    }
+
+    @Test
+    public void testExtractNumericalValueFromNumberContext_twelve_complex() throws Exception {
+        TIBasicParser.NumberContext ctx = TestUtils.createParser("12i").number();
+        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
+        assertComplexValue(value, 0, 12);
+    }
+
+    @Test
+    public void testExtractNumericalValueFromNumberContext_twelve_dot_sixteen_complex() throws Exception {
+        TIBasicParser.NumberContext ctx = TestUtils.createParser("12.16i").number();
+        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
+        assertComplexValue(value, 0, 12.16);
     }
 
     @Test

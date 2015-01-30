@@ -23,6 +23,7 @@
 package org.xlrnet.tibaija.processor;
 
 import com.google.common.collect.ImmutableList;
+import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.exception.CommandNotFoundException;
 import org.xlrnet.tibaija.exception.DuplicateCommandException;
@@ -67,7 +68,8 @@ public class ExecutionEnvironment {
      *         The visitor that should be used for running programs.
      * @return A new environment
      */
-    public static ExecutionEnvironment newEnvironment(CalculatorMemory memory, CalculatorIO calculatorIO, FullTIBasicVisitor visitor) {
+    @NotNull
+    public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull FullTIBasicVisitor visitor) {
         return new ExecutionEnvironment(memory, calculatorIO, visitor);
     }
 
@@ -80,7 +82,8 @@ public class ExecutionEnvironment {
      *         The visitor that should be used for running programs.
      * @return A new environment
      */
-    public static ExecutionEnvironment newEnvironment(VirtualCalculator virtualCalculator, FullTIBasicVisitor visitor) {
+    @NotNull
+    public static ExecutionEnvironment newEnvironment(@NotNull VirtualCalculator virtualCalculator, @NotNull FullTIBasicVisitor visitor) {
         return ExecutionEnvironment.newEnvironment(virtualCalculator.getMemory(), virtualCalculator.getIODevice(), visitor);
     }
 
@@ -89,6 +92,7 @@ public class ExecutionEnvironment {
      *
      * @return Reference to the I/O device of the environment.
      */
+    @NotNull
     public CalculatorIO getCalculatorIO() {
         return calculatorIO;
     }
@@ -98,6 +102,7 @@ public class ExecutionEnvironment {
      *
      * @return Reference to the readable memory of the calculator.
      */
+    @NotNull
     public ReadOnlyCalculatorMemory getMemory() {
         return memory;
     }
@@ -112,7 +117,7 @@ public class ExecutionEnvironment {
      * @param command
      *         An instance of the concrete command.
      */
-    public void registerCommand(String commandName, Command command) throws TIRuntimeException {
+    public void registerCommand(@NotNull String commandName, @NotNull Command command) throws TIRuntimeException {
         if (commandMap.get(commandName) != null)
             throw new DuplicateCommandException("Command already exists: " + commandName);
 
@@ -132,7 +137,7 @@ public class ExecutionEnvironment {
      * @throws TIRuntimeException
      *         Will be thrown on errors while executing the program
      */
-    public void run(ExecutableProgram program) throws TIRuntimeException {
+    public void run(@NotNull ExecutableProgram program) throws TIRuntimeException {
         visitor.visit(program.getMainProgramContext());
     }
 
@@ -147,7 +152,8 @@ public class ExecutionEnvironment {
      * @throws TIRuntimeException
      *         Can be thrown on type errors, internal problems or illegal parameters.
      */
-    public Optional<Value> runRegisteredCommand(String commandName, Value... arguments) throws TIRuntimeException {
+    @NotNull
+    public Optional<Value> runRegisteredCommand(@NotNull String commandName, @NotNull Value... arguments) throws TIRuntimeException {
         Command command = commandMap.get(commandName);
         if (command == null)
             throw new CommandNotFoundException(-1, -1, commandName);
@@ -163,6 +169,7 @@ public class ExecutionEnvironment {
      *
      * @return A reference to the writable memory of this environment.
      */
+    @NotNull
     protected CalculatorMemory getWritableMemory() {
         return memory;
     }

@@ -34,7 +34,7 @@ import org.xlrnet.tibaija.processor.PreprocessErrorListener;
  */
 public class TestUtils {
 
-    public static final double DEFAULT_TOLERANCE = 0.0000001;
+    public static final double DEFAULT_TOLERANCE = 0.000001;
 
     /**
      * Create a parser from the given input string.

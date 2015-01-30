@@ -115,24 +115,24 @@ expression_power_root returns [ List<String> operators ]
          )
          expression_postfix )*;
 
-expression_postfix returns [ List<String> operators ]
-@init { _localctx.operators = new ArrayList<String>(); }
-       : expression_preeval (
-         ( SQUARED { $operators.add($SQUARED.text); }
-         | FACTORIAL { $operators.add($FACTORIAL.text); }
-           // TODO: Add other postfix operators
-         )
-         expression_preeval )*;
+expression_postfix returns [ String operator ]
+       : expression_preeval
+         op = ( SQUARED
+              | FACTORIAL
+               // TODO: Add other postfix operators
+               )? { $operator = $op.text; };
 
 expression_preeval              // Helper rule to simplify decisions
        : expression_prefix | expression_value;
 
 expression_prefix returns [ String operator ]
-       : ( SQUARE_ROOT { $operator = $SQUARE_ROOT.text; }
+       : op = ( SQUARE_ROOT
+              | CUBIC_ROOT
             // TODO: Add more prefix operators
             // TODO: Add identifier functions
             // TODO: Make sure that closing parentheses are only allowed when there is an opening parenthesis
-          ) expression_xor (RIGHT_PARENTHESIS)?     // Allow only at last XOR, since conversion operators cannot be combined in another expression
+          ) { $operator = $op.text; }
+          expression_xor (RIGHT_PARENTHESIS)?     // Allow only at last XOR, since conversion operators cannot be combined in another expression
           ;
 
 expression_value
@@ -228,6 +228,8 @@ NOT: 'not(';
 // Prefix operators
 NEGATIVE_MINUS: '‾';                      // TI-Basic forces its own minus symbol - the regular MINUS is not allowed!
 SQUARE_ROOT: '√(';
+CUBIC_ROOT: '³√(';
+
 // Postfix operators
 FACTORIAL: '!';
 SQUARED: '²';
@@ -249,9 +251,18 @@ CAPITAL_LETTER: 'A' .. 'Z';
 labelIdentifier: (CAPITAL_LETTER | THETA | DIGIT) (CAPITAL_LETTER | THETA | DIGIT)?;
 numericalVariable: CAPITAL_LETTER | THETA;
 lastResult: 'Ans';
-number returns [
-       String preDecimal, String decimal
-]: NEGATIVE_MINUS? DIGIT* { $preDecimal = $DIGIT.text; } DOT? DIGIT+ { $decimal = $DIGIT.text; } IMAGINARY?;
+
+/* Parser rule for detecting numbers */
+digits: DIGIT+;     // Helper rule to get the token
+
+number
+  returns [
+    String preDecimal, String decimal
+] :  NEGATIVE_MINUS?
+     digits? { $preDecimal = $digits.text; }
+     DOT?
+     digits { $decimal = $digits.text; }
+     IMAGINARY?;
 
 /* Skip whitespace */
 

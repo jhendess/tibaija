@@ -22,6 +22,7 @@
 
 package org.xlrnet.tibaija.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.math3.complex.Complex;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
@@ -45,15 +46,19 @@ public class ContextUtils {
         boolean isNegative = !isNull(ctx.NEGATIVE_MINUS());
         boolean isImaginary = !isNull(ctx.IMAGINARY());
         boolean isDecimal = !isNull(ctx.DOT());
-        String preDecimal = (ctx.preDecimal != null) ? ctx.preDecimal : "0";
-        String decimal = (ctx.decimal != null) ? ctx.decimal : "0";
+        String preDecimal = (StringUtils.isNotEmpty(ctx.preDecimal)) ? ctx.preDecimal : "0";
+        String decimal = (StringUtils.isNotEmpty(ctx.decimal)) ? ctx.decimal : "0";
 
         Number value;
-        if (isDecimal)
+        if (isDecimal) {
             value = NumberUtils.createNumber(preDecimal + "." + decimal);
-        else
-            value = NumberUtils.createNumber(decimal);
-
+        } else {
+            if ("0".equals(preDecimal))
+                value = NumberUtils.createNumber(decimal);
+            else
+                value = NumberUtils.createNumber(preDecimal + decimal);
+        }
+        
         if (isNegative)
             value = value.doubleValue() * -1;
 

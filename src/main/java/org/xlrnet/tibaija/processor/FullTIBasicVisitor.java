@@ -159,9 +159,10 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
 
     @Override
     public Value visitExpression_postfix(@NotNull TIBasicParser.Expression_postfixContext ctx) {
-        List<? extends RuleContext> contextRules = ctx.expression_preeval();
-        List<String> operators = ctx.operators;
-        return processGenericExpressions(operators, contextRules);
+        Value lhs = (Value) ctx.expression_preeval().accept(this);
+        if (ctx.operator != null)
+            return environment.runRegisteredCommand(ctx.operator, lhs).get();
+        return lhs;
     }
 
     @Override
@@ -174,7 +175,9 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Value visitExpression_prefix(@NotNull TIBasicParser.Expression_prefixContext ctx) {
         Value lhs = (Value) ctx.expression_xor().accept(this);
-        return environment.runRegisteredCommand(ctx.operator, lhs).get();
+        if (ctx.operator != null)
+            return environment.runRegisteredCommand(ctx.operator, lhs).get();
+        return lhs;
     }
 
     @Override
