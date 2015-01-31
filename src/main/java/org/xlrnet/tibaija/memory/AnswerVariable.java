@@ -22,17 +22,26 @@
 
 package org.xlrnet.tibaija.memory;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.math3.complex.Complex;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
+import org.xlrnet.tibaija.exception.TIArgumentException;
 import org.xlrnet.tibaija.exception.TIRuntimeException;
+import org.xlrnet.tibaija.util.ComplexComparator;
 
+import java.util.Comparator;
 import java.util.Objects;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Variable that contains the result of the last top-level expression. Make sure to run a type-check using the built-in
  * methods of this class before querying its value.
  */
-public class AnswerVariable {
+public class AnswerVariable implements Comparable<AnswerVariable> {
+
+    Comparator<Complex> complexComparator = new ComplexComparator();
 
     Object value = Complex.ZERO;
 
@@ -40,6 +49,36 @@ public class AnswerVariable {
 
     public AnswerVariable(Complex o) {
         setValue(o);
+    }
+
+    @Override
+    public int compareTo(AnswerVariable o) {
+        checkNotNull(o);
+
+        if (Objects.equals(this, o))
+            return 0;
+
+        try {
+            switch (type) {
+                case NUMBER:
+                    switch (o.type) {
+                        case NUMBER:
+                            return complexComparator.compare(this.complex(), o.complex());
+                        case LIST:
+                            // TODO: Implement right list comparison logic
+                            throw new NotImplementedException("Comparison for lists is not yet supported");
+                        default:
+                            throw new IllegalTypeException("Comparison not supported for right type", Variables.VariableType.NUMBER, type);
+                    }
+                case LIST:
+                    // TODO: Implement left list comparison logic
+                    throw new NotImplementedException("Comparison for lists is not yet supported");
+                default:
+                    throw new IllegalTypeException("Comparison not supported for left type", Variables.VariableType.NUMBER, type);
+            }
+        } catch (UnsupportedOperationException u) {
+            throw new TIArgumentException("Illegal operation: " + u.getMessage(), ImmutableList.of(this, o));
+        }
     }
 
     /**
@@ -90,6 +129,15 @@ public class AnswerVariable {
         type = Variables.VariableType.NUMBER;
     }
 
+    /**
+     * Checks if the value is complex and has an imaginary value.
+     *
+     * @return True if the value is complex and has an imaginary value. False otherwise.
+     */
+    public boolean hasImaginaryValue() {
+        return isType(Variables.VariableType.NUMBER) && complex().getImaginary() != 0;
+    }
+
     @Override
     public int hashCode() {
         int result = value.hashCode();
@@ -130,7 +178,7 @@ public class AnswerVariable {
      *
      * @param checkedType
      *         The expected type.
-     * @return True if the internal type is equal to the expected type, false if not.
+     * @return True if the internal type is equal to the expected type. False otherwise.
      */
     private boolean isType(Variables.VariableType checkedType) {
         return Objects.equals(this.getType(), checkedType);

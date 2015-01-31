@@ -20,30 +20,21 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.exception;
+package org.xlrnet.tibaija.processor;
 
-import com.google.common.collect.ImmutableList;
-import org.xlrnet.tibaija.memory.AnswerVariable;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
- * This exception will be thrown if invalid arguments were given to a command. This includes wrong types and parameter
- * count.
+ * Testsuite for all test concerning the interactive interpreter mode of the virtual TI-83+.
  */
-public class TIArgumentException extends TIRuntimeException {
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        IllegalControlFlowTests.class,      // Control flow statements are not allowed in interactive mode
+        InterpretComparisonTest.class,           // Tests for correct logic
+        InterpretStructuralTest.class,      // Tests for structural issues
+        SimpleArithmeticsTest.class         // Tests for simpler arithmetics
+})
+public class TI83PlusInterpretSuite extends AbstractTI83PlusTest {
 
-    private ImmutableList<? extends AnswerVariable> arguments;
-
-    public TIArgumentException(String message, ImmutableList<? extends AnswerVariable> arguments) {
-        super(message);
-        this.arguments = arguments;
-    }
-
-    public TIArgumentException(int linenumber, int startIndex, String message, ImmutableList<? extends AnswerVariable> arguments) {
-        super(linenumber, startIndex, message);
-        this.arguments = arguments;
-    }
-
-    public ImmutableList<? extends AnswerVariable> getArguments() {
-        return arguments;
-    }
 }

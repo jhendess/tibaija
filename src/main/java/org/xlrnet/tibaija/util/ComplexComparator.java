@@ -23,19 +23,30 @@
 package org.xlrnet.tibaija.util;
 
 import org.apache.commons.math3.complex.Complex;
-import org.xlrnet.tibaija.memory.Value;
+
+import java.util.Comparator;
+import java.util.Objects;
 
 /**
- * Methods for a more convenient wrapping of values.
+ * Compares two Complex values. Throws an UnsupportedOperationException if you try to compare complex values with
+ * imaginary parts.
  */
-public class WrapperUtils {
+public class ComplexComparator implements Comparator<Complex> {
 
-    public static Value wrapValue(Number n) {
-        return Value.of(new Complex(n.doubleValue()));
+    @Override
+    public int compare(Complex o1, Complex o2) {
+        boolean isNoneImaginary = o1.getImaginary() == 0 && o2.getImaginary() == 0;
+        boolean isNoneReal = o1.getReal() == 0 && o2.getReal() == 0;
+
+        if (isNoneImaginary && isNoneReal)      // Comparison of zero and zero -> equal
+            return 0;
+
+        if (!isNoneImaginary && !isNoneReal)      // Comparison of complex and imaginary 
+            throw new UnsupportedOperationException("Comparison of complex numbers with imaginary part is not allowed");
+        if (isNoneImaginary)
+            return Objects.compare(o1.getReal(), o2.getReal(), Comparator.naturalOrder());
+        else
+            return Objects.compare(o1.getImaginary(), o2.getImaginary(), Comparator.naturalOrder());
     }
-
-    public static Value wrapValue(Complex c) {
-        return Value.of(c);
-    }
-
 }
+

@@ -52,11 +52,22 @@ public class ExecutionEnvironmentUtil {
     }
 
     private static void registerCommands(ExecutionEnvironment env) {
-        env.registerCommand("+", BinaryCommand.newAddCommand());
-        env.registerCommand("-", BinaryCommand.newSubtractCommand());
-        env.registerCommand("*", BinaryCommand.newMultiplyCommand());
-        env.registerCommand("/", BinaryCommand.newDivideCommand());
-        env.registerCommand("^", BinaryCommand.newPowerCommand());
+        // Register basic arithmetic operators
+        env.registerCommand("+", new BinaryCommand(BinaryCommand.Operator.PLUS));
+        env.registerCommand("-", new BinaryCommand(BinaryCommand.Operator.MINUS));
+        env.registerCommand("*", new BinaryCommand(BinaryCommand.Operator.MULTIPLY));
+        env.registerCommand("/", new BinaryCommand(BinaryCommand.Operator.DIVIDE));
+        env.registerCommand("^", new BinaryCommand(BinaryCommand.Operator.POWER));
+
+        // Register logical operators
+        env.registerCommand("=", new BinaryCommand(BinaryCommand.Operator.EQUALS));
+        env.registerCommand("≠", new BinaryCommand(BinaryCommand.Operator.NOT_EQUALS));
+        env.registerCommand("<", new BinaryCommand(BinaryCommand.Operator.LESS_THAN));
+        env.registerCommand("≤", new BinaryCommand(BinaryCommand.Operator.LESS_EQUALS));
+        env.registerCommand(">", new BinaryCommand(BinaryCommand.Operator.GREATER_THAN));
+        env.registerCommand("≥", new BinaryCommand(BinaryCommand.Operator.GREATER_EQUALS));
+
+
     }
 
 }

@@ -22,62 +22,15 @@
 
 package org.xlrnet.tibaija.processor;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.xlrnet.tibaija.TI83Plus;
-import org.xlrnet.tibaija.exception.IllegalControlFlowException;
-import org.xlrnet.tibaija.io.CalculatorIO;
-import org.xlrnet.tibaija.matchers.EqualsWithDeltaValueComplex;
-import org.xlrnet.tibaija.memory.CalculatorMemory;
-import org.xlrnet.tibaija.test.TestUtils;
 
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-
+/**
+ * Tests that concern simple arithmetics. No trigonomy or logic.
+ */
 @RunWith(MockitoJUnitRunner.class)
-public class TI83PlusTest {
-
-    @Mock
-    CalculatorMemory mockedMemory;
-
-    @Mock
-    CalculatorIO mockedIO;
-
-    TI83Plus calculator;
-
-    @Before
-    public void setUp() {
-        calculator = new TI83Plus(mockedMemory, mockedIO);
-    }
-
-    @Test(expected = IllegalControlFlowException.class)
-    public void testInterpret_invalidProgram_Else() throws Exception {
-        calculator.interpret("Else");
-    }
-
-    @Test(expected = IllegalControlFlowException.class)
-    public void testInterpret_invalidProgram_End() throws Exception {
-        calculator.interpret("End");
-    }
-
-    @Test(expected = IllegalControlFlowException.class)
-    public void testInterpret_invalidProgram_Repeat() throws Exception {
-        calculator.interpret("Repeat 1");
-    }
-
-    @Test(expected = IllegalControlFlowException.class)
-    public void testInterpret_invalidProgram_Then() throws Exception {
-        calculator.interpret("Then");
-    }
-
-    @Test(expected = IllegalControlFlowException.class)
-    public void testInterpret_invalidProgram_While() throws Exception {
-        calculator.interpret("While 1");
-    }
+public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
 
     /**
      * Faculty on complex numbers is not allowed!
@@ -85,21 +38,6 @@ public class TI83PlusTest {
     @Test(expected = Exception.class)
     public void testInterpret_invalidProgram_faculty_complex() throws Exception {
         calculator.interpret("4i!");
-    }
-
-    @Test(expected = IllegalControlFlowException.class)
-    public void testInterpret_invalidProgram_if() throws Exception {
-        calculator.interpret("If 1");
-    }
-
-    @Test(expected = Exception.class)
-    public void testInterpret_invalidProgram_parentheses_1() throws Exception {
-        calculator.interpret("()");
-    }
-
-    @Test(expected = Exception.class)
-    public void testInterpret_invalidProgram_parentheses_2() throws Exception {
-        calculator.interpret("()()");
     }
 
     @Test
@@ -151,18 +89,6 @@ public class TI83PlusTest {
     }
 
     @Test
-    public void testInterpret_validProgram_emptyProgram() throws Exception {
-        calculator.interpret(":");
-        verifyZeroInteractions(mockedMemory);
-    }
-
-    @Test
-    public void testInterpret_validProgram_emptyProgram_noColon() throws Exception {
-        calculator.interpret("");
-        verifyZeroInteractions(mockedMemory);
-    }
-
-    @Test
     public void testInterpret_validProgram_factorial() throws Exception {
         calculator.interpret("4!");
         verifyLastResultValue(24);
@@ -199,18 +125,6 @@ public class TI83PlusTest {
     }
 
     @Test
-    public void testInterpret_validProgram_one() throws Exception {
-        calculator.interpret(":1");
-        verifyLastResultValue(1.0);
-    }
-
-    @Test
-    public void testInterpret_validProgram_one_noColon() throws Exception {
-        calculator.interpret("1");
-        verifyLastResultValue(1.0);
-    }
-
-    @Test
     public void testInterpret_validProgram_parentheses_1() throws Exception {
         calculator.interpret("(1)");
         verifyLastResultValue(1);
@@ -223,7 +137,7 @@ public class TI83PlusTest {
     }
 
     @Test
-    public void testInterpret_validProgram_parentheses_5() throws Exception {
+    public void testInterpret_validProgram_parentheses_3() throws Exception {
         calculator.interpret("((2(3))");
         verifyLastResultValue(6);
     }
@@ -247,9 +161,21 @@ public class TI83PlusTest {
     }
 
     @Test
-    public void testInterpret_validProgram_squared() throws Exception {
+    public void testInterpret_validProgram_squared_1() throws Exception {
         calculator.interpret("4²");
         verifyLastResultValue(16);
+    }
+
+    @Test
+    public void testInterpret_validProgram_squared_imaginary_1() throws Exception {
+        calculator.interpret("5i²");
+        verifyLastResultValue(-5);
+    }
+
+    @Test
+    public void testInterpret_validProgram_squared_imaginary_2() throws Exception {
+        calculator.interpret("5²i");
+        verifyLastResultValue(0, 25);
     }
 
     @Test
@@ -273,8 +199,7 @@ public class TI83PlusTest {
     @Test
     public void testInterpret_validProgram_subtraction() throws Exception {
         calculator.interpret("1-2");
-        final double realPart = -1.0;
-        verifyLastResultValue(realPart);
+        verifyLastResultValue(-1.0);
     }
 
     @Test
@@ -289,12 +214,4 @@ public class TI83PlusTest {
         verifyLastResultValue(3);
     }
 
-    private void verifyLastResultValue(double realPart, double imaginaryPart) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsWithDeltaValueComplex(realPart, imaginaryPart, TestUtils.DEFAULT_TOLERANCE)));
-
-    }
-
-    private void verifyLastResultValue(double realPart) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsWithDeltaValueComplex(realPart, TestUtils.DEFAULT_TOLERANCE)));
-    }
 }

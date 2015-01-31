@@ -26,9 +26,11 @@ import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
+import org.xlrnet.tibaija.exception.TIArgumentException;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.processor.Command;
+import org.xlrnet.tibaija.util.CompareUtils;
 
 import java.util.Optional;
 import java.util.function.BinaryOperator;
@@ -50,48 +52,13 @@ public class BinaryCommand extends Command {
 
     private Operator operator;
 
-    private BinaryCommand(Operator operator) {
+    public BinaryCommand(Operator operator) {
         this(operator.getOperatorFunction());
         this.operator = operator;
     }
 
     protected BinaryCommand(BinaryOperator<Value> evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
-    }
-
-    /**
-     * Create a new instance of an ArithmeticCommand with an Add-operand (+) for execution.
-     */
-    public static BinaryCommand newAddCommand() {
-        return new BinaryCommand(Operator.PLUS);
-    }
-
-    /**
-     * Create a new instance of an ArithmeticCommand with a subtract-operand (-) for execution.
-     */
-    public static BinaryCommand newSubtractCommand() {
-        return new BinaryCommand(Operator.MINUS);
-    }
-
-    /**
-     * Create a new instance of an ArithmeticCommand with a multiply-operand (*) for execution.
-     */
-    public static BinaryCommand newMultiplyCommand() {
-        return new BinaryCommand(Operator.MULTIPLY);
-    }
-
-    /**
-     * Create a new instance of an ArithmeticCommand with a divide-operand (/) for execution.
-     */
-    public static BinaryCommand newDivideCommand() {
-        return new BinaryCommand(Operator.DIVIDE);
-    }
-
-    /**
-     * Create a new instance of an ArithmeticCommand with a power-operand (^) for execution.
-     */
-    public static Command newPowerCommand() {
-        return new BinaryCommand(Operator.POWER);
     }
 
     @Override
@@ -142,7 +109,7 @@ public class BinaryCommand extends Command {
     /**
      * Static enum that defines several functions for evaluating arithmetic operations with two operands.
      */
-    static enum Operator {
+    public static enum Operator {
 
         PLUS((lhs, rhs) -> Value.of(lhs.complex().add(rhs.complex()))),
 
@@ -152,12 +119,41 @@ public class BinaryCommand extends Command {
 
         DIVIDE((lhs, rhs) -> Value.of(lhs.complex().divide(rhs.complex()))),
 
-        POWER((lhs, rhs) -> Value.of(lhs.complex().pow(rhs.complex())));
+        POWER((lhs, rhs) -> Value.of(lhs.complex().pow(rhs.complex()))),
+
+        EQUALS((lhs, rhs) -> Value.of(CompareUtils.isEqual(lhs, rhs))),
+
+        NOT_EQUALS((lhs, rhs) -> Value.of(CompareUtils.isNotEqual(lhs, rhs))),
+
+        GREATER_THAN((lhs, rhs) -> {
+            checkIfAnyComplexIsImaginary(lhs, rhs);
+            return Value.of(CompareUtils.isGreaterThan(lhs, rhs));
+        }),
+
+        LESS_THAN((lhs, rhs) -> {
+            checkIfAnyComplexIsImaginary(lhs, rhs);
+            return Value.of(CompareUtils.isLessThan(lhs, rhs));
+        }),
+
+        GREATER_EQUALS((lhs, rhs) -> {
+            checkIfAnyComplexIsImaginary(lhs, rhs);
+            return Value.of(CompareUtils.isGreaterOrEqual(lhs, rhs));
+        }),
+
+        LESS_EQUALS((lhs, rhs) -> {
+            checkIfAnyComplexIsImaginary(lhs, rhs);
+            return Value.of(CompareUtils.isLessOrEqual(lhs, rhs));
+        });
 
         private final BinaryOperator<Value> operatorFunction;
 
         Operator(BinaryOperator<Value> operatorFunction) {
             this.operatorFunction = operatorFunction;
+        }
+
+        private static void checkIfAnyComplexIsImaginary(Value lhs, Value rhs) {
+            if (lhs.hasImaginaryValue() || rhs.hasImaginaryValue())
+                throw new TIArgumentException("Cannot compare two imaginary values", ImmutableList.of(lhs, rhs));
         }
 
         public BinaryOperator<Value> getOperatorFunction() {

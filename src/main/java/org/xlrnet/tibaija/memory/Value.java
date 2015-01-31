@@ -45,10 +45,37 @@ public class Value extends AnswerVariable {
         return new Value(c);
     }
 
+    /**
+     * Create a new Value object from a boolean. True is represented as 1, false will become 0.
+     *
+     * @param bool
+     *         True or false.
+     * @return A new Value object with the given boolean parameter represented as 1 or 0.
+     */
+    public static Value of(boolean bool) {
+        return of(bool ? 1 : 0);
+    }
+
+    /**
+     * Create a new Value object from a real number.
+     *
+     * @param real
+     *         A real number.
+     * @return A new Value object with a real number.
+     */
     public static Value of(double real) {
         return of(real, 0);
     }
 
+    /**
+     * Create a new Value object from a real number and an imaginary part.
+     *
+     * @param real
+     *         A real number.
+     * @param imaginary
+     *         The imaginary part.
+     * @return A new Value object with a full complex number.
+     */
     public static Value of(double real, double imaginary) {
         return of(Complex.valueOf(real, imaginary));
     }
