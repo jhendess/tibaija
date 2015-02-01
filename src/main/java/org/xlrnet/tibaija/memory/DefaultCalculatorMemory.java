@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.xlrnet.tibaija.memory.Value.checkValueType;
+import static org.xlrnet.tibaija.util.ValueUtils.checkValueType;
 
 /**
  * Default implementation of the TI-Basic memory model.

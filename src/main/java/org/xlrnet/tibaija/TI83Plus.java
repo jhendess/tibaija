@@ -75,9 +75,9 @@ public class TI83Plus implements VirtualCalculator {
 
         try {
             ExecutableProgram executableProgram = internalPreprocessCode("TMP", input);
-            ExecutionEnvironmentUtil.newDefaultEnvironment(this, new ControlflowLessTIBasicVisitor()).run(executableProgram);
+            ExecutionEnvironmentUtil.newDefaultEnvironment(this).run(executableProgram, new ControlflowLessTIBasicVisitor());
         } catch (PreprocessException e) {
-            LOGGER.error("Preprocessing commands failed");
+            LOGGER.error("Preprocessing commands failed: {}", e.getMessage());
             throw e;
         }
     }
@@ -103,9 +103,7 @@ public class TI83Plus implements VirtualCalculator {
      */
     private ExecutableProgram internalPreprocessCode(String programName, CharSequence programCode) {
         ExecutableProgram executableProgram;
-
         executableProgram = preprocessor.preprocessProgramCode(programName, programCode);
-
         return executableProgram;
     }
 }

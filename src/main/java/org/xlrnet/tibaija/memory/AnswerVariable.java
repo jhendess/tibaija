@@ -25,6 +25,7 @@ package org.xlrnet.tibaija.memory;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.math3.complex.Complex;
+import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 import org.xlrnet.tibaija.exception.TIRuntimeException;
@@ -52,7 +53,7 @@ public class AnswerVariable implements Comparable<AnswerVariable> {
     }
 
     @Override
-    public int compareTo(AnswerVariable o) {
+    public int compareTo(@NotNull AnswerVariable o) {
         checkNotNull(o);
 
         if (Objects.equals(this, o))
@@ -88,6 +89,7 @@ public class AnswerVariable implements Comparable<AnswerVariable> {
      * @return The internal value as a Complex object.
      * @throws TIRuntimeException
      */
+    @NotNull
     public Complex complex() throws IllegalTypeException {
 
         internalTypeCheck(Variables.VariableType.NUMBER);
@@ -107,6 +109,8 @@ public class AnswerVariable implements Comparable<AnswerVariable> {
         return true;
     }
 
+    @NotNull
+
     public Variables.VariableType getType() {
         return type;
     }
@@ -114,6 +118,7 @@ public class AnswerVariable implements Comparable<AnswerVariable> {
     /**
      * Returns the internal value without casting as a pure object.
      */
+    @NotNull
     public Object getValue() {
         return value;
     }
@@ -124,7 +129,7 @@ public class AnswerVariable implements Comparable<AnswerVariable> {
      * @param number
      *         A numerical value.
      */
-    protected void setValue(Complex number) {
+    protected void setValue(@NotNull Complex number) {
         value = number;
         type = Variables.VariableType.NUMBER;
     }

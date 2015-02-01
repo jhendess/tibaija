@@ -91,7 +91,7 @@ public class PreprocessVisitor extends TIBasicBaseVisitor {
         return new Label(labelIdentifier.getText());
     }
 
-    private class Label {
+    private static class Label {
 
         String identifier;
 
@@ -107,7 +107,7 @@ public class PreprocessVisitor extends TIBasicBaseVisitor {
     /**
      * Wrapper class for a label map.
      */
-    class LabelMapWrapper {
+    static class LabelMapWrapper {
 
         Map<String, List<TIBasicParser.CommandContext>> content;
 

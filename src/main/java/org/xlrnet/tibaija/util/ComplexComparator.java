@@ -24,6 +24,7 @@ package org.xlrnet.tibaija.util;
 
 import org.apache.commons.math3.complex.Complex;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -31,7 +32,9 @@ import java.util.Objects;
  * Compares two Complex values. Throws an UnsupportedOperationException if you try to compare complex values with
  * imaginary parts.
  */
-public class ComplexComparator implements Comparator<Complex> {
+public class ComplexComparator implements Comparator<Complex>, Serializable {
+
+    private static final long serialVersionUID = -2757714182421392977L;
 
     @Override
     public int compare(Complex o1, Complex o2) {

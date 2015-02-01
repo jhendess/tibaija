@@ -46,15 +46,11 @@ public class ExecutionEnvironment {
 
     CalculatorIO calculatorIO;
 
-    FullTIBasicVisitor visitor;
-
     Map<String, Command> commandMap = new HashMap<>();
 
-    private ExecutionEnvironment(CalculatorMemory memory, CalculatorIO calculatorIO, FullTIBasicVisitor visitor) {
+    private ExecutionEnvironment(CalculatorMemory memory, CalculatorIO calculatorIO) {
         this.memory = memory;
         this.calculatorIO = calculatorIO;
-        this.visitor = visitor;
-        visitor.setEnvironment(this);
     }
 
     /**
@@ -64,13 +60,11 @@ public class ExecutionEnvironment {
      *         The writable memory for the new environment.
      * @param calculatorIO
      *         The I/O device for the new environment.
-     * @param visitor
-     *         The visitor that should be used for running programs.
      * @return A new environment
      */
     @NotNull
-    public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull FullTIBasicVisitor visitor) {
-        return new ExecutionEnvironment(memory, calculatorIO, visitor);
+    public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO) {
+        return new ExecutionEnvironment(memory, calculatorIO);
     }
 
     /**
@@ -78,13 +72,11 @@ public class ExecutionEnvironment {
      *
      * @param virtualCalculator
      *         The virtual calculator with a configured I/O device and memory.
-     * @param visitor
-     *         The visitor that should be used for running programs.
      * @return A new environment
      */
     @NotNull
-    public static ExecutionEnvironment newEnvironment(@NotNull VirtualCalculator virtualCalculator, @NotNull FullTIBasicVisitor visitor) {
-        return ExecutionEnvironment.newEnvironment(virtualCalculator.getMemory(), virtualCalculator.getIODevice(), visitor);
+    public static ExecutionEnvironment newEnvironment(@NotNull VirtualCalculator virtualCalculator) {
+        return ExecutionEnvironment.newEnvironment(virtualCalculator.getMemory(), virtualCalculator.getIODevice());
     }
 
     /**
@@ -130,14 +122,17 @@ public class ExecutionEnvironment {
 
     /**
      * Run a given {@link org.xlrnet.tibaija.processor.ExecutableProgram} inside this environment. The program will be
-     * visited by the visitor with which the environment was instantiated.
+     * visited with the given visitor.
      *
      * @param program
      *         The program to run.
+     * @param visitor
+     *         The visitor implementation that should run this program.
      * @throws TIRuntimeException
      *         Will be thrown on errors while executing the program
      */
-    public void run(@NotNull ExecutableProgram program) throws TIRuntimeException {
+    public void run(@NotNull ExecutableProgram program, @NotNull FullTIBasicVisitor visitor) throws TIRuntimeException {
+        visitor.setEnvironment(this);
         visitor.visit(program.getMainProgramContext());
     }
 

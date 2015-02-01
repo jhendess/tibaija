@@ -23,11 +23,7 @@
 package org.xlrnet.tibaija.memory;
 
 import org.apache.commons.math3.complex.Complex;
-import org.xlrnet.tibaija.exception.IllegalTypeException;
-
-import java.util.Objects;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Variable that contains a temporary result of an expression. Make sure to run a type-check using the built-in
@@ -41,7 +37,8 @@ public class Value extends AnswerVariable {
         super(c);
     }
 
-    public static Value of(Complex c) {
+    @NotNull
+    public static Value of(@NotNull Complex c) {
         return new Value(c);
     }
 
@@ -52,6 +49,7 @@ public class Value extends AnswerVariable {
      *         True or false.
      * @return A new Value object with the given boolean parameter represented as 1 or 0.
      */
+    @NotNull
     public static Value of(boolean bool) {
         return of(bool ? 1 : 0);
     }
@@ -63,6 +61,7 @@ public class Value extends AnswerVariable {
      *         A real number.
      * @return A new Value object with a real number.
      */
+    @NotNull
     public static Value of(double real) {
         return of(real, 0);
     }
@@ -76,29 +75,9 @@ public class Value extends AnswerVariable {
      *         The imaginary part.
      * @return A new Value object with a full complex number.
      */
+    @NotNull
     public static Value of(double real, double imaginary) {
         return of(Complex.valueOf(real, imaginary));
-    }
-
-    /**
-     * Check the given Value object if it contains the expected type. If the actual and expected don't match, an {@link
-     * IllegalTypeException} will be thrown.
-     *
-     * @param value
-     *         The value to check.
-     * @param expectedType
-     *         The expected type of the value.
-     * @throws org.xlrnet.tibaija.exception.IllegalTypeException
-     *         Exception will be thrown if the actual and the expected type don't match.
-     * @throws java.lang.NullPointerException
-     *         Will be thrown if either the value or the expected type are null.
-     */
-    public static void checkValueType(Value value, Variables.VariableType expectedType) throws IllegalTypeException, NullPointerException {
-        checkNotNull(value);
-        checkNotNull(expectedType);
-
-        if (!Objects.equals(value.getType(), expectedType))
-            throw new IllegalTypeException(expectedType, value.getType());
     }
 
     /**
@@ -107,8 +86,16 @@ public class Value extends AnswerVariable {
      * @param number
      *         A numerical value.
      */
-    public void setValue(Complex number) {
+    public void setValue(@NotNull Complex number) {
         value = number;
         type = Variables.VariableType.NUMBER;
+    }
+
+    @Override
+    public String toString() {
+        return "Value{" +
+                "value=" + value +
+                ", type=" + type +
+                '}';
     }
 }

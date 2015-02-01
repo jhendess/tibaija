@@ -32,8 +32,7 @@ public class ValidationUtils {
     /**
      * Checks if the given input string is a valid label identifier for TI-Basic. Label names can be either one or two
      * characters long, and the only characters you're allowed to use are letters (including θ) and numbers 0 to 9;
-     * this
-     * means 37+37*37=1406 possible combinations.
+     * this means 37+37*37=1406 possible combinations.
      *
      * @param labelIdentifier
      *         The name that should be checked.

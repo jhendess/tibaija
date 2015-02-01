@@ -31,7 +31,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         IllegalControlFlowTests.class,      // Control flow statements are not allowed in interactive mode
-        InterpretComparisonTest.class,           // Tests for correct logic
+        InterpretComparisonTest.class,      // Tests for correct comparisons
+        InterpretLogicTest.class,           // Tests for correct logic operators
         InterpretStructuralTest.class,      // Tests for structural issues
         SimpleArithmeticsTest.class         // Tests for simpler arithmetics
 })

@@ -103,8 +103,9 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
 
     @Override
     public Object visitExpression_and(@NotNull TIBasicParser.Expression_andContext ctx) {
-        // TODO: Implement AND logic
-        return super.visitExpression_and(ctx);
+        List<? extends RuleContext> contextRules = ctx.expression_compare();
+        List<String> operators = ctx.operators;
+        return processGenericExpressions(operators, contextRules);
     }
 
     @Override

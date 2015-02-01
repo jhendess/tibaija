@@ -22,52 +22,53 @@
 
 package org.xlrnet.tibaija.util;
 
+import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.commands.BinaryCommand;
+import org.xlrnet.tibaija.commands.BinaryCommandOperator;
+import org.xlrnet.tibaija.commands.UnaryCommand;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
-import org.xlrnet.tibaija.processor.Command;
 import org.xlrnet.tibaija.processor.ExecutionEnvironment;
-import org.xlrnet.tibaija.processor.FullTIBasicVisitor;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * Factory for creating ExecutionEnvironments with preconfigured commands. You own commands should use the
- * registerGlobalCommand() function of this class to register themselves.
+ * Static factory for creating ExecutionEnvironments with preconfigured commands.
  */
 public class ExecutionEnvironmentUtil {
 
-    private static Map<String, Command> commandMap = new HashMap<>();
-
-    public static ExecutionEnvironment newDefaultEnvironment(VirtualCalculator virtualCalculator, FullTIBasicVisitor visitor) {
-        return newDefaultEnvironment(virtualCalculator.getMemory(), virtualCalculator.getIODevice(), visitor);
+    @NotNull
+    public static ExecutionEnvironment newDefaultEnvironment(@NotNull VirtualCalculator virtualCalculator) {
+        return newDefaultEnvironment(virtualCalculator.getMemory(), virtualCalculator.getIODevice());
     }
 
-    private static ExecutionEnvironment newDefaultEnvironment(CalculatorMemory memory, CalculatorIO ioDevice, FullTIBasicVisitor visitor) {
-        ExecutionEnvironment env = ExecutionEnvironment.newEnvironment(memory, ioDevice, visitor);
+    @NotNull
+    private static ExecutionEnvironment newDefaultEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO ioDevice) {
+        ExecutionEnvironment env = ExecutionEnvironment.newEnvironment(memory, ioDevice);
         registerCommands(env);
         return env;
     }
 
-    private static void registerCommands(ExecutionEnvironment env) {
+    private static void registerCommands(@NotNull ExecutionEnvironment env) {
         // Register basic arithmetic operators
-        env.registerCommand("+", new BinaryCommand(BinaryCommand.Operator.PLUS));
-        env.registerCommand("-", new BinaryCommand(BinaryCommand.Operator.MINUS));
-        env.registerCommand("*", new BinaryCommand(BinaryCommand.Operator.MULTIPLY));
-        env.registerCommand("/", new BinaryCommand(BinaryCommand.Operator.DIVIDE));
-        env.registerCommand("^", new BinaryCommand(BinaryCommand.Operator.POWER));
+        env.registerCommand("+", new BinaryCommand(BinaryCommandOperator.PLUS));
+        env.registerCommand("-", new BinaryCommand(BinaryCommandOperator.MINUS));
+        env.registerCommand("*", new BinaryCommand(BinaryCommandOperator.MULTIPLY));
+        env.registerCommand("/", new BinaryCommand(BinaryCommandOperator.DIVIDE));
+        env.registerCommand("^", new BinaryCommand(BinaryCommandOperator.POWER));
+
+        // Register comparison operators
+        env.registerCommand("=", new BinaryCommand(BinaryCommandOperator.EQUALS));
+        env.registerCommand("≠", new BinaryCommand(BinaryCommandOperator.NOT_EQUALS));
+        env.registerCommand("<", new BinaryCommand(BinaryCommandOperator.LESS_THAN));
+        env.registerCommand("≤", new BinaryCommand(BinaryCommandOperator.LESS_EQUALS));
+        env.registerCommand(">", new BinaryCommand(BinaryCommandOperator.GREATER_THAN));
+        env.registerCommand("≥", new BinaryCommand(BinaryCommandOperator.GREATER_EQUALS));
 
         // Register logical operators
-        env.registerCommand("=", new BinaryCommand(BinaryCommand.Operator.EQUALS));
-        env.registerCommand("≠", new BinaryCommand(BinaryCommand.Operator.NOT_EQUALS));
-        env.registerCommand("<", new BinaryCommand(BinaryCommand.Operator.LESS_THAN));
-        env.registerCommand("≤", new BinaryCommand(BinaryCommand.Operator.LESS_EQUALS));
-        env.registerCommand(">", new BinaryCommand(BinaryCommand.Operator.GREATER_THAN));
-        env.registerCommand("≥", new BinaryCommand(BinaryCommand.Operator.GREATER_EQUALS));
-
-
+        env.registerCommand("and", new BinaryCommand(BinaryCommandOperator.AND));
+        env.registerCommand("or", new BinaryCommand(BinaryCommandOperator.OR));
+        env.registerCommand("xor", new BinaryCommand(BinaryCommandOperator.XOR));
+        env.registerCommand("not(", new UnaryCommand(UnaryCommand.UnaryCommandOperator.NOT));
     }
 
 }

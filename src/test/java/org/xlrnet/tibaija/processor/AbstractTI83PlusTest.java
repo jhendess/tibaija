@@ -27,7 +27,7 @@ import org.mockito.Mock;
 import org.xlrnet.tibaija.TI83Plus;
 import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.io.CalculatorIO;
-import org.xlrnet.tibaija.matchers.EqualsWithDeltaValueComplex;
+import org.xlrnet.tibaija.matchers.EqualsWithComplexDeltaMatcher;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.test.TestUtils;
 
@@ -53,10 +53,10 @@ public class AbstractTI83PlusTest {
     }
 
     protected void verifyLastResultValue(double realPart, double imaginaryPart) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsWithDeltaValueComplex(realPart, imaginaryPart, TestUtils.DEFAULT_TOLERANCE)));
+        verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, imaginaryPart, TestUtils.DEFAULT_TOLERANCE)));
     }
 
     protected void verifyLastResultValue(double realPart) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsWithDeltaValueComplex(realPart, TestUtils.DEFAULT_TOLERANCE)));
+        verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.DEFAULT_TOLERANCE)));
     }
 }

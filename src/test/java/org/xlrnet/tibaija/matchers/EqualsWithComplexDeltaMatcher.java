@@ -36,7 +36,7 @@ import java.io.Serializable;
  * Custom matcher for mockito framework. This allows us to match wrapped Complex values inside a {@link
  * org.xlrnet.tibaija.memory.Value} object with a certain precision delta.
  */
-public class EqualsWithDeltaValueComplex extends ArgumentMatcher<Value> implements Serializable {
+public class EqualsWithComplexDeltaMatcher extends ArgumentMatcher<Value> implements Serializable {
 
     private static final long serialVersionUID = 5066980489920383664L;
 
@@ -44,11 +44,11 @@ public class EqualsWithDeltaValueComplex extends ArgumentMatcher<Value> implemen
 
     private final Number delta;
 
-    public EqualsWithDeltaValueComplex(double real, Number delta) {
+    public EqualsWithComplexDeltaMatcher(double real, Number delta) {
         this(real, 0, delta);
     }
 
-    public EqualsWithDeltaValueComplex(double real, double imaginary, Number delta) {
+    public EqualsWithComplexDeltaMatcher(double real, double imaginary, Number delta) {
         this.wanted = Value.of(real, imaginary);
         this.delta = delta;
     }

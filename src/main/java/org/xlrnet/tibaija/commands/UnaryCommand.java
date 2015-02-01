@@ -31,41 +31,43 @@ import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.processor.Command;
 
 import java.util.Optional;
-import java.util.function.BinaryOperator;
+import java.util.function.UnaryOperator;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.xlrnet.tibaija.util.LogicUtils.not;
+import static org.xlrnet.tibaija.util.ValueUtils.checkIfAnyValueIsImaginary;
 
 /**
- * Generic implementation for arithmetic operations with two operands like + , - , *  and /. Uses a functional enum
- * pattern for instantiation.
+ * Generic implementation for arithmetic operations with one operand like √(, ², ! or "not(". Uses a functional enum
+ * pattern
+ * for instantiation.
  */
-public class BinaryCommand extends Command {
+public class UnaryCommand extends Command {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryCommand.class);
 
     /**
      * A function with two parameters that will be used to calculate the result of an operation
      */
-    private final BinaryOperator<Value> evaluationFunction;
+    private final UnaryOperator<Value> evaluationFunction;
 
-    private BinaryCommandOperator operator;
+    private UnaryCommandOperator operator;
 
-    public BinaryCommand(BinaryCommandOperator operator) {
+    public UnaryCommand(UnaryCommandOperator operator) {
         this(operator.getOperatorFunction());
         this.operator = operator;
     }
 
-    protected BinaryCommand(BinaryOperator<Value> evaluationFunction) {
+    protected UnaryCommand(UnaryOperator<Value> evaluationFunction) {
         this.evaluationFunction = evaluationFunction;
     }
 
     @Override
     protected Optional<Value> execute(ImmutableList<Value> arguments) {
-        final Value lhs = arguments.get(0);
-        final Value rhs = arguments.get(1);
-        final Value result = evaluationFunction.apply(lhs, rhs);
+        final Value operand = arguments.get(0);
+        final Value result = evaluationFunction.apply(operand);
 
-        LOGGER.debug("({}) {} {} -> {}", operator, lhs.getValue(), rhs.getValue(), result.getValue());
+        LOGGER.debug("({}) {} -> {}", operator, operand.getValue(), result.getValue());
 
         return Optional.of(result);
     }
@@ -79,21 +81,17 @@ public class BinaryCommand extends Command {
      */
     @Override
     protected boolean hasValidArgumentValues(ImmutableList<Value> parameters) {
-        final Value lhs = parameters.get(0);
-        final Value rhs = parameters.get(1);
-        checkNotNull(lhs);
-        checkNotNull(rhs);
+        final Value operand = parameters.get(0);
+        checkNotNull(operand);
 
-        if (!lhs.isNumber())
-            throw new IllegalTypeException("Left hand side of expression is not a Number: " + lhs.getValue(), Variables.VariableType.NUMBER, lhs.getType());
-        if (!rhs.isNumber())
-            throw new IllegalTypeException("Right hand side of expression is not a Number: " + rhs.getValue(), Variables.VariableType.NUMBER, rhs.getType());
+        if (!operand.isNumber())
+            throw new IllegalTypeException("Operand is not a Number: " + operand.getValue(), Variables.VariableType.NUMBER, operand.getType());
 
         return true;
     }
 
     /**
-     * Checks if exactly two arguments were passed.
+     * Check if exactly one argument was passed.
      *
      * @param numberOfParametersEntered
      *         Number of parameters passed by the caller.
@@ -101,7 +99,26 @@ public class BinaryCommand extends Command {
      */
     @Override
     protected boolean hasValidNumberOfArguments(int numberOfParametersEntered) {
-        return numberOfParametersEntered == 2;
+        return numberOfParametersEntered == 1;
+    }
+
+    public static enum UnaryCommandOperator {
+
+        NOT((Value operand) -> {
+            checkIfAnyValueIsImaginary(operand);
+            return Value.of(not(operand.complex().getReal()));
+        });
+
+        private final UnaryOperator<Value> operatorFunction;
+
+        UnaryCommandOperator(UnaryOperator<Value> operatorFunction) {
+            this.operatorFunction = operatorFunction;
+        }
+
+        public UnaryOperator<Value> getOperatorFunction() {
+            return operatorFunction;
+        }
+
     }
 
 }

@@ -128,6 +128,7 @@ expression_preeval              // Helper rule to simplify decisions
 expression_prefix returns [ String operator ]
        : op = ( SQUARE_ROOT
               | CUBIC_ROOT
+              | NOT
             // TODO: Add more prefix operators
             // TODO: Add identifier functions
             // TODO: Make sure that closing parentheses are only allowed when there is an opening parenthesis
@@ -224,7 +225,7 @@ NOT_EQUALS: '≠';
 AND: 'and';
 OR: 'or';
 XOR: 'xor';
-NOT: 'not(';
+NOT: 'not(';            // Prefix!
 // Prefix operators
 NEGATIVE_MINUS: '‾';                      // TI-Basic forces its own minus symbol - the regular MINUS is not allowed!
 SQUARE_ROOT: '√(';
@@ -255,14 +256,13 @@ lastResult: 'Ans';
 /* Parser rule for detecting numbers */
 digits: DIGIT+;     // Helper rule to get the token
 
-number
-  returns [
+number returns [
     String preDecimal, String decimal
 ] :  NEGATIVE_MINUS?
      digits? { $preDecimal = $digits.text; }
      DOT?
      digits { $decimal = $digits.text; }
-     IMAGINARY?;
+     IMAGINARY?;        // TODO: Check exact implementation in TI-Basic -> IMAGINARY must probably be treated as an expression?
 
 /* Skip whitespace */
 

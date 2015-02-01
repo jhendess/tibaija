@@ -29,7 +29,7 @@ import org.xlrnet.tibaija.exception.PreprocessException;
 
 public class PreprocessErrorListener extends BaseErrorListener {
 
-    public static PreprocessErrorListener INSTANCE = new PreprocessErrorListener();
+    public static final PreprocessErrorListener INSTANCE = new PreprocessErrorListener();
 
     @Override
     public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
