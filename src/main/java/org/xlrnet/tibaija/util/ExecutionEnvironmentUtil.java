@@ -49,13 +49,19 @@ public class ExecutionEnvironmentUtil {
     }
 
     private static void registerCommands(@NotNull ExecutionEnvironment env) {
-        // Register basic arithmetic operators
+        // Register binary arithmetic operators
         env.registerCommand("+", new BinaryCommand(BinaryCommandOperator.PLUS));
         env.registerCommand("-", new BinaryCommand(BinaryCommandOperator.MINUS));
         env.registerCommand("*", new BinaryCommand(BinaryCommandOperator.MULTIPLY));
         env.registerCommand("/", new BinaryCommand(BinaryCommandOperator.DIVIDE));
         env.registerCommand("^", new BinaryCommand(BinaryCommandOperator.POWER));
 
+        // Register unary arithmetic operators
+        env.registerCommand("²", new UnaryCommand(UnaryCommand.UnaryCommandOperator.SQUARED));
+        env.registerCommand("√(", new UnaryCommand(UnaryCommand.UnaryCommandOperator.SQUARE_ROOT));
+        env.registerCommand("³√(", new UnaryCommand(UnaryCommand.UnaryCommandOperator.CUBIC_ROOT));
+        env.registerCommand("!", new UnaryCommand(UnaryCommand.UnaryCommandOperator.FACTORIAL));
+        
         // Register comparison operators
         env.registerCommand("=", new BinaryCommand(BinaryCommandOperator.EQUALS));
         env.registerCommand("≠", new BinaryCommand(BinaryCommandOperator.NOT_EQUALS));

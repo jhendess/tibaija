@@ -25,12 +25,28 @@ package org.xlrnet.tibaija.processor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.xlrnet.tibaija.exception.TIArgumentException;
 
 /**
  * Tests that concern simple arithmetics. No trigonomy or logic.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
+
+    @Test(expected = TIArgumentException.class)
+    public void testInterpret_invalidProgram_factorial_complex() throws Exception {
+        calculator.interpret("4i!");
+    }
+
+    @Test(expected = TIArgumentException.class)
+    public void testInterpret_invalidProgram_factorial_minus_1() throws Exception {
+        calculator.interpret("(‾.6)!");
+    }
+
+    @Test(expected = TIArgumentException.class)
+    public void testInterpret_invalidProgram_factorial_minus_2() throws Exception {
+        calculator.interpret("(‾1)!");
+    }
 
     /**
      * Faculty on complex numbers is not allowed!
@@ -83,15 +99,45 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
     }
 
     @Test
+    public void testInterpret_validProgram_cubicroot_complex_1() throws Exception {
+        calculator.interpret("³√(27i");
+        verifyLastResultValue(2.598076211, 1.5);
+    }
+
+    @Test
+    public void testInterpret_validProgram_cubicroot_complex_2() throws Exception {
+        calculator.interpret("³√(27)i");
+        verifyLastResultValue(3);
+    }
+
+    @Test
     public void testInterpret_validProgram_cubicroot_power() throws Exception {
         calculator.interpret("³√(81^3");
         verifyLastResultValue(81);
     }
 
     @Test
-    public void testInterpret_validProgram_factorial() throws Exception {
+    public void testInterpret_validProgram_factorial_1() throws Exception {
         calculator.interpret("4!");
         verifyLastResultValue(24);
+    }
+
+    @Test
+    public void testInterpret_validProgram_factorial_2() throws Exception {
+        calculator.interpret("5.5!");
+        verifyLastResultValue(287.8852778);
+    }
+
+    @Test
+    public void testInterpret_validProgram_factorial_minus_1() throws Exception {
+        calculator.interpret("‾.5!");       //  Should be interpreted as -(0.5!)
+        verifyLastResultValue(-0.8862269255);
+    }
+
+    @Test
+    public void testInterpret_validProgram_factorial_minus_2() throws Exception {
+        calculator.interpret("(‾.5)!");
+        verifyLastResultValue(1.772453851);
     }
 
     @Test

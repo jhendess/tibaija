@@ -29,6 +29,7 @@ import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.processor.Command;
+import org.xlrnet.tibaija.util.TIMathUtils;
 
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -107,6 +108,17 @@ public class UnaryCommand extends Command {
         NOT((Value operand) -> {
             checkIfAnyValueIsImaginary(operand);
             return Value.of(not(operand.complex().getReal()));
+        }),
+
+        SQUARED(operand -> Value.of(operand.complex().multiply(operand.complex()))),
+
+        SQUARE_ROOT(operand -> Value.of(operand.complex().sqrt())),
+
+        CUBIC_ROOT(operand -> Value.of(operand.complex().nthRoot(3).get(0))),
+
+        FACTORIAL(operand -> {
+            checkIfAnyValueIsImaginary(operand);
+            return Value.of(TIMathUtils.factorial(operand.complex().getReal()));
         });
 
         private final UnaryOperator<Value> operatorFunction;
