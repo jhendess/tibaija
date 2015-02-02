@@ -24,6 +24,10 @@ package org.xlrnet.tibaija.exception;
 
 import com.google.common.collect.ImmutableList;
 import org.xlrnet.tibaija.memory.AnswerVariable;
+import org.xlrnet.tibaija.memory.Value;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This exception will be thrown if invalid arguments were given to a command. This includes wrong types and parameter
@@ -31,7 +35,20 @@ import org.xlrnet.tibaija.memory.AnswerVariable;
  */
 public class TIArgumentException extends TIRuntimeException {
 
+    private static final long serialVersionUID = -9040606410143723978L;
+
     private ImmutableList<? extends AnswerVariable> arguments;
+
+    public TIArgumentException(String message, Number... arguments) {
+        this(message, ImmutableList.copyOf(
+                Stream.of(arguments)
+                        .map(Value::of)
+                        .collect(Collectors.toList())));
+    }
+
+    public <T extends AnswerVariable> TIArgumentException(String message, T... arguments) {
+        this(message, ImmutableList.<T>copyOf(arguments));
+    }
 
     public TIArgumentException(String message, ImmutableList<? extends AnswerVariable> arguments) {
         super(message);

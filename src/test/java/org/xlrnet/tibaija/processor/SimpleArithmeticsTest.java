@@ -22,6 +22,7 @@
 
 package org.xlrnet.tibaija.processor;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -93,6 +94,7 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
     }
 
     @Test
+    @Ignore("Ambiguity of (3³)(√(54)) and 3(³√(54)) cannot be resolved - this WILL cause errors!")
     public void testInterpret_validProgram_cubicroot_ambiguity() throws Exception {
         calculator.interpret("3³√(54");         // Ambiguous clause can mean (3^3)*sqrt(54) or 3*qubicroot(54) -> ???
         verifyLastResultValue(54);
@@ -107,7 +109,7 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
     @Test
     public void testInterpret_validProgram_cubicroot_complex_2() throws Exception {
         calculator.interpret("³√(27)i");
-        verifyLastResultValue(3);
+        verifyLastResultValue(0, 3);
     }
 
     @Test
@@ -140,6 +142,24 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
         verifyLastResultValue(1.772453851);
     }
 
+    /**
+     * -> 3i² must be interpreted as 3*(i²) = -3
+     */
+    @Test
+    public void testInterpret_validProgram_imaginary_precedence_1() throws Exception {
+        calculator.interpret("3i²");
+        verifyLastResultValue(-3);
+    }
+
+    /**
+     * -> ii² must be interpreted as i*(i²)
+     */
+    @Test
+    public void testInterpret_validProgram_imaginary_precedence_2() throws Exception {
+        calculator.interpret("ii²");
+        verifyLastResultValue(0, -1);
+    }
+
     @Test
     public void testInterpret_validProgram_multiplication_precedence() throws Exception {
         calculator.interpret("1+4*5");
@@ -153,15 +173,36 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
     }
 
     @Test
-    public void testInterpret_validProgram_nCr() throws Exception {
-        calculator.interpret("8 nCr 70");
-        verifyLastResultValue(70);
+    public void testInterpret_validProgram_nCr_1() throws Exception {
+        calculator.interpret("40 nCr 8");
+        verifyLastResultValueWithBigTolerance(76904685L);
     }
 
     @Test
-    public void testInterpret_validProgram_nPr() throws Exception {
+    public void testInterpret_validProgram_nCr_2() throws Exception {
+        calculator.interpret("8 nCr 70");
+        verifyLastResultValue(0);
+    }
+
+    @Test
+    public void testInterpret_validProgram_nPr_1() throws Exception {
         calculator.interpret("8 nPr 4");
         verifyLastResultValue(1680);
+    }
+
+    @Test
+    public void testInterpret_validProgram_nPr_2() throws Exception {
+        calculator.interpret("4 nPr 80");
+        verifyLastResultValue(0);
+    }
+
+    /**
+     * Make sure that "8 nPr 4i" is interpreted as "(8 nPr 4)*i" i.e. no Exception may be thrown.
+     */
+    @Test
+    public void testInterpret_validProgram_nPr_complex_precedence() throws Exception {
+        calculator.interpret("8 nPr 4i");
+        verifyLastResultValue(0, 1680);
     }
 
     @Test
@@ -213,6 +254,12 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
     }
 
     @Test
+    public void testInterpret_validProgram_squared_2() throws Exception {
+        calculator.interpret("4²²");
+        verifyLastResultValue(256);
+    }
+
+    @Test
     public void testInterpret_validProgram_squared_imaginary_1() throws Exception {
         calculator.interpret("5i²");
         verifyLastResultValue(-5);
@@ -243,6 +290,12 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
     }
 
     @Test
+    public void testInterpret_validProgram_squareroot_minus() throws Exception {
+        calculator.interpret("√(‾1");
+        verifyLastResultValue(0, 1);
+    }
+
+    @Test
     public void testInterpret_validProgram_subtraction() throws Exception {
         calculator.interpret("1-2");
         verifyLastResultValue(-1.0);
@@ -260,4 +313,33 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
         verifyLastResultValue(3);
     }
 
+    @Test
+    public void testInterpret_validProgram_xroot_complex_lhs_normal() throws Exception {
+        calculator.interpret("3i×√27");
+        verifyLastResultValue(-2.964383781, 0.4608999853);
+    }
+
+    @Test
+    public void testInterpret_validProgram_xroot_complex_lhs_parentheses() throws Exception {
+        calculator.interpret("(3i)×√27");
+        verifyLastResultValue(0.4548324228, -0.8905770417);
+    }
+
+    @Test
+    public void testInterpret_validProgram_xroot_complex_rhs_normal() throws Exception {
+        calculator.interpret("3×√27i");
+        verifyLastResultValue(0, 3);
+    }
+
+    @Test
+    public void testInterpret_validProgram_xroot_complex_rhs_parentheses() throws Exception {
+        calculator.interpret("3×√(27i)");
+        verifyLastResultValue(2.598076211, 1.5);
+    }
+
+    @Test
+    public void testInterpret_validProgram_xroot_decimal() throws Exception {
+        calculator.interpret("2.5×√5.6568542");
+        verifyLastResultValue(2);
+    }
 }

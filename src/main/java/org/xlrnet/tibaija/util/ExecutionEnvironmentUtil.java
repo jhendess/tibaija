@@ -56,6 +56,11 @@ public class ExecutionEnvironmentUtil {
         env.registerCommand("/", new BinaryCommand(BinaryCommandOperator.DIVIDE));
         env.registerCommand("^", new BinaryCommand(BinaryCommandOperator.POWER));
 
+        // Register more advances binary operators
+        env.registerCommand("×√", new BinaryCommand(BinaryCommandOperator.NTH_ROOT));
+        env.registerCommand("nCr", new BinaryCommand(BinaryCommandOperator.NCR));
+        env.registerCommand("nPr", new BinaryCommand(BinaryCommandOperator.NPR));
+
         // Register unary arithmetic operators
         env.registerCommand("²", new UnaryCommand(UnaryCommand.UnaryCommandOperator.SQUARED));
         env.registerCommand("√(", new UnaryCommand(UnaryCommand.UnaryCommandOperator.SQUARE_ROOT));

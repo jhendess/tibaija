@@ -24,6 +24,7 @@ package org.xlrnet.tibaija.util;
 
 import org.junit.Test;
 import org.xlrnet.tibaija.exception.TIArgumentException;
+import org.xlrnet.tibaija.test.Assertions;
 import org.xlrnet.tibaija.test.TestUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -62,7 +63,54 @@ public class TIMathUtilsTest {
     public void testFactorial_valid() throws Exception {
         // Some values for testing...
         assertEquals(24, TIMathUtils.factorial(4), TestUtils.DEFAULT_TOLERANCE);
-        assertEquals(2.652528598e32, TIMathUtils.factorial(30), TestUtils.DEFAULT_TOLERANCE);
+        assertEquals(479001600, TIMathUtils.factorial(12), TestUtils.DEFAULT_TOLERANCE);
         assertEquals(52.342777, TIMathUtils.factorial(4.5), TestUtils.DEFAULT_TOLERANCE);
+    }
+
+    @Test(expected = TIArgumentException.class)
+    public void testImaginaryNthPower_invalid() {
+        TIMathUtils.imaginaryNthPower(-1);
+    }
+
+    @Test
+    public void testImaginaryNthPower_valid() {
+        Assertions.assertComplexValue(TIMathUtils.imaginaryNthPower(0), 1, 0);
+        Assertions.assertComplexValue(TIMathUtils.imaginaryNthPower(1), 0, 1);
+        Assertions.assertComplexValue(TIMathUtils.imaginaryNthPower(2), -1, 0);
+        Assertions.assertComplexValue(TIMathUtils.imaginaryNthPower(3), 0, -1);
+    }
+
+    @Test(expected = TIArgumentException.class)
+    public void testNumberOfCombinations_invalid_decimal() throws Exception {
+        TIMathUtils.numberOfCombinations(0.5, 0.5);
+    }
+
+    @Test(expected = TIArgumentException.class)
+    public void testNumberOfCombinations_invalid_negative() throws Exception {
+        TIMathUtils.numberOfCombinations(-1, -5);
+    }
+
+    @Test
+    public void testNumberOfCombinations_valid() throws Exception {
+        assertEquals(1, TIMathUtils.numberOfCombinations(0, 0), TestUtils.DEFAULT_TOLERANCE);
+        assertEquals(10, TIMathUtils.numberOfCombinations(5, 3), TestUtils.DEFAULT_TOLERANCE);
+        assertEquals(3176716400L, TIMathUtils.numberOfCombinations(80, 7), TestUtils.BIG_TOLERANCE);
+    }
+
+    @Test(expected = TIArgumentException.class)
+    public void testNumberOfPermutations_invalid_decimal() throws Exception {
+        TIMathUtils.numberOfPermutations(0.5, 0.5);
+    }
+
+    @Test(expected = TIArgumentException.class)
+    public void testNumberOfPermutations_invalid_negative() throws Exception {
+        TIMathUtils.numberOfPermutations(-1, -5);
+    }
+
+    @Test
+    public void testNumberOfPermutations_valid() throws Exception {
+        assertEquals(1, TIMathUtils.numberOfPermutations(0, 0), TestUtils.DEFAULT_TOLERANCE);
+        assertEquals(60, TIMathUtils.numberOfPermutations(5, 3), TestUtils.DEFAULT_TOLERANCE);
+        assertEquals(1168675200L, TIMathUtils.numberOfPermutations(35, 6), TestUtils.BIG_TOLERANCE);
     }
 }

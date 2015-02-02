@@ -59,4 +59,8 @@ public class AbstractTI83PlusTest {
     protected void verifyLastResultValue(double realPart) {
         verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.DEFAULT_TOLERANCE)));
     }
+
+    protected void verifyLastResultValueWithBigTolerance(double realPart) {
+        verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.BIG_TOLERANCE)));
+    }
 }

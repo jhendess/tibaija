@@ -27,6 +27,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
 import org.xlrnet.tibaija.memory.Value;
 
+import java.math.BigDecimal;
+
 import static java.util.Objects.isNull;
 
 /**
@@ -43,27 +45,23 @@ public class ContextUtils {
      */
     public static Value extractValueFromNumberContext(TIBasicParser.NumberContext ctx) {
         boolean isNegative = !isNull(ctx.NEGATIVE_MINUS());
-        boolean isImaginary = !isNull(ctx.IMAGINARY());
         boolean isDecimal = !isNull(ctx.DOT());
         String preDecimal = (StringUtils.isNotEmpty(ctx.preDecimal)) ? ctx.preDecimal : "0";
         String decimal = (StringUtils.isNotEmpty(ctx.decimal)) ? ctx.decimal : "0";
 
-        Number value;
+        BigDecimal value;
         if (isDecimal) {
-            value = NumberUtils.createNumber(preDecimal + "." + decimal);
+            value = NumberUtils.createBigDecimal(preDecimal + "." + decimal);
         } else {
             if ("0".equals(preDecimal))
-                value = NumberUtils.createNumber(decimal);
+                value = NumberUtils.createBigDecimal(decimal);
             else
-                value = NumberUtils.createNumber(preDecimal + decimal);
+                value = NumberUtils.createBigDecimal(preDecimal + decimal);
         }
         
         if (isNegative)
-            value = value.doubleValue() * -1;
+            value = value.multiply(BigDecimal.valueOf(-1));
 
-        if (isImaginary)
-            return Value.of(0, value.doubleValue());
-        else
-            return Value.of(value.doubleValue());
+        return Value.of(value);
     }
 }

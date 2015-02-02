@@ -25,6 +25,7 @@ package org.xlrnet.tibaija.commands;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.util.CompareUtils;
 import org.xlrnet.tibaija.util.LogicUtils;
+import org.xlrnet.tibaija.util.TIMathUtils;
 
 import java.util.function.BinaryOperator;
 
@@ -44,6 +45,8 @@ public enum BinaryCommandOperator {
     DIVIDE((lhs, rhs) -> Value.of(lhs.complex().divide(rhs.complex()))),
 
     POWER((lhs, rhs) -> Value.of(lhs.complex().pow(rhs.complex()))),
+
+    NTH_ROOT((lhs, rhs) -> Value.of(TIMathUtils.complexNthRoot(lhs.complex(), rhs.complex()))),
 
     EQUALS((lhs, rhs) -> Value.of(CompareUtils.isEqual(lhs, rhs))),
 
@@ -82,6 +85,16 @@ public enum BinaryCommandOperator {
     XOR((lhs, rhs) -> {
         checkIfAnyValueIsImaginary(lhs, rhs);
         return Value.of(LogicUtils.xor(lhs.complex().getReal(), rhs.complex().getReal()));
+    }),
+
+    NPR((lhs, rhs) -> {
+        checkIfAnyValueIsImaginary(lhs, rhs);
+        return Value.of(TIMathUtils.numberOfPermutations(lhs.complex().getReal(), rhs.complex().getReal()));
+    }),
+
+    NCR((lhs, rhs) -> {
+        checkIfAnyValueIsImaginary(lhs, rhs);
+        return Value.of(TIMathUtils.numberOfCombinations(lhs.complex().getReal(), rhs.complex().getReal()));
     });
 
     private final BinaryOperator<Value> operatorFunction;

@@ -24,6 +24,7 @@ package org.xlrnet.tibaija.processor;
 
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.apache.commons.math3.complex.Complex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.antlr.TIBasicBaseVisitor;
@@ -32,6 +33,7 @@ import org.xlrnet.tibaija.memory.AnswerVariable;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.util.ContextUtils;
+import org.xlrnet.tibaija.util.TIMathUtils;
 
 import java.util.List;
 
@@ -160,10 +162,40 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
 
     @Override
     public Value visitExpression_postfix(@NotNull TIBasicParser.Expression_postfixContext ctx) {
-        Value lhs = (Value) ctx.expression_preeval().accept(this);
-        if (ctx.operator != null)
-            return environment.runRegisteredCommand(ctx.operator, lhs).get();
-        return lhs;
+        List<String> operators = ctx.operators;
+
+        if (ctx.expression_preeval() != null) {
+            // Run regular right-associative postfix logic without imaginary parts
+            Value expressionValue = (Value) ctx.expression_preeval().accept(this);
+            for (String op : operators)
+                expressionValue = environment.runRegisteredCommand(op, expressionValue).get();
+            return expressionValue;
+        } else {
+            // Run imaginary logic -> e.g. ii²² == i(i²)²
+            int imaginaryCount = ctx.IMAGINARY().size() - 1;
+            Value lhs = Value.of(Complex.I);
+            LOGGER.debug("(IMAGINARY) -> {}", lhs.complex());
+            for (String op : operators) {
+                if (imaginaryCount >= 0) {
+                    lhs = environment.runRegisteredCommand(op, lhs).get();
+                    if (imaginaryCount > 0) {
+                        Value before = lhs;
+                        lhs = Value.of(lhs.complex().multiply(Complex.I));
+                        LOGGER.debug("(MULTIPLY) {} (IMAGINARY) -> {}", before.complex(), lhs.complex());
+                        imaginaryCount--;
+                    }
+                }
+            }
+            // Multiply value with all left I
+            if (imaginaryCount > 0) {
+                final Complex factor = TIMathUtils.imaginaryNthPower(imaginaryCount);
+                final Value before = lhs;
+                lhs = Value.of(lhs.complex().multiply(factor));
+                LOGGER.debug("(MULTIPLY) {} {} -> {}", before.complex(), factor, lhs.complex());
+            }
+
+            return lhs;
+        }
     }
 
     @Override

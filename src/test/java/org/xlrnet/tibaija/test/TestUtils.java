@@ -34,7 +34,15 @@ import org.xlrnet.tibaija.processor.PreprocessErrorListener;
  */
 public class TestUtils {
 
+    /**
+     * Default tolerance for most values
+     */
     public static final double DEFAULT_TOLERANCE = 0.000001;
+
+    /**
+     * Tolerance for very big values > 10^9
+     */
+    public static final double BIG_TOLERANCE = 0.001;
 
     /**
      * Create a parser from the given input string.

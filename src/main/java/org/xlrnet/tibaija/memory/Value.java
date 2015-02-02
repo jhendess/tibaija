@@ -25,6 +25,8 @@ package org.xlrnet.tibaija.memory;
 import org.apache.commons.math3.complex.Complex;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
+
 /**
  * Variable that contains a temporary result of an expression. Make sure to run a type-check using the built-in
  * methods of this class before querying its value.
@@ -40,6 +42,19 @@ public class Value extends AnswerVariable {
     @NotNull
     public static Value of(@NotNull Complex c) {
         return new Value(c);
+    }
+
+    /**
+     * Create a new Value object from a BigDecimal. This is recommended, since future versions might work with
+     * BigDecimal implementations.
+     *
+     * @param bigDecimal
+     *         A big decimal.
+     * @return A new Value object with a real number.
+     */
+    @NotNull
+    public static Value of(@NotNull BigDecimal bigDecimal) {
+        return Value.of(bigDecimal.doubleValue());           // We don't support BigDecimal yet :( -> casting to double
     }
 
     /**
@@ -62,7 +77,7 @@ public class Value extends AnswerVariable {
      * @return A new Value object with a real number.
      */
     @NotNull
-    public static Value of(double real) {
+    public static Value of(Number real) {
         return of(real, 0);
     }
 
@@ -76,8 +91,8 @@ public class Value extends AnswerVariable {
      * @return A new Value object with a full complex number.
      */
     @NotNull
-    public static Value of(double real, double imaginary) {
-        return of(Complex.valueOf(real, imaginary));
+    public static Value of(@NotNull Number real, @NotNull Number imaginary) {
+        return of(Complex.valueOf(real.doubleValue(), imaginary.doubleValue()));
     }
 
     /**

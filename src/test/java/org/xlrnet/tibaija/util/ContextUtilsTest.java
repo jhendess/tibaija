@@ -39,20 +39,6 @@ public class ContextUtilsTest {
     }
 
     @Test
-    public void testExtractNumericalValueFromNumberContext_dot_two_imaginary() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser(".2i").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, .2);
-    }
-
-    @Test
-    public void testExtractNumericalValueFromNumberContext_dot_two_imaginary_negative() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("‾.2i").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, -.2);
-    }
-
-    @Test
     public void testExtractNumericalValueFromNumberContext_dot_two_negative() throws Exception {
         TIBasicParser.NumberContext ctx = TestUtils.createParser("‾.2").number();
         Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
@@ -74,38 +60,10 @@ public class ContextUtilsTest {
     }
 
     @Test
-    public void testExtractNumericalValueFromNumberContext_one_dot_two_imaginary() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("1.2i").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, 1.2);
-    }
-
-    @Test
-    public void testExtractNumericalValueFromNumberContext_one_dot_two_imaginary_negative() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("‾1.2i").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, -1.2);
-    }
-
-    @Test
     public void testExtractNumericalValueFromNumberContext_one_dot_two_negative() throws Exception {
         TIBasicParser.NumberContext ctx = TestUtils.createParser("‾1.2").number();
         Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
         assertComplexValue(value, -1.2, 0);
-    }
-
-    @Test
-    public void testExtractNumericalValueFromNumberContext_one_imaginary() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("1i").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, 1);
-    }
-
-    @Test
-    public void testExtractNumericalValueFromNumberContext_ten_imaginary_negative() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("‾10i").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, -10);
     }
 
     @Test
@@ -123,45 +81,9 @@ public class ContextUtilsTest {
     }
 
     @Test
-    public void testExtractNumericalValueFromNumberContext_twelve_complex() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("12i").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, 12);
-    }
-
-    @Test
-    public void testExtractNumericalValueFromNumberContext_twelve_dot_sixteen_complex() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("12.16i").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, 12.16);
-    }
-
-    @Test
     public void testExtractNumericalValueFromNumberContext_zero() throws Exception {
         TIBasicParser.NumberContext ctx = TestUtils.createParser("0").number();
         Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
         assertComplexValue(value, 0, 0);
     }
-
-    @Test
-    public void testExtractNumericalValueFromNumberContext_zero_dot_zero() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("0.0").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, 0);
-    }
-
-    @Test
-    public void testExtractNumericalValueFromNumberContext_zero_dot_zero_imaginary() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("0.0i").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, 0);
-    }
-
-    @Test
-    public void testExtractNumericalValueFromNumberContext_zero_imaginary() throws Exception {
-        TIBasicParser.NumberContext ctx = TestUtils.createParser("0i").number();
-        Complex value = ContextUtils.extractValueFromNumberContext(ctx).complex();
-        assertComplexValue(value, 0, 0);
-    }
-
 }

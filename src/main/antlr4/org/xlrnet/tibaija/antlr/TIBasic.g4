@@ -111,19 +111,30 @@ expression_power_root returns [ List<String> operators ]
 @init { _localctx.operators = new ArrayList<String>(); }
        : expression_postfix (
          ( POWER { $operators.add($POWER.text); }
-         | XROOT { $operators.add($XROOT.text); }
+         | NROOT { $operators.add($NROOT.text); }
          )
          expression_postfix )*;
 
-expression_postfix returns [ String operator ]
-       : expression_preeval
-         op = ( SQUARED
-              | FACTORIAL
-               // TODO: Add other postfix operators
-               )? { $operator = $op.text; };
+expression_postfix returns [ List<String> operators ]
+@init { _localctx.operators = new ArrayList<String>(); }
+       : ( expression_preeval
+         | IMAGINARY+)
+         ( SQUARED   { $operators.add($SQUARED.text); }
+         | FACTORIAL { $operators.add($FACTORIAL.text); }
+           // TODO: Add other postfix operators
+         )*
+       ;
+
+expression_imaginary                 // Imaginary part must be treated as a separate postfix operator -> otherwise associativity won't be correct
+       : IMAGINARY* expression_postfix
+       | IMAGINARY+
+       ;
 
 expression_preeval              // Helper rule to simplify decisions
-       : expression_prefix | expression_value;
+       : expression_prefix
+       | expression_value
+     //  | expression_imaginary
+       ;
 
 expression_prefix returns [ String operator ]
        : op = ( SQUARE_ROOT
@@ -213,7 +224,7 @@ DIVIDE: '/';
 NPR: 'nPr';
 NCR: 'nCr';
 POWER: '^';
-XROOT: '×√';
+NROOT: '×√';
 // Relational operators:
 GREATER_OR_EQUAL: '≥';
 GREATER_THAN: '>';
@@ -262,7 +273,7 @@ number returns [
      digits? { $preDecimal = $digits.text; }
      DOT?
      digits { $decimal = $digits.text; }
-     IMAGINARY?;        // TODO: Check exact implementation in TI-Basic -> IMAGINARY must probably be treated as an expression?
+     ;
 
 /* Skip whitespace */
 
