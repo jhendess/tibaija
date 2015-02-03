@@ -22,11 +22,13 @@
 
 package org.xlrnet.tibaija.processor;
 
+import org.apache.commons.math3.complex.Complex;
 import org.junit.Before;
 import org.mockito.Mock;
 import org.xlrnet.tibaija.TI83Plus;
 import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.io.CalculatorIO;
+import org.xlrnet.tibaija.matchers.EqualsTIListMatcher;
 import org.xlrnet.tibaija.matchers.EqualsWithComplexDeltaMatcher;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.Variables;
@@ -61,6 +63,17 @@ public class AbstractTI83PlusTest {
 
     protected void verifyLastResultValue(double realPart) {
         verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.DEFAULT_TOLERANCE)));
+    }
+
+    protected void verifyLastResultValueList(Complex... values) {
+        verify(mockedMemory).setLastResult(argThat(new EqualsTIListMatcher(values, TestUtils.DEFAULT_TOLERANCE)));
+    }
+
+    protected void verifyLastResultValueList(Double... values) {
+        Complex[] t = new Complex[values.length];
+        for (int i = 0; i < values.length; i++)
+            t[i] = Complex.valueOf(values[i]);
+        verifyLastResultValueList(t);
     }
 
     protected void verifyLastResultValueWithBigTolerance(double realPart) {

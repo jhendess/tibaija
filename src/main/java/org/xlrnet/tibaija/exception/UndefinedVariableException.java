@@ -23,9 +23,9 @@
 package org.xlrnet.tibaija.exception;
 
 /**
- * An exception that indicates an access to an unknown variable or a variable resolution error.
+ * An exception that indicates an access to an undefined variable or a variable resolution error.
  */
-public class UnknownVariableException extends TIRuntimeException {
+public class UndefinedVariableException extends TIRuntimeException {
 
     private static final long serialVersionUID = 1697277001636611416L;
 
@@ -37,11 +37,11 @@ public class UnknownVariableException extends TIRuntimeException {
      * @param variableName
      *         Name of the Variable.
      */
-    public UnknownVariableException(String variableName) {
-        this(-1, -1, "Unknown variable", variableName);
+    public UndefinedVariableException(String variableName) {
+        this(-1, -1, "Undefined variable", variableName);
     }
 
-    public UnknownVariableException(int linenumber, int startIndex, String message, String variableName) {
+    public UndefinedVariableException(int linenumber, int startIndex, String message, String variableName) {
         super(linenumber, startIndex, message);
         this.variableName = variableName;
     }

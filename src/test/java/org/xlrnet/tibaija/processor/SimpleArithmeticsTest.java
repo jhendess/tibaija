@@ -22,11 +22,14 @@
 
 package org.xlrnet.tibaija.processor;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.xlrnet.tibaija.exception.TIArgumentException;
+import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.memory.Variables;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Tests that concern simple arithmetics. No trigonomy or logic.
@@ -82,6 +85,12 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
     }
 
     @Test
+    public void testInterpret_validProgram_cubicroot() throws Exception {
+        calculator.interpret("3∛(54");
+        verifyLastResultValue(11.339289449053858);
+    }
+
+    @Test
     public void testInterpret_validProgram_cubicroot_1() throws Exception {
         calculator.interpret("∛(27");
         verifyLastResultValue(3);
@@ -98,13 +107,6 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
         calculator.interpret("3³√(9");
         verifyLastResultValue(81);
     }
-
-    @Test
-    public void testInterpret_validProgram_cubicroot() throws Exception {
-        calculator.interpret("3∛(54");
-        verifyLastResultValue(11.339289449053858);
-    }
-
 
     @Test
     public void testInterpret_validProgram_cubicroot_complex_1() throws Exception {
@@ -164,6 +166,21 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
     public void testInterpret_validProgram_imaginary_precedence_2() throws Exception {
         calculator.interpret("ii²");
         verifyLastResultValue(0, -1);
+    }
+
+    @Test
+    public void testInterpret_validProgram_implicitMultiplication_numberVariable() {
+        when(mockedMemory.getNumberVariableValue(Variables.NumberVariable.A)).thenReturn(Value.of(123));
+        when(mockedMemory.getNumberVariableValue(Variables.NumberVariable.B)).thenReturn(Value.of(456));
+        calculator.interpret("ABA");
+        verifyLastResultValue(123 * 456 * 123);
+    }
+
+    @Test
+    public void testInterpret_validProgram_memory_read_numberVariable_single() {
+        when(mockedMemory.getNumberVariableValue(Variables.NumberVariable.A)).thenReturn(Value.of(123));
+        calculator.interpret("A");
+        verifyLastResultValue(123);
     }
 
     @Test

@@ -51,6 +51,24 @@ public class ValidationUtilsTest {
     }
 
     @Test
+    public void testIsValidListVariable_false() throws Exception {
+        assertFalse(ValidationUtils.isValidListName("1"));
+        assertFalse(ValidationUtils.isValidListName("ABCDEFGHI"));
+        assertFalse(ValidationUtils.isValidListName("1AEFG"));
+        assertFalse(ValidationUtils.isValidListName("a1234567"));
+        assertFalse(ValidationUtils.isValidListName("abc"));
+    }
+
+    @Test
+    public void testIsValidListVariable_true() throws Exception {
+        assertTrue(ValidationUtils.isValidListName("A"));
+        assertTrue(ValidationUtils.isValidListName("A1"));
+        assertTrue(ValidationUtils.isValidListName("A1234"));
+        assertTrue(ValidationUtils.isValidListName("θ"));
+        assertTrue(ValidationUtils.isValidListName("θθθθθ"));
+    }
+
+    @Test
     public void testIsValidProgramName_false() throws Exception {
         assertFalse(ValidationUtils.isValidProgramName("1"));
         assertFalse(ValidationUtils.isValidProgramName("ABCDEFGHI"));

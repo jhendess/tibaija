@@ -36,6 +36,7 @@ import org.xlrnet.tibaija.util.TIMathUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Full visitor for the TI-Basic language. This class implements all
@@ -224,8 +225,9 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Value visitExpression_value(@NotNull TIBasicParser.Expression_valueContext ctx) {
         if (ctx.expression() != null)
-            return (Value) ctx.expression().accept(this);     // Expression with parentheses
-        return (Value) ctx.numericalValue().accept(this);
+            return (Value) ctx.expression().accept(this);     // Expression with parentheses has more than 1 child
+        else
+            return (Value) ctx.getChild(0).accept(this);      // All other rules have only one child
     }
 
     @Override
@@ -263,6 +265,26 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Value visitLastResult(@NotNull TIBasicParser.LastResultContext ctx) {
         return environment.getMemory().getLastResult();
+    }
+
+    @Override
+    public Object visitListExpression(@NotNull TIBasicParser.ListExpressionContext ctx) {
+        List<TIBasicParser.ExpressionContext> expressions = ctx.expression();
+        List<Complex> evaluatedExpressions = expressions.stream()
+                .map(expression -> ((Value) expression.accept(this)).complex())
+                .collect(Collectors.toList());
+        return Value.of(evaluatedExpressions);
+    }
+
+    @Override
+    public Value visitListValue(@NotNull TIBasicParser.ListValueContext ctx) {
+        if (ctx.listVariable() != null) {
+            final String listVariableName = ctx.listVariable().listIdentifier().getText();
+            return environment.getMemory().getListVariableValue(listVariableName);
+        } else if (ctx.listExpression() != null) {
+            return (Value) ctx.listExpression().accept(this);
+        }
+        throw new UnsupportedOperationException("This shouldn't happen");
     }
 
     @Override

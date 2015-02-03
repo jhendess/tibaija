@@ -40,13 +40,27 @@ public interface ReadOnlyCalculatorMemory {
     public Value getLastResult();
 
     /**
-     * Returns the stored value of a given variable. If a variable has not yet been written to, the value is zero.
+     * Returns the stored value of a given list variable. If a variable has not yet been written to, an
+     * UndefinedVariableException will be thrown.
      *
      * @param variable
-     *         The variable from which value should be returned.
+     *         The list variable name from which value should be returned. Must be written uppercase and between one
+     *         and
+     *         five characters without the leading list token "∟". Digits are allowed except for the first character.
      * @return Value of the selected variable.
      */
     @NotNull
-    public Value getNumberVariableValue(Variables.NumberVariable variable);
+    public Value getListVariableValue(@NotNull String variable);
+
+    /**
+     * Returns the stored value of a given number variable. If a variable has not yet been written to, the value is
+     * zero.
+     *
+     * @param variable
+     *         The number variable name from which value should be returned.
+     * @return Value of the selected variable.
+     */
+    @NotNull
+    public Value getNumberVariableValue(@NotNull Variables.NumberVariable variable);
 
 }

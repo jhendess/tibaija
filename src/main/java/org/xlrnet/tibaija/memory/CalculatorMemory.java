@@ -43,7 +43,18 @@ public interface CalculatorMemory extends ReadOnlyCalculatorMemory {
     public void setLastResult(@NotNull Value value);
 
     /**
-     * Sets the internal value of the given variable.
+     * Sets the internal value of the given list variable.
+     *
+     * @param listName
+     *         The variable to which the value should be written. Must be written uppercase and between one and five
+     *         characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @param value
+     *         The new value of the selected variable.
+     */
+    public void setListVariableValue(@NotNull String listName, @NotNull Value value);
+
+    /**
+     * Sets the internal value of the given number variable.
      *
      * @param variable
      *         The variable to which the value should be written.

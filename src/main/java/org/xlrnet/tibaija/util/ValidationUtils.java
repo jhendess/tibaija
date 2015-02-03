@@ -22,6 +22,8 @@
 
 package org.xlrnet.tibaija.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.regex.Pattern;
 
 /**
@@ -36,9 +38,9 @@ public class ValidationUtils {
      *
      * @param labelIdentifier
      *         The name that should be checked.
-     * @return True if the given string is a valid label identifier, false if not.
+     * @return True if the given string is a valid label identifier. False otherwise.
      */
-    public static boolean isValidLabelIdentifier(String labelIdentifier) {
+    public static boolean isValidLabelIdentifier(@NotNull String labelIdentifier) {
         return Pattern.matches("[A-Z0-9θ]{1,2}", labelIdentifier);
     }
 
@@ -48,9 +50,21 @@ public class ValidationUtils {
      *
      * @param programName
      *         The name that should be checked.
-     * @return True if the given string is a valid program name, false if not.
+     * @return True if the given string is a valid program name. False otherwise.
      */
-    public static boolean isValidProgramName(String programName) {
+    public static boolean isValidProgramName(@NotNull String programName) {
         return Pattern.matches("[A-Zθ][A-Zθ0-9]{0,7}", programName);
+    }
+
+    /**
+     * Checks if the given input string is a valid list name. A valid list name consists of one to five capital
+     * letters or theta. Except for the first symbol, digits from 0 to 9 are also allowed.
+     *
+     * @param listName
+     *         Name of the list variable without the leading list token.
+     * @return True if the given string is a valid list variable name. False otherwise.
+     */
+    public static boolean isValidListName(@NotNull String listName) {
+        return Pattern.matches("[A-Zθ][A-Z0-9θ]{0,4}", listName);
     }
 }

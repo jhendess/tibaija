@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.exception.DuplicateProgramException;
+import org.xlrnet.tibaija.exception.UndefinedVariableException;
 import org.xlrnet.tibaija.processor.ExecutableProgram;
 
 import java.util.HashMap;
@@ -43,6 +44,8 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCalculatorMemory.class);
 
     private final Map<Variables.NumberVariable, Value> numberVariableValueMap;
+
+    private final Map<String, Value> listVariableValueMap = new HashMap<>();
 
     private Value lastResult = Value.of(0);
 
@@ -69,9 +72,25 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
 
     @NotNull
     @Override
+    public Value getListVariableValue(@NotNull String variable) throws UndefinedVariableException {
+        if (!listVariableValueMap.containsKey(variable))
+            throw new UndefinedVariableException(variable);
+        return listVariableValueMap.get(variable);
+    }
+
+    @NotNull
+    @Override
     public Value getNumberVariableValue(@NotNull Variables.NumberVariable variable) {
         checkNotNull(variable);
         return numberVariableValueMap.get(variable);
+    }
+
+    @Override
+    public void setListVariableValue(@NotNull String listName, @NotNull Value value) {
+        checkNotNull(listName);
+        checkNotNull(value);
+
+        listVariableValueMap.put(listName, value);
     }
 
     @Override

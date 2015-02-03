@@ -33,6 +33,7 @@ import org.xlrnet.tibaija.util.ComplexComparator;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -60,11 +61,66 @@ public class Value implements Comparable<Value> {
      * @param number
      *         The complex number.
      */
-    private Value(Complex number) {
+    private Value(@NotNull Complex number) {
         value = number;
         type = Variables.VariableType.NUMBER;
     }
 
+    /**
+     * Create a new Value object from an immutable list of complex numbers and set the according type. Note: Numbers
+     * are
+     * always represented as complex values!
+     *
+     * @param complexImmutableList
+     *         The immutable list of complex numbers.
+     */
+    private Value(@NotNull ImmutableList<Complex> complexImmutableList) {
+        value = complexImmutableList;
+        type = Variables.VariableType.LIST;
+    }
+
+    /**
+     * Create a new Value object from an immutable list of complex numbers.
+     *
+     * @param complexImmutableList
+     *         The immutable list of complex numbers.
+     */
+    @NotNull
+    public static Value of(@NotNull ImmutableList<Complex> complexImmutableList) {
+        return new Value(complexImmutableList);
+    }
+
+    /**
+     * Create a new Value object from a mutable list of complex numbers. The given objects will be transferred to a
+     * separate immutable list.
+     *
+     * @param complexMutableList
+     *         The immutable list of complex numbers.
+     */
+    @NotNull
+    public static Value of(@NotNull List<Complex> complexMutableList) {
+        return of(ImmutableList.copyOf(complexMutableList));
+    }
+
+    /**
+     * Create a new Value object from a mutable array of complex numbers. The given objects will be transferred to a
+     * separate immutable list.
+     *
+     * @param complexArray
+     *         The immutable list of complex numbers.
+     */
+    @NotNull
+    public static Value of(@NotNull Complex... complexArray) {
+        return of(ImmutableList.copyOf(complexArray));
+    }
+
+    /**
+     * Create a new Value object from a complex number. Note: Numbers are always represented as complex values!
+     *
+     * @param c
+     *         The complex number.
+     * @return A new Value object with the given complex number.
+     */
     @NotNull
     public static Value of(@NotNull Complex c) {
         return new Value(c);
@@ -80,7 +136,7 @@ public class Value implements Comparable<Value> {
      */
     @NotNull
     public static Value of(@NotNull BigDecimal bigDecimal) {
-        return Value.of(bigDecimal.doubleValue());           // We don't support BigDecimal yet :( -> casting to double
+        return of(bigDecimal.doubleValue());           // We don't support BigDecimal yet :( -> casting to double
     }
 
     /**
@@ -160,7 +216,6 @@ public class Value implements Comparable<Value> {
      */
     @NotNull
     public Complex complex() throws IllegalTypeException {
-
         internalTypeCheck(Variables.VariableType.NUMBER);
         return (Complex) value;
     }
@@ -209,12 +264,35 @@ public class Value implements Comparable<Value> {
     }
 
     /**
+     * Check if this object contains a list.
+     *
+     * @return True if this object contains a list; false otherwise.
+     */
+    public boolean isList() {
+        return isType(Variables.VariableType.LIST);
+    }
+
+    /**
      * Check if this object contains a complex or numerical value.
      *
-     * @return True if this object contains a complex or numerical value; false if not.
+     * @return True if this object contains a complex or numerical value; false otherwise.
      */
     public boolean isNumber() {
         return isType(Variables.VariableType.NUMBER);
+    }
+
+    /**
+     * Retrieves the internal value as a list of Complex objects. If the internal is not a Complex, this method will
+     * throw an
+     * {IllegalTypeException}. Use this method only if you know the underlying object type!
+     *
+     * @return The internal value as a Complex object.
+     * @throws TIRuntimeException
+     */
+    @NotNull
+    public ImmutableList<Complex> list() throws IllegalTypeException {
+        internalTypeCheck(Variables.VariableType.LIST);
+        return (ImmutableList) value;
     }
 
     @Override

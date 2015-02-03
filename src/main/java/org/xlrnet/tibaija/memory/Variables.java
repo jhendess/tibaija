@@ -23,7 +23,7 @@
 package org.xlrnet.tibaija.memory;
 
 import org.apache.commons.lang3.EnumUtils;
-import org.xlrnet.tibaija.exception.UnknownVariableException;
+import org.xlrnet.tibaija.exception.UndefinedVariableException;
 
 /**
  * Class with enums for accessing various variables.
@@ -37,7 +37,7 @@ public class Variables {
     private static <E extends Enum<E>> E internalResolveVariableName(final Class<E> clazz, String variableName) {
         E result = EnumUtils.getEnum(clazz, variableName);
         if (result == null)
-            throw new UnknownVariableException(-1, -1, "Unknown variable name", variableName);
+            throw new UndefinedVariableException(-1, -1, "Unknown variable name", variableName);
         return result;
     }
 

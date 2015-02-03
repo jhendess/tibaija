@@ -151,6 +151,8 @@ expression_prefix returns [ String operator ]
 expression_value
        : LEFT_PARENTHESIS expression RIGHT_PARENTHESIS?
        | numericalValue
+       | listValue
+       | lastResult
          // TODO: Implement other data types
        ;
 
@@ -211,8 +213,53 @@ storeStatement
 numericalValue
        : numericalVariable
        | number
-       | lastResult;
+       ;
+       
+listValue
+       : listVariable
+       | listExpression
+       ;
+       
+listExpression
+       : LEFT_BRACE expression ( COMMA expression )* RIGHT_BRACE?
+       ;
+       
+listVariable
+       : LIST_TOKEN listIdentifier;
+       
+labelIdentifier
+       : (CapitalTheta | DIGIT) (CapitalTheta | DIGIT)?;
 
+numericalVariable
+       : CapitalTheta;
+
+listIdentifier
+      : CapitalTheta
+       (CapitalTheta | DIGIT)?
+       (CapitalTheta | DIGIT)?
+       (CapitalTheta | DIGIT)?
+       (CapitalTheta | DIGIT)?
+      ;
+
+lastResult
+       : 'Ans';
+
+
+
+/* Lexer rules for more readable code */
+CapitalTheta: (CAPITAL_LETTER | THETA);
+
+
+/* Parser rule for detecting numbers */
+digits: DIGIT+;     // Helper rule to get the token
+
+number returns [
+    String preDecimal, String decimal
+] :  NEGATIVE_MINUS?
+     digits? { $preDecimal = $digits.text; }
+     DOT?
+     digits { $decimal = $digits.text; }
+     ;
 
 /* Main Token */
 
@@ -255,6 +302,8 @@ TO_DEC: '►Dec';
 
 LEFT_PARENTHESIS: '(';
 RIGHT_PARENTHESIS: ')';
+LEFT_BRACE: '{';
+RIGHT_BRACE: '}';
 COMMA: ',';
 STORE: '->' | '→';
 IMAGINARY: 'i';
@@ -262,21 +311,7 @@ DIGIT: '0' .. '9';
 DOT: '.';
 THETA: 'θ';
 CAPITAL_LETTER: 'A' .. 'Z';
-
-labelIdentifier: (CAPITAL_LETTER | THETA | DIGIT) (CAPITAL_LETTER | THETA | DIGIT)?;
-numericalVariable: CAPITAL_LETTER | THETA;
-lastResult: 'Ans';
-
-/* Parser rule for detecting numbers */
-digits: DIGIT+;     // Helper rule to get the token
-
-number returns [
-    String preDecimal, String decimal
-] :  NEGATIVE_MINUS?
-     digits? { $preDecimal = $digits.text; }
-     DOT?
-     digits { $decimal = $digits.text; }
-     ;
+LIST_TOKEN: '∟';
 
 /* Skip whitespace */
 
