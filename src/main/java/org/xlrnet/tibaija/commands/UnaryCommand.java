@@ -112,6 +112,8 @@ public class UnaryCommand extends Command {
 
         SQUARED(operand -> Value.of(operand.complex().multiply(operand.complex()))),
 
+        CUBED(operand -> Value.of(operand.complex().multiply(operand.complex()).multiply(operand.complex()))),
+
         SQUARE_ROOT(operand -> Value.of(operand.complex().sqrt())),
 
         CUBIC_ROOT(operand -> Value.of(operand.complex().nthRoot(3).get(0))),

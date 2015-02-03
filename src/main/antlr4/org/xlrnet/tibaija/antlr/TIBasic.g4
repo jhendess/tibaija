@@ -121,6 +121,7 @@ expression_postfix returns [ List<String> operators ]
          | IMAGINARY+)
          ( SQUARED   { $operators.add($SQUARED.text); }
          | FACTORIAL { $operators.add($FACTORIAL.text); }
+         | CUBED     { $operators.add($CUBED.text); }
            // TODO: Add other postfix operators
          )*
        ;
@@ -240,11 +241,12 @@ NOT: 'not(';            // Prefix!
 // Prefix operators
 NEGATIVE_MINUS: '‾';                      // TI-Basic forces its own minus symbol - the regular MINUS is not allowed!
 SQUARE_ROOT: '√(';
-CUBIC_ROOT: '³√(';
+CUBIC_ROOT: '∛(';
 
 // Postfix operators
 FACTORIAL: '!';
 SQUARED: '²';
+CUBED: '³';
 // Conversion operators
 TO_FRAC: '►Frac';
 TO_DEC: '►Dec';

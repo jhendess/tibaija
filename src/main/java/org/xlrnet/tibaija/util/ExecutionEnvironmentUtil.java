@@ -63,8 +63,9 @@ public class ExecutionEnvironmentUtil {
 
         // Register unary arithmetic operators
         env.registerCommand("²", new UnaryCommand(UnaryCommand.UnaryCommandOperator.SQUARED));
+        env.registerCommand("³", new UnaryCommand(UnaryCommand.UnaryCommandOperator.CUBED));
         env.registerCommand("√(", new UnaryCommand(UnaryCommand.UnaryCommandOperator.SQUARE_ROOT));
-        env.registerCommand("³√(", new UnaryCommand(UnaryCommand.UnaryCommandOperator.CUBIC_ROOT));
+        env.registerCommand("∛(", new UnaryCommand(UnaryCommand.UnaryCommandOperator.CUBIC_ROOT));
         env.registerCommand("!", new UnaryCommand(UnaryCommand.UnaryCommandOperator.FACTORIAL));
         
         // Register comparison operators

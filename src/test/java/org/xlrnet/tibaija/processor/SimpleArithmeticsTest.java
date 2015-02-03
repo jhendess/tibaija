@@ -83,38 +83,44 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
 
     @Test
     public void testInterpret_validProgram_cubicroot_1() throws Exception {
-        calculator.interpret("³√(27");
+        calculator.interpret("∛(27");
         verifyLastResultValue(3);
     }
 
     @Test
     public void testInterpret_validProgram_cubicroot_2() throws Exception {
-        calculator.interpret("³√(√(729");
+        calculator.interpret("∛(√(729");
         verifyLastResultValue(3);
     }
 
     @Test
-    @Ignore("Ambiguity of (3³)(√(54)) and 3(³√(54)) cannot be resolved - this WILL cause errors!")
     public void testInterpret_validProgram_cubicroot_ambiguity() throws Exception {
-        calculator.interpret("3³√(54");         // Ambiguous clause can mean (3^3)*sqrt(54) or 3*qubicroot(54) -> ???
-        verifyLastResultValue(54);
+        calculator.interpret("3³√(9");
+        verifyLastResultValue(81);
     }
 
     @Test
+    public void testInterpret_validProgram_cubicroot() throws Exception {
+        calculator.interpret("3∛(54");
+        verifyLastResultValue(11.339289449053858);
+    }
+
+
+    @Test
     public void testInterpret_validProgram_cubicroot_complex_1() throws Exception {
-        calculator.interpret("³√(27i");
+        calculator.interpret("∛(27i");
         verifyLastResultValue(2.598076211, 1.5);
     }
 
     @Test
     public void testInterpret_validProgram_cubicroot_complex_2() throws Exception {
-        calculator.interpret("³√(27)i");
+        calculator.interpret("∛(27)i");
         verifyLastResultValue(0, 3);
     }
 
     @Test
     public void testInterpret_validProgram_cubicroot_power() throws Exception {
-        calculator.interpret("³√(81^3");
+        calculator.interpret("∛(81^3");
         verifyLastResultValue(81);
     }
 
