@@ -24,7 +24,7 @@ package org.xlrnet.tibaija.io;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xlrnet.tibaija.memory.AnswerVariable;
+import org.xlrnet.tibaija.memory.Value;
 
 import java.io.*;
 
@@ -67,8 +67,8 @@ public class ConsoleIO implements CalculatorIO {
     }
 
     @Override
-    public void printLine(AnswerVariable... values) {
-        for (AnswerVariable value : values) {
+    public void printLine(Value... values) {
+        for (Value value : values) {
             printLine(value.toString());            // TODO: Implement real output formatting
         }
     }

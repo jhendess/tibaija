@@ -22,7 +22,7 @@
 
 package org.xlrnet.tibaija.io;
 
-import org.xlrnet.tibaija.memory.AnswerVariable;
+import org.xlrnet.tibaija.memory.Value;
 
 import java.io.IOException;
 
@@ -55,7 +55,7 @@ public interface CalculatorIO {
      * @param values
      *         One or more values. Note: Values are derived from AnswerVariables; so they are of course valid, too.
      */
-    public void printLine(AnswerVariable... values);
+    public void printLine(Value... values);
 
     /**
      * Reads a CharSequence from the input and returns it. This methods must block the main execution until the return

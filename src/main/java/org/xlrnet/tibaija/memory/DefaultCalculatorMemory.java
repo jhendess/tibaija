@@ -44,7 +44,7 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
 
     private final Map<Variables.NumberVariable, Value> numberVariableValueMap;
 
-    private AnswerVariable lastResult = Value.of(0);
+    private Value lastResult = Value.of(0);
 
     private Map<String, ExecutableProgram> programMap = new HashMap<>();
 
@@ -54,10 +54,10 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
     public DefaultCalculatorMemory() {
         numberVariableValueMap = newEnumValueMapWithDefault(Variables.NumberVariable.class, Value.ZERO);
     }
-    
+
     @NotNull
     @Override
-    public AnswerVariable getLastResult() {
+    public Value getLastResult() {
         return lastResult;
     }
 

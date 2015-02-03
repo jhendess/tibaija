@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.antlr.TIBasicBaseVisitor;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
-import org.xlrnet.tibaija.memory.AnswerVariable;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.util.ContextUtils;
@@ -262,7 +261,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public AnswerVariable visitLastResult(@NotNull TIBasicParser.LastResultContext ctx) {
+    public Value visitLastResult(@NotNull TIBasicParser.LastResultContext ctx) {
         return environment.getMemory().getLastResult();
     }
 

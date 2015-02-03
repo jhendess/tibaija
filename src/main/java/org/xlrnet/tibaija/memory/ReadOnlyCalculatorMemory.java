@@ -37,7 +37,7 @@ public interface ReadOnlyCalculatorMemory {
      * @return The result of the last top-level expression.
      */
     @NotNull
-    public AnswerVariable getLastResult();
+    public Value getLastResult();
 
     /**
      * Returns the stored value of a given variable. If a variable has not yet been written to, the value is zero.

@@ -22,23 +22,47 @@
 
 package org.xlrnet.tibaija.memory;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.math3.complex.Complex;
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.exception.IllegalTypeException;
+import org.xlrnet.tibaija.exception.TIArgumentException;
+import org.xlrnet.tibaija.exception.TIRuntimeException;
+import org.xlrnet.tibaija.util.ComplexComparator;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.Objects;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Variable that contains a temporary result of an expression. Make sure to run a type-check using the built-in
+ * Holds any value Make sure to run a type-check using the built-in
  * methods of this class before querying its value.
  */
-public class Value extends AnswerVariable {
+public class Value implements Comparable<Value> {
 
     public static final Value ZERO = Value.of(Complex.ZERO);
-    
+
     public static final Value NEGATIVE_ONE = Value.of(Complex.valueOf(-1));
 
-    private Value(Complex c) {
-        super(c);
+    private static final Comparator<Complex> complexComparator = new ComplexComparator();
+
+    private final Object value;
+
+    private final Variables.VariableType type;
+
+    /**
+     * Create a new Value object from a complex number and set the according type. Note: Numbers are always represented
+     * as complex values!
+     *
+     * @param number
+     *         The complex number.
+     */
+    private Value(Complex number) {
+        value = number;
+        type = Variables.VariableType.NUMBER;
     }
 
     @NotNull
@@ -97,22 +121,129 @@ public class Value extends AnswerVariable {
         return of(Complex.valueOf(real.doubleValue(), imaginary.doubleValue()));
     }
 
+    @Override
+    public int compareTo(@NotNull Value o) {
+        checkNotNull(o);
+
+        if (Objects.equals(this, o))
+            return 0;
+
+        try {
+            switch (type) {
+                case NUMBER:
+                    switch (o.type) {
+                        case NUMBER:
+                            return complexComparator.compare(this.complex(), o.complex());
+                        case LIST:
+                            // TODO: Implement right list comparison logic
+                            throw new NotImplementedException("Comparison for lists is not yet supported");
+                        default:
+                            throw new IllegalTypeException("Comparison not supported for right type", Variables.VariableType.NUMBER, type);
+                    }
+                case LIST:
+                    // TODO: Implement left list comparison logic
+                    throw new NotImplementedException("Comparison for lists is not yet supported");
+                default:
+                    throw new IllegalTypeException("Comparison not supported for left type", Variables.VariableType.NUMBER, type);
+            }
+        } catch (UnsupportedOperationException u) {
+            throw new TIArgumentException("Illegal operation: " + u.getMessage(), ImmutableList.of(this, o));
+        }
+    }
+
     /**
-     * Set the value of this object with the given number. Note: Numbers are always represented as complex values!
+     * Retrieves the internal value as a Complex object. If the internal is not a Complex, this method will throw an
+     * {IllegalTypeException}. Use this method only if you know the underlying object type!
      *
-     * @param number
-     *         A numerical value.
+     * @return The internal value as a Complex object.
+     * @throws TIRuntimeException
      */
-    public void setValue(@NotNull Complex number) {
-        value = number;
-        type = Variables.VariableType.NUMBER;
+    @NotNull
+    public Complex complex() throws IllegalTypeException {
+
+        internalTypeCheck(Variables.VariableType.NUMBER);
+        return (Complex) value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Value)) return false;
+
+        Value that = (Value) o;
+
+        if (type != that.type) return false;
+        if (!value.equals(that.value)) return false;
+
+        return true;
+    }
+
+    @NotNull
+
+    public Variables.VariableType getType() {
+        return type;
+    }
+
+    /**
+     * Returns the internal value without casting as a pure object.
+     */
+    @NotNull
+    public Object getValue() {
+        return value;
+    }
+
+    /**
+     * Checks if the value is complex and has an imaginary value.
+     *
+     * @return True if the value is complex and has an imaginary value. False otherwise.
+     */
+    public boolean hasImaginaryValue() {
+        return isType(Variables.VariableType.NUMBER) && complex().getImaginary() != 0;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = value.hashCode();
+        result = 31 * result + type.hashCode();
+        return result;
+    }
+
+    /**
+     * Check if this object contains a complex or numerical value.
+     *
+     * @return True if this object contains a complex or numerical value; false if not.
+     */
+    public boolean isNumber() {
+        return isType(Variables.VariableType.NUMBER);
     }
 
     @Override
     public String toString() {
-        return "Value{" +
+        return "AnswerVariable{" +
                 "value=" + value +
                 ", type=" + type +
                 '}';
+    }
+
+    /**
+     * Internal type check. Will throw an exception if the internal type is not equal to the given parameter.
+     *
+     * @param checkType
+     *         The type to match.
+     */
+    private void internalTypeCheck(Variables.VariableType checkType) throws IllegalTypeException {
+        if (!isType(checkType))
+            throw new IllegalTypeException(-1, -1, "Illegal type cast", checkType, type);
+    }
+
+    /**
+     * Internal method for type checking.
+     *
+     * @param checkedType
+     *         The expected type.
+     * @return True if the internal type is equal to the expected type. False otherwise.
+     */
+    private boolean isType(Variables.VariableType checkedType) {
+        return Objects.equals(this.getType(), checkedType);
     }
 }
