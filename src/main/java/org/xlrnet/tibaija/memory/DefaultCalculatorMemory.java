@@ -22,6 +22,7 @@
 
 package org.xlrnet.tibaija.memory;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +42,19 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCalculatorMemory.class);
 
-    private final Map<Variables.NumberVariable, Value> numberVariableValueMap = new HashMap<>();
+    private final Map<Variables.NumberVariable, Value> numberVariableValueMap;
 
     private AnswerVariable lastResult = Value.of(0);
 
     private Map<String, ExecutableProgram> programMap = new HashMap<>();
 
+    /**
+     * Creates a new instance of a TI-Basic capable calculator's memory model.
+     */
+    public DefaultCalculatorMemory() {
+        numberVariableValueMap = newEnumValueMapWithDefault(Variables.NumberVariable.class, Value.ZERO);
+    }
+    
     @NotNull
     @Override
     public AnswerVariable getLastResult() {
@@ -86,5 +94,23 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
             programMap.put(programName, programCode);
 
         LOGGER.debug("Stored new program {}", programName);
+    }
+
+    /**
+     * Takes an Enum class and creates a new map with each enum value as key and the given default value as the value.
+     *
+     * @param numberVariableClass
+     *         An enum class that is suppossed to become the key of maps.
+     * @param defaultValue
+     *         The default value for all entries.
+     * @param <T>
+     *         A class extending Enum.
+     * @return A new map with each enum value as key and the given default value as the value.
+     */
+    @NotNull
+    private <T extends Enum<T>> Map<T, Value> newEnumValueMapWithDefault(@NotNull Class<T> numberVariableClass, @NotNull final Value defaultValue) {
+        Map<T, Value> valueMap = new HashMap<>();
+        EnumUtils.getEnumMap(numberVariableClass).forEach((name, enumObject) -> valueMap.put(enumObject, defaultValue));
+        return valueMap;
     }
 }

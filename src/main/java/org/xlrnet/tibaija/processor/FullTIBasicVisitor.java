@@ -36,6 +36,7 @@ import org.xlrnet.tibaija.util.ContextUtils;
 import org.xlrnet.tibaija.util.TIMathUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Full visitor for the TI-Basic language. This class implements all
@@ -63,6 +64,20 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
 
     @Override
     public Object visitCommand(@NotNull TIBasicParser.CommandContext ctx) {
+        Object result = null;
+        if (ctx.expressionParent() != null) {
+            result = ctx.expressionParent().accept(this);
+        } else if (ctx.statement() != null) {
+            result = ctx.statement().accept(this);
+        }
+
+        if (result instanceof Optional) {
+            Value lastResult = (Value) ((Optional) result).get();
+            environment.getWritableMemory().setLastResult(lastResult);
+            LOGGER.debug("Updated ANS variable to value {} of type {}", lastResult.getValue(), lastResult.getType());
+        } else if (result != null) {
+            LOGGER.debug("Got result object of type {}", result.getClass().getSimpleName());
+        }
         return super.visitCommand(ctx);
     }
 
@@ -93,14 +108,8 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Object visitExpressionParent(@NotNull TIBasicParser.ExpressionParentContext ctx) {
-        Object result = ctx.expression().accept(this);
-        if (result instanceof Value) {
-            Value lastResult = (Value) result;
-            environment.getWritableMemory().setLastResult(lastResult);
-            LOGGER.debug("Updated ANS variable to value {} of type {}", lastResult.getValue(), lastResult.getType());
-        }
-        return result;
+    public Optional<Value> visitExpressionParent(@NotNull TIBasicParser.ExpressionParentContext ctx) {
+        return Optional.of((Value) ctx.expression().accept(this));
     }
 
     @Override
@@ -285,13 +294,19 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Object visitStatement(@NotNull TIBasicParser.StatementContext ctx) {
-        return super.visitStatement(ctx);
+    public Optional<Value> visitStatement(@NotNull TIBasicParser.StatementContext ctx) {
+        return Optional.ofNullable((Value) super.visitStatement(ctx));
     }
 
     @Override
-    public Object visitStoreStatement(@NotNull TIBasicParser.StoreStatementContext ctx) {
-        return super.visitStoreStatement(ctx);
+    public Value visitStoreNumberStatement(@NotNull TIBasicParser.StoreNumberStatementContext ctx) {
+        String variableName = ctx.numericalVariable().getText();
+        Value value = (Value) ctx.expression().accept(this);
+
+        Variables.NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
+        environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
+
+        return value;
     }
 
     @Override
@@ -307,8 +322,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     /**
      * Internal function for processing expressions. This method takes an initial value and both a list of operators
      * and  a list of operands. Each i-th element in the operator list will be applied to the i-1-th and i-th element
-     * in
-     * the operand list. Each operator will be looked up in the current environment's command list.
+     * in the operand list. Each operator will be looked up in the current environment's command list.
      * If there is only one operand, the left hand side will be returned.
      * <p/>
      * E.g.: operator = ['+','-'] and operands = [1,2,3] will result in 1 + 2 - 3
@@ -322,7 +336,8 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
      *         {@link
      *         Value}.
      */
-    private Value processGenericExpressions(List<String> operators, List<? extends RuleContext> contextRules) {
+    @NotNull
+    private Value processGenericExpressions(@NotNull List<String> operators, @NotNull List<? extends RuleContext> contextRules) {
         Value lhs = (Value) contextRules.get(0).accept(this);
         for (int i = 1; i < contextRules.size(); i++) {
             Value rhs = (Value) contextRules.get(i).accept(this);

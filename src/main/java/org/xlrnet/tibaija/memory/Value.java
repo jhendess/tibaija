@@ -33,6 +33,8 @@ import java.math.BigDecimal;
  */
 public class Value extends AnswerVariable {
 
+    public static final Value ZERO = Value.of(Complex.ZERO);
+    
     public static final Value NEGATIVE_ONE = Value.of(Complex.valueOf(-1));
 
     private Value(Complex c) {

@@ -20,36 +20,33 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.memory;
+package org.xlrnet.tibaija.processor;
 
-import org.apache.commons.lang3.EnumUtils;
-import org.xlrnet.tibaija.exception.UnknownVariableException;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.xlrnet.tibaija.memory.Variables;
 
 /**
- * Class with enums for accessing various variables.
+ * Tests for storing values.
  */
-public class Variables {
+@RunWith(MockitoJUnitRunner.class)
+public class StoreStatementTest extends AbstractTI83PlusTest {
 
-    public static NumberVariable resolveNumberVariable(String variableName) {
-        return internalResolveVariableName(NumberVariable.class, variableName);
+    @Test
+    public void testInterpret_validProgram_store_numbervalue_numbervariable_1() {
+        calculator.interpret("123->A");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 123, 0);
+        verifyLastResultValue(123);
     }
 
-    private static <E extends Enum<E>> E internalResolveVariableName(final Class<E> clazz, String variableName) {
-        E result = EnumUtils.getEnum(clazz, variableName);
-        if (result == null)
-            throw new UnknownVariableException(-1, -1, "Unknown variable name", variableName);
-        return result;
+    @Test
+    public void testInterpret_validProgram_store_numbervalue_numbervariable_complex() {
+        calculator.interpret("123i+512.1024->B");
+        verifyNumberVariableValue(Variables.NumberVariable.B, 512.1024, 123);
+        verifyLastResultValue(512.1024, 123);
     }
 
-    public enum NumberVariable {
-        A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
-    }
-
-    public enum VariableType {
-        NUMBER,
-        STRING,
-        LIST,
-        MATRIX
-    }
+    // TODO: Write negative tests when other data types have been implemented
 
 }

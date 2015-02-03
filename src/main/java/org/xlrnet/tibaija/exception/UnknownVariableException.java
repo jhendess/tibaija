@@ -27,7 +27,19 @@ package org.xlrnet.tibaija.exception;
  */
 public class UnknownVariableException extends TIRuntimeException {
 
+    private static final long serialVersionUID = 1697277001636611416L;
+
     private String variableName;
+
+    /**
+     * Throws a new UnknownVariableException with the given name of the unknown variable as a String.
+     *
+     * @param variableName
+     *         Name of the Variable.
+     */
+    public UnknownVariableException(String variableName) {
+        this(-1, -1, "Unknown variable", variableName);
+    }
 
     public UnknownVariableException(int linenumber, int startIndex, String message, String variableName) {
         super(linenumber, startIndex, message);

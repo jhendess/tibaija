@@ -40,10 +40,10 @@ program
 commandList
        : (SEPARATOR command)*;
 
-command
+command                        // Includes handling of the ANS variable
        : (statement | expressionParent | );
 
-expressionParent: expression;                           // Pseudo-expression for handling the ANS variable
+expressionParent: expression;
 
 
 /* BEGIN Code for operator precendece          */
@@ -205,7 +205,8 @@ callStatement
        : DISP expression;
 
 storeStatement
-       : expression STORE numericalVariable;
+       : expression STORE numericalVariable      # StoreNumberStatement
+       ;
 
 numericalValue
        : numericalVariable

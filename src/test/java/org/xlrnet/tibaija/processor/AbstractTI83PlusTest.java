@@ -29,9 +29,12 @@ import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.matchers.EqualsWithComplexDeltaMatcher;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
+import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.test.TestUtils;
 
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -62,5 +65,10 @@ public class AbstractTI83PlusTest {
 
     protected void verifyLastResultValueWithBigTolerance(double realPart) {
         verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.BIG_TOLERANCE)));
+    }
+
+    protected void verifyNumberVariableValue(Variables.NumberVariable variable, double real, double imaginary) {
+        // times(2) -> workaround for bug???
+        verify(mockedMemory, times(2)).setNumberVariableValue(eq(variable), argThat(new EqualsWithComplexDeltaMatcher(real, imaginary, TestUtils.DEFAULT_TOLERANCE)));
     }
 }
