@@ -99,6 +99,12 @@ public class InterpretComparisonTest extends AbstractTI83PlusTest {
     }
 
     @Test
+    public void testInterpret_validProgram_comparison_equals_list_both() {
+        calculator.interpret("{1,2,3}={3,2,1");
+        verifyLastResultValueList(0d, 1d, 0d);
+    }
+
+    @Test
     public void testInterpret_validProgram_comparison_greater_equals_1() {
         calculator.interpret("123≥456");
         verifyLastResultValue(0);
@@ -132,6 +138,24 @@ public class InterpretComparisonTest extends AbstractTI83PlusTest {
     public void testInterpret_validProgram_comparison_greater_than_3() {
         calculator.interpret("456>123");
         verifyLastResultValue(1);
+    }
+
+    @Test
+    public void testInterpret_validProgram_comparison_greater_than_list_both() {
+        calculator.interpret("{1,5,9}>{1,6,3}");
+        verifyLastResultValueList(0d, 0d, 1d);
+    }
+
+    @Test
+    public void testInterpret_validProgram_comparison_greater_than_list_left() {
+        calculator.interpret("{1,5,9}>2");
+        verifyLastResultValueList(0d, 1d, 1d);
+    }
+
+    @Test
+    public void testInterpret_validProgram_comparison_greater_than_list_right() {
+        calculator.interpret("3>{1,5,9}");
+        verifyLastResultValueList(1d, 0d, 0d);
     }
 
     @Test

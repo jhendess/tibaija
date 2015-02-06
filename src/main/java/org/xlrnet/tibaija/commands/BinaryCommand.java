@@ -23,15 +23,22 @@
 package org.xlrnet.tibaija.commands;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.math3.complex.Complex;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
+import org.xlrnet.tibaija.exception.TIArgumentException;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.processor.Command;
+import org.xlrnet.tibaija.util.ValueUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -63,7 +70,7 @@ public class BinaryCommand extends Command {
     protected Optional<Value> execute(ImmutableList<Value> arguments) {
         final Value lhs = arguments.get(0);
         final Value rhs = arguments.get(1);
-        final Value result = evaluationFunction.apply(lhs, rhs);
+        final Value result = applyOperator(lhs, rhs);
 
         LOGGER.debug("({}) {} {} -> {}", operator, lhs.getValue(), rhs.getValue(), result.getValue());
 
@@ -84,10 +91,10 @@ public class BinaryCommand extends Command {
         checkNotNull(lhs);
         checkNotNull(rhs);
 
-        if (!lhs.isNumber())
-            throw new IllegalTypeException("Left hand side of expression is not a Number: " + lhs.getValue(), Variables.VariableType.NUMBER, lhs.getType());
-        if (!rhs.isNumber())
-            throw new IllegalTypeException("Right hand side of expression is not a Number: " + rhs.getValue(), Variables.VariableType.NUMBER, rhs.getType());
+        if (!ValueUtils.isNumberOrList(lhs))
+            throw new IllegalTypeException("Left hand side of expression is not a list or number: " + lhs.getValue(), Variables.VariableType.NUMBER, lhs.getType());
+        if (!ValueUtils.isNumberOrList(rhs))
+            throw new IllegalTypeException("Right hand side of expression is not a list or number: " + rhs.getValue(), Variables.VariableType.NUMBER, rhs.getType());
 
         return true;
     }
@@ -102,6 +109,98 @@ public class BinaryCommand extends Command {
     @Override
     protected boolean hasValidNumberOfArguments(int numberOfParametersEntered) {
         return numberOfParametersEntered == 2;
+    }
+
+    /**
+     * Apply the internal function if they both operands are lists and have the same length. Each i-th element of the
+     * left list will be applied to the i-th element of the right list to build the i-th element of the result list.
+     *
+     * @param lhs
+     *         Left side of the expression
+     * @param rhs
+     *         Right side of the expression.
+     * @return A new Value object with the internal function applied to it.
+     */
+    @NotNull
+    private Value applyOnBothList(@NotNull Value lhs, @NotNull Value rhs) {
+        final ImmutableList<Complex> leftList = lhs.list();
+        final ImmutableList<Complex> rightList = rhs.list();
+
+        if (leftList.size() != rightList.size())
+            throw new TIArgumentException("Mismatching dimensions: " + leftList.size() + " - " + rightList.size(), lhs, rhs);
+
+        List<Complex> resultList = new ArrayList<>(leftList.size());
+        for (int i = 0; i < leftList.size(); i++)
+            resultList.add(evaluationFunction.apply(Value.of(leftList.get(i)), Value.of(rightList.get(i))).complex());
+        return Value.of(resultList);
+    }
+
+    /**
+     * Apply the internal function if the left operand is a list and the right is a number. Each i-th element of the
+     * left list will be applied to the numerical right-side expression to build the i-th value of the resulting list.
+     *
+     * @param lhs
+     *         Left side of the expression
+     * @param rhs
+     *         Right side of the expression.
+     * @return A new Value object with the internal function applied to it.
+     */
+    @NotNull
+    private Value applyOnLeftList(@NotNull Value lhs, @NotNull Value rhs) {
+        List<Complex> valueList = lhs.list()
+                .stream()
+                .map(c -> evaluationFunction.apply(Value.of(c), rhs).complex())
+                .collect(Collectors.toList());
+        return Value.of(valueList);
+    }
+
+    /**
+     * Apply the internal function if the right operand is a list and the left is a number. The numerical left-side
+     * expression will be applied to each i-th element of the right list to build the i-th value of the resulting list.
+     *
+     * @param lhs
+     *         Left side of the expression
+     * @param rhs
+     *         Right side of the expression.
+     * @return A new Value object with the internal function applied to it.
+     */
+    @NotNull
+    private Value applyOnRightList(@NotNull Value lhs, @NotNull Value rhs) {
+        List<Complex> valueList = rhs.list()
+                .stream()
+                .map(c -> evaluationFunction.apply(lhs, Value.of(c)).complex())
+                .collect(Collectors.toList());
+        return Value.of(valueList);
+    }
+
+    /**
+     * Apply the internal operator function on the given operand. If both operand are numbers, the function will be
+     * applied to both numerical values. If both operands are lists and have the same length, each i-th element of the
+     * left list will be applied with the i-th element of the right list to build the i-th element of the result.  If
+     * both lists have a different length an exception will be thrown. If only one side of the expression is a list,
+     * the non-list side will be applied to each element of the list side.
+     *
+     * @param lhs
+     *         Left side of the expression
+     * @param rhs
+     *         Right side of the expression.
+     * @return A new Value object with the internal function applied to it.
+     */
+    private Value applyOperator(Value lhs, Value rhs) throws TIArgumentException {
+        Value result;
+
+        if (lhs.isList() || rhs.isList()) {
+            if (lhs.isList() && rhs.isList()) {
+                result = applyOnBothList(lhs, rhs);
+            } else if (lhs.isList()) {
+                result = applyOnLeftList(lhs, rhs);
+            } else {
+                result = applyOnRightList(lhs, rhs);
+            }
+        } else {
+            result = evaluationFunction.apply(lhs, rhs);
+        }
+        return result;
     }
 
 }

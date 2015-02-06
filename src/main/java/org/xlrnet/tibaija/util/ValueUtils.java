@@ -74,4 +74,11 @@ public class ValueUtils {
             if (v.hasImaginaryValue())
                 throw new TIArgumentException("Cannot operate on imaginary values", ImmutableList.copyOf(values));
     }
+
+    /**
+     * Return true if the given Value is either a number or a list.
+     */
+    public static boolean isNumberOrList(Value operand) {
+        return operand.isNumber() || operand.isList();
+    }
 }

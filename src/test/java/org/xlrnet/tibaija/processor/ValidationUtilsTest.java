@@ -52,20 +52,22 @@ public class ValidationUtilsTest {
 
     @Test
     public void testIsValidListVariable_false() throws Exception {
-        assertFalse(ValidationUtils.isValidListName("1"));
-        assertFalse(ValidationUtils.isValidListName("ABCDEFGHI"));
-        assertFalse(ValidationUtils.isValidListName("1AEFG"));
-        assertFalse(ValidationUtils.isValidListName("a1234567"));
-        assertFalse(ValidationUtils.isValidListName("abc"));
+        assertFalse(ValidationUtils.isValidListName("∟1"));
+        assertFalse(ValidationUtils.isValidListName("∟ABCDEFGHI"));
+        assertFalse(ValidationUtils.isValidListName("∟1AEFG"));
+        assertFalse(ValidationUtils.isValidListName("∟a1234567"));
+        assertFalse(ValidationUtils.isValidListName("∟abc"));
+        assertFalse(ValidationUtils.isValidListName("A"));
+        assertFalse(ValidationUtils.isValidListName("ABC12"));
     }
 
     @Test
     public void testIsValidListVariable_true() throws Exception {
-        assertTrue(ValidationUtils.isValidListName("A"));
-        assertTrue(ValidationUtils.isValidListName("A1"));
-        assertTrue(ValidationUtils.isValidListName("A1234"));
-        assertTrue(ValidationUtils.isValidListName("θ"));
-        assertTrue(ValidationUtils.isValidListName("θθθθθ"));
+        assertTrue(ValidationUtils.isValidListName("∟A"));
+        assertTrue(ValidationUtils.isValidListName("∟A1"));
+        assertTrue(ValidationUtils.isValidListName("∟A1234"));
+        assertTrue(ValidationUtils.isValidListName("∟θ"));
+        assertTrue(ValidationUtils.isValidListName("∟θθθθθ"));
     }
 
     @Test

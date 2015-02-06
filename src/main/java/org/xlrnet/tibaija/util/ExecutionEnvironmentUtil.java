@@ -27,6 +27,7 @@ import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.commands.BinaryCommand;
 import org.xlrnet.tibaija.commands.BinaryCommandOperator;
 import org.xlrnet.tibaija.commands.UnaryCommand;
+import org.xlrnet.tibaija.commands.UnaryCommandOperator;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.processor.ExecutionEnvironment;
@@ -62,11 +63,11 @@ public class ExecutionEnvironmentUtil {
         env.registerCommand("nPr", new BinaryCommand(BinaryCommandOperator.NPR));
 
         // Register unary arithmetic operators
-        env.registerCommand("²", new UnaryCommand(UnaryCommand.UnaryCommandOperator.SQUARED));
-        env.registerCommand("³", new UnaryCommand(UnaryCommand.UnaryCommandOperator.CUBED));
-        env.registerCommand("√(", new UnaryCommand(UnaryCommand.UnaryCommandOperator.SQUARE_ROOT));
-        env.registerCommand("∛(", new UnaryCommand(UnaryCommand.UnaryCommandOperator.CUBIC_ROOT));
-        env.registerCommand("!", new UnaryCommand(UnaryCommand.UnaryCommandOperator.FACTORIAL));
+        env.registerCommand("²", new UnaryCommand(UnaryCommandOperator.SQUARED));
+        env.registerCommand("³", new UnaryCommand(UnaryCommandOperator.CUBED));
+        env.registerCommand("√(", new UnaryCommand(UnaryCommandOperator.SQUARE_ROOT));
+        env.registerCommand("∛(", new UnaryCommand(UnaryCommandOperator.CUBIC_ROOT));
+        env.registerCommand("!", new UnaryCommand(UnaryCommandOperator.FACTORIAL));
         
         // Register comparison operators
         env.registerCommand("=", new BinaryCommand(BinaryCommandOperator.EQUALS));
@@ -80,7 +81,7 @@ public class ExecutionEnvironmentUtil {
         env.registerCommand("and", new BinaryCommand(BinaryCommandOperator.AND));
         env.registerCommand("or", new BinaryCommand(BinaryCommandOperator.OR));
         env.registerCommand("xor", new BinaryCommand(BinaryCommandOperator.XOR));
-        env.registerCommand("not(", new UnaryCommand(UnaryCommand.UnaryCommandOperator.NOT));
+        env.registerCommand("not(", new UnaryCommand(UnaryCommandOperator.NOT));
     }
 
 }

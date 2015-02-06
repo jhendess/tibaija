@@ -68,6 +68,8 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
     public void setLastResult(@NotNull Value value) {
         checkNotNull(value);
         this.lastResult = value;
+
+        LOGGER.debug("Updated ANS variable to value {} of type {}", lastResult.getValue(), lastResult.getType());
     }
 
     @NotNull
@@ -89,8 +91,10 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
     public void setListVariableValue(@NotNull String listName, @NotNull Value value) {
         checkNotNull(listName);
         checkNotNull(value);
+        checkValueType(value, Variables.VariableType.LIST);
 
         listVariableValueMap.put(listName, value);
+        LOGGER.debug("Changed value in list variable {} to {}", listName, value);
     }
 
     @Override

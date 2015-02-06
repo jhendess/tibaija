@@ -76,6 +76,6 @@ public class IllegalTypeException extends TIRuntimeException {
 
     @Override
     public String getMessage() {
-        return super.getMessage() + " expected: " + expectedType + "; actual: " + actualType;
+        return super.getMessage() + " - expected: " + expectedType + "; actual: " + actualType;
     }
 }

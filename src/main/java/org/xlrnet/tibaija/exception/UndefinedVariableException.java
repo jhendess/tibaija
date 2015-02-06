@@ -46,6 +46,11 @@ public class UndefinedVariableException extends TIRuntimeException {
         this.variableName = variableName;
     }
 
+    @Override
+    public String getMessage() {
+        return super.getMessage() + " - " + variableName;
+    }
+
     public String getVariableName() {
         return variableName;
     }

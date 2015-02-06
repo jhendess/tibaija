@@ -31,20 +31,19 @@ import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.matchers.EqualsTIListMatcher;
 import org.xlrnet.tibaija.matchers.EqualsWithComplexDeltaMatcher;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
+import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.test.TestUtils;
 
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * Abstract class with all necessary mocks.
  */
 public class AbstractTI83PlusTest {
 
-    @Mock
     CalculatorMemory mockedMemory;
 
     @Mock
@@ -54,6 +53,7 @@ public class AbstractTI83PlusTest {
 
     @Before
     public void setUp() {
+        mockedMemory = spy(new DefaultCalculatorMemory());
         calculator = new TI83Plus(mockedMemory, mockedIO);
     }
 
@@ -78,6 +78,11 @@ public class AbstractTI83PlusTest {
 
     protected void verifyLastResultValueWithBigTolerance(double realPart) {
         verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.BIG_TOLERANCE)));
+    }
+
+    protected void verifyListVariableValue(String variable, Complex... values) {
+        // times(2) -> workaround for bug???
+        verify(mockedMemory, times(2)).setListVariableValue(eq(variable), argThat(new EqualsTIListMatcher(values, TestUtils.DEFAULT_TOLERANCE)));
     }
 
     protected void verifyNumberVariableValue(Variables.NumberVariable variable, double real, double imaginary) {

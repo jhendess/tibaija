@@ -22,11 +22,16 @@
 
 package org.xlrnet.tibaija.processor;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.math3.complex.Complex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.xlrnet.tibaija.exception.PreprocessException;
+import org.xlrnet.tibaija.exception.IllegalTypeException;
+import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
+
+import static org.mockito.Mockito.doReturn;
 
 /**
  * Tests for storing values.
@@ -34,9 +39,22 @@ import org.xlrnet.tibaija.memory.Variables;
 @RunWith(MockitoJUnitRunner.class)
 public class StoreStatementTest extends AbstractTI83PlusTest {
 
-    @Test(expected = PreprocessException.class)
+    @Test(expected = IllegalTypeException.class)
     public void testInterpret_invalidProgram_store_listvalue_numbervariable() {
         calculator.interpret(":{A->A");
+    }
+
+    @Test(expected = IllegalTypeException.class)
+    public void testInterpret_invalidProgram_store_numberValue_listvariable() {
+        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(mockedMemory).getListVariableValue("A");
+        calculator.interpret(":∟A->A");
+    }
+
+    @Test
+    public void testInterpret_validProgram_store_listvalue_listvariable() {
+        calculator.interpret(":{1,2->∟A");
+        verifyListVariableValue("A", Complex.valueOf(1), Complex.valueOf(2));
+        verifyLastResultValueList(1d, 2d);
     }
 
     @Test
@@ -53,7 +71,5 @@ public class StoreStatementTest extends AbstractTI83PlusTest {
         verifyLastResultValue(512.1024, 123);
     }
 
-    // TODO: Add tests for list type
     // TODO: Write negative tests when other data types have been implemented
-
 }

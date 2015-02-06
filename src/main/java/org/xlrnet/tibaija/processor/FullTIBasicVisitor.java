@@ -74,9 +74,8 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         if (result instanceof Optional) {
             Value lastResult = (Value) ((Optional) result).get();
             environment.getWritableMemory().setLastResult(lastResult);
-            LOGGER.debug("Updated ANS variable to value {} of type {}", lastResult.getValue(), lastResult.getType());
         } else if (result != null) {
-            LOGGER.debug("Got result object of type {}", result.getClass().getSimpleName());
+            LOGGER.debug("Command returned object of type {} with value {}", result.getClass().getSimpleName(), result);
         }
         return super.visitCommand(ctx);
     }
@@ -317,6 +316,15 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Optional<Value> visitStatement(@NotNull TIBasicParser.StatementContext ctx) {
         return Optional.ofNullable((Value) super.visitStatement(ctx));
+    }
+
+    @Override
+    public Value visitStoreListStatement(@NotNull TIBasicParser.StoreListStatementContext ctx) {
+        String variableName = ctx.listVariable().listIdentifier().getText();
+        Value value = (Value) ctx.expression().accept(this);
+
+        environment.getWritableMemory().setListVariableValue(variableName, value);
+        return value;
     }
 
     @Override

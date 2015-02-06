@@ -23,7 +23,6 @@
 package org.xlrnet.tibaija.memory;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.math3.complex.Complex;
 import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
@@ -185,23 +184,9 @@ public class Value implements Comparable<Value> {
             return 0;
 
         try {
-            switch (type) {
-                case NUMBER:
-                    switch (o.type) {
-                        case NUMBER:
-                            return complexComparator.compare(this.complex(), o.complex());
-                        case LIST:
-                            // TODO: Implement right list comparison logic
-                            throw new NotImplementedException("Comparison for lists is not yet supported");
-                        default:
-                            throw new IllegalTypeException("Comparison not supported for right type", Variables.VariableType.NUMBER, type);
-                    }
-                case LIST:
-                    // TODO: Implement left list comparison logic
-                    throw new NotImplementedException("Comparison for lists is not yet supported");
-                default:
-                    throw new IllegalTypeException("Comparison not supported for left type", Variables.VariableType.NUMBER, type);
-            }
+            if (!(this.isNumber() || o.isNumber()))
+                throw new IllegalTypeException("Comparison not supported for right type", Variables.VariableType.NUMBER, type);
+            return complexComparator.compare(this.complex(), o.complex());
         } catch (UnsupportedOperationException u) {
             throw new TIArgumentException("Illegal operation: " + u.getMessage(), ImmutableList.of(this, o));
         }

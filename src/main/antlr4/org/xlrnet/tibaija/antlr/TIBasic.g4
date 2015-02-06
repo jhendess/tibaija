@@ -32,7 +32,19 @@
 
 grammar TIBasic;
 
-/** Actual grammar */
+/* Additional java imports */
+
+@header {
+import org.xlrnet.tibaija.util.ValidationUtils;
+}
+
+/* Global attributes */
+
+@members {
+    boolean isListMode = false;
+}
+
+/* Actual grammar */
 
 program
        : commandList;
@@ -87,14 +99,28 @@ expression_plus_minus returns [ List<String> operators ]
          )
          expression_mul_div )*;
 
-expression_mul_div returns [ List<String> operators ]
+// Let's hope the following rule doesn't break ...
+expression_mul_div returns [         
+    List<String> operators
+] locals [
+    String lastExpr,
+    boolean isImplicit = false
+]  @local {  }
 @init { _localctx.operators = new ArrayList<String>(); }
-       : expression_infix (
-         ( MULTIPLY { $operators.add($MULTIPLY.text); }
-         | DIVIDE { $operators.add($DIVIDE.text); }
-         | { $operators.add("*"); }              // Implicit multiplication
+       : expression_infix { $lastExpr = $expression_infix.text; }
+       (
+         ( MULTIPLY { $operators.add($MULTIPLY.text); $isImplicit = false;}
+         | DIVIDE { $operators.add($DIVIDE.text); $isImplicit = false; }
+         | { $operators.add("*"); $isImplicit = true; }              // Implicit multiplication
          )
-         expression_infix )*;
+         // Make sure that no implicit multiplication with a number variable is allowed
+         // if the last expression was a list variable and the next expression begins with a number variable
+         // I.e.: Prevent that  ∟ABCDEF will be interpreted as ∟ABCDE*F
+         expression_infix { !($isImplicit
+                            && ValidationUtils.isValidListName($lastExpr)
+                            && ValidationUtils.isValidNumberVariableName($expression_infix.text)) }?
+           { $lastExpr = $expression_infix.text; }
+       )*;
 
 expression_infix returns [ List<String> operators ]
 @init { _localctx.operators = new ArrayList<String>(); }
@@ -208,6 +234,7 @@ callStatement
 
 storeStatement
        : expression STORE numericalVariable      # StoreNumberStatement
+       | expression STORE listVariable           # StoreListStatement
        ;
 
 numericalValue
@@ -216,16 +243,17 @@ numericalValue
        ;
        
 listValue
-       : listVariable
-       | listExpression
+       : listVariable   { !(isListMode) }? {isListMode = false; }      // Disable list mode after visiting the expression/variable
+       | listExpression {isListMode = false; }
        ;
        
 listExpression
-       : LEFT_BRACE expression ( COMMA expression )* RIGHT_BRACE?
+       : LEFT_BRACE { !(isListMode) }? { isListMode = true; } expression ( COMMA expression )* RIGHT_BRACE?
        ;
        
 listVariable
-       : LIST_TOKEN listIdentifier;
+       : LIST_TOKEN listIdentifier
+       ;
        
 labelIdentifier
        : (CapitalTheta | DIGIT) (CapitalTheta | DIGIT)?;
@@ -239,6 +267,7 @@ listIdentifier
        (CapitalTheta | DIGIT)?
        (CapitalTheta | DIGIT)?
        (CapitalTheta | DIGIT)?
+      | DefaultList
       ;
 
 lastResult
@@ -248,7 +277,7 @@ lastResult
 
 /* Lexer rules for more readable code */
 CapitalTheta: (CAPITAL_LETTER | THETA);
-
+DefaultList: ('₁' .. '₆');              // Characters are subscript UTF-8 numbers 0x2081 to 0x2086
 
 /* Parser rule for detecting numbers */
 digits: DIGIT+;     // Helper rule to get the token

@@ -61,10 +61,22 @@ public class ValidationUtils {
      * letters or theta. Except for the first symbol, digits from 0 to 9 are also allowed.
      *
      * @param listName
-     *         Name of the list variable without the leading list token.
+     *         Name of the list variable with the leading list token.
      * @return True if the given string is a valid list variable name. False otherwise.
      */
     public static boolean isValidListName(@NotNull String listName) {
-        return Pattern.matches("[A-Zθ][A-Z0-9θ]{0,4}", listName);
+        return Pattern.matches("∟[A-Zθ][A-Z0-9θ]{0,4}", listName);
+    }
+
+    /**
+     * Checks if the given input string is a valid name for a number variable. A valid number variable name consists of
+     * any of capital letters A to Z or theta.
+     *
+     * @param variableName
+     *         Name of the number variable.
+     * @return True if the given string is a valid number variable name. False otherwise.
+     */
+    public static boolean isValidNumberVariableName(@NotNull String variableName) {
+        return Pattern.matches("[A-Zθ]", variableName);        
     }
 }
