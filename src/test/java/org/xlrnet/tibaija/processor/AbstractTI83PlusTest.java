@@ -57,16 +57,17 @@ public class AbstractTI83PlusTest {
         calculator = new TI83Plus(mockedMemory, mockedIO);
     }
 
-    protected void verifyLastResultValue(double realPart, double imaginaryPart) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, imaginaryPart, TestUtils.DEFAULT_TOLERANCE)));
+    protected void storeAndExecute(String snippet) {
+        calculator.loadProgram("TEST", snippet);
+        calculator.executeProgram("TEST");
     }
 
     protected void verifyLastResultValue(double realPart) {
         verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.DEFAULT_TOLERANCE)));
     }
 
-    protected void verifyLastResultValueList(Complex... values) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsTIListMatcher(values, TestUtils.DEFAULT_TOLERANCE)));
+    protected void verifyLastResultValue(double realPart, double imaginaryPart) {
+        verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, imaginaryPart, TestUtils.DEFAULT_TOLERANCE)));
     }
 
     protected void verifyLastResultValueList(Double... values) {
@@ -74,6 +75,10 @@ public class AbstractTI83PlusTest {
         for (int i = 0; i < values.length; i++)
             t[i] = Complex.valueOf(values[i]);
         verifyLastResultValueList(t);
+    }
+
+    protected void verifyLastResultValueList(Complex... values) {
+        verify(mockedMemory).setLastResult(argThat(new EqualsTIListMatcher(values, TestUtils.DEFAULT_TOLERANCE)));
     }
 
     protected void verifyLastResultValueWithBigTolerance(double realPart) {
@@ -89,4 +94,5 @@ public class AbstractTI83PlusTest {
         // times(2) -> workaround for bug???
         verify(mockedMemory, times(2)).setNumberVariableValue(eq(variable), argThat(new EqualsWithComplexDeltaMatcher(real, imaginary, TestUtils.DEFAULT_TOLERANCE)));
     }
+
 }

@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.exception.DuplicateProgramException;
+import org.xlrnet.tibaija.exception.ProgramNotFoundException;
 import org.xlrnet.tibaija.exception.UndefinedVariableException;
 import org.xlrnet.tibaija.processor.ExecutableProgram;
 
@@ -85,6 +86,17 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
     public Value getNumberVariableValue(@NotNull Variables.NumberVariable variable) {
         checkNotNull(variable);
         return numberVariableValueMap.get(variable);
+    }
+
+    @NotNull
+    @Override
+    public ExecutableProgram getStoredProgram(@NotNull String programName) throws ProgramNotFoundException {
+        checkNotNull(programName);
+
+        if (!programMap.containsKey(programName))
+            throw new ProgramNotFoundException(programName);
+
+        return programMap.get(programName);
     }
 
     @Override

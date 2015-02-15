@@ -31,6 +31,7 @@ import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.processor.ControlflowLessTIBasicVisitor;
 import org.xlrnet.tibaija.processor.ExecutableProgram;
+import org.xlrnet.tibaija.processor.FullTIBasicVisitor;
 import org.xlrnet.tibaija.processor.Preprocessor;
 import org.xlrnet.tibaija.util.ExecutionEnvironmentUtil;
 import org.xlrnet.tibaija.util.ValidationUtils;
@@ -55,7 +56,8 @@ public class TI83Plus implements VirtualCalculator {
 
     @Override
     public void executeProgram(String programName) throws ProgramNotFoundException {
-
+        ExecutableProgram executableProgram = calculatorMemory.getStoredProgram(programName);
+        ExecutionEnvironmentUtil.newDefaultEnvironment(this).run(executableProgram, new FullTIBasicVisitor());
     }
 
     @Override

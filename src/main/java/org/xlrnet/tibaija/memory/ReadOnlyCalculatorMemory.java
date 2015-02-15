@@ -23,6 +23,8 @@
 package org.xlrnet.tibaija.memory;
 
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.exception.ProgramNotFoundException;
+import org.xlrnet.tibaija.processor.ExecutableProgram;
 
 /**
  * This interface defines a read-only access for the internal calculator memory.
@@ -62,5 +64,17 @@ public interface ReadOnlyCalculatorMemory {
      */
     @NotNull
     public Value getNumberVariableValue(@NotNull Variables.NumberVariable variable);
+
+    /**
+     * Get a reference to a read-only executable program that was stored in the virtual calculator's memory.
+     *
+     * @param programName
+     *         Name of the program. See program name spec.
+     * @return The requested ExecutableProgram.
+     * @throws ProgramNotFoundException
+     *         Will be thrown if the requested program could not be found.
+     */
+    @NotNull
+    public ExecutableProgram getStoredProgram(@NotNull String programName) throws ProgramNotFoundException;
 
 }

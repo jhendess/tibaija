@@ -27,7 +27,14 @@ package org.xlrnet.tibaija.exception;
  */
 public class ProgramNotFoundException extends TIRuntimeException {
 
+    private static final long serialVersionUID = -8151518864039083556L;
+
     String programName;
+
+    public ProgramNotFoundException(String programName) {
+        this(-1, -1, programName);
+        this.programName = programName;
+    }
 
     public ProgramNotFoundException(int lineNumber, int startIndex, String programName) {
         super(lineNumber, startIndex, programName + " could not be found");

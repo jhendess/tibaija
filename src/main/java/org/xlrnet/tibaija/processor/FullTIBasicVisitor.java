@@ -24,11 +24,14 @@ package org.xlrnet.tibaija.processor;
 
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.apache.commons.lang3.EnumUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.math3.complex.Complex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.antlr.TIBasicBaseVisitor;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
+import org.xlrnet.tibaija.exception.IllegalControlFlowException;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.util.ContextUtils;
@@ -36,6 +39,7 @@ import org.xlrnet.tibaija.util.TIMathUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 /**
@@ -82,7 +86,29 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
 
     @Override
     public Object visitCommandList(@NotNull TIBasicParser.CommandListContext ctx) {
-        return super.visitCommandList(ctx);
+        final List<TIBasicParser.CommandContext> commandList = ctx.command();
+        final int commandListSize = commandList.size();
+
+        Stack<ControlFlowElement> flowElementStack = new Stack<>();
+        Stack<ControlFlowElement.ControlFlowToken> skipCommandsStack = new Stack<>();
+
+        for (int commandCounter = 0; commandCounter < commandListSize; commandCounter++) {
+            final TIBasicParser.CommandContext nextCommand = commandList.get(commandCounter);
+
+            // Skipping logic
+            if (!skipCommandsStack.empty()) {
+                if (nextCommand.isControlFlowStatement) {
+                    commandCounter = internalHandleSkipFlowLogic(commandCounter, commandList, skipCommandsStack, nextCommand);
+                } else {
+                    LOGGER.debug("Skipping command {}", commandCounter);
+                }
+            } else if (nextCommand.isControlFlowStatement) {
+                commandCounter = internalHandleControlFlowLogic(commandCounter, commandList, flowElementStack, skipCommandsStack, nextCommand);
+            } else {
+                nextCommand.accept(this);
+            }
+        }
+        return null;
     }
 
     @Override
@@ -92,12 +118,16 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
 
     @Override
     public Object visitElseStatement(@NotNull TIBasicParser.ElseStatementContext ctx) {
-        return super.visitElseStatement(ctx);
+        int line = ctx.ELSE().getSymbol().getLine();
+        int startIndex = ctx.ELSE().getSymbol().getStartIndex();
+        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.ELSE, false, false);
     }
 
     @Override
     public Object visitEndStatement(@NotNull TIBasicParser.EndStatementContext ctx) {
-        return super.visitEndStatement(ctx);
+        int line = ctx.END().getSymbol().getLine();
+        int startIndex = ctx.END().getSymbol().getStartIndex();
+        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.END, false, false);
     }
 
     @Override
@@ -247,8 +277,14 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Object visitIfStatement(@NotNull TIBasicParser.IfStatementContext ctx) {
-        return super.visitIfStatement(ctx);
+    public ControlFlowElement visitIfStatement(@NotNull TIBasicParser.IfStatementContext ctx) {
+        final int line = ctx.IF().getSymbol().getLine();
+        final int startIndex = ctx.IF().getSymbol().getStartIndex();
+
+        Value value = (Value) ctx.expression().accept(this);
+        boolean lastEvaluation = value.bool();
+
+        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.IF, lastEvaluation, false);
     }
 
     @Override
@@ -339,13 +375,138 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Object visitThenStatement(@NotNull TIBasicParser.ThenStatementContext ctx) {
-        return super.visitThenStatement(ctx);
+    public ControlFlowElement visitThenStatement(@NotNull TIBasicParser.ThenStatementContext ctx) {
+        int line = ctx.THEN().getSymbol().getLine();
+        int startIndex = ctx.THEN().getSymbol().getStartIndex();
+        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.THEN, false, false);
     }
 
     @Override
     public Object visitWhileStatement(@NotNull TIBasicParser.WhileStatementContext ctx) {
         return super.visitWhileStatement(ctx);
+    }
+
+    private int internalHandleControlFlowLogic(int currentCommandCount, List<TIBasicParser.CommandContext> commandList, Stack<ControlFlowElement> flowElementStack, Stack<ControlFlowElement.ControlFlowToken> skipCommandsStack, TIBasicParser.CommandContext nextCommand) {
+        int commandListSize = commandList.size();
+        ControlFlowElement currentFlowElement = (ControlFlowElement) nextCommand.accept(this);
+        ControlFlowElement topFlowElement;
+        if (!flowElementStack.empty()) {
+            topFlowElement = flowElementStack.peek();
+        } else {
+            topFlowElement = null;
+        }
+
+        // Check if current token depends on a certain pre-token
+        final int line = currentFlowElement.getLine();
+        final int charIndex = currentFlowElement.getCharIndex();
+        switch (currentFlowElement.getToken()) {
+            case GOTO:
+            case LABEL:
+                throw new NotImplementedException(currentFlowElement.getToken() + " is not yet implemented");
+            case THEN:
+                if (topFlowElement == null) {
+                    throw new IllegalControlFlowException(line, charIndex, "Illegal 'Then' Statement");
+                }
+                if (topFlowElement.getToken() != ControlFlowElement.ControlFlowToken.IF) {
+                    throw new IllegalControlFlowException(line, charIndex, "Illegal 'Then' Statement without preceding 'If'");
+                }
+                if (topFlowElement.getLastEvaluation()) {
+                    currentFlowElement.setLastEvaluation(true);
+                } else {
+                    currentFlowElement.setLastEvaluation(false);
+                    skipCommandsStack.push(ControlFlowElement.ControlFlowToken.ELSE);
+                    LOGGER.debug("Skipping commands until next ELSE from command {}", currentCommandCount);
+                }
+                flowElementStack.push(currentFlowElement);
+                break;
+            case ELSE:
+                if (topFlowElement == null) {
+                    throw new IllegalControlFlowException(line, charIndex, "Illegal 'Else' Statement");
+                }
+                if (topFlowElement.getToken() != ControlFlowElement.ControlFlowToken.THEN) {
+                    throw new IllegalControlFlowException(line, charIndex, "Illegal 'Else' Statement without preceding 'Then'");
+                }
+                if (topFlowElement.getLastEvaluation()) {        // Skip until next "END" if previous if was true
+                    skipCommandsStack.push(ControlFlowElement.ControlFlowToken.END);
+                    LOGGER.debug("Skipping commands until next END from command {}", currentCommandCount);
+                }
+                break;
+            case END:
+                if (topFlowElement == null) {
+                    throw new IllegalControlFlowException(line, charIndex, "Illegal 'End' Statement without preceding endable element");
+                }
+                if (topFlowElement.isRepeatable()) {
+                    currentCommandCount = topFlowElement.getCommandIndex();          // Move counter backwards
+                    LOGGER.debug("Moving command counter to index {}", currentCommandCount);
+                } else {
+                    flowElementStack.pop();
+                }
+                break;
+            case IF:
+                // Look ahead if the next command might be a "Then" i.e. if it is a controlflow statement
+                if (commandListSize <= currentCommandCount + 1) {
+                    throw new IllegalControlFlowException(line, charIndex, "Illegal 'If' at the end of the program");
+                } else if (commandList.get(currentCommandCount + 1).isControlFlowStatement) {
+                    flowElementStack.push(currentFlowElement);
+                    LOGGER.debug("Predicted multiline IF at command {}", currentCommandCount);
+                } else if (!currentFlowElement.getLastEvaluation()) {
+                    // If the next command is not a flow statement and the If evaluated to false, skip the next command (i.e. no else allowed!)
+                    currentCommandCount++;
+                    LOGGER.debug("Skipped IF statement without ELSE clause at command {}", currentCommandCount);
+                }
+                break;
+            default:
+                throw new NotImplementedException("Flow not implemented");
+        }
+        return currentCommandCount;
+    }
+
+    private int internalHandleSkipFlowLogic(int currentCommandCounter, List<TIBasicParser.CommandContext> commandList, Stack<ControlFlowElement.ControlFlowToken> skipCommandsStack, TIBasicParser.CommandContext nextCommand) {
+        int commandListSize = commandList.size();
+        final String enumName = nextCommand.controlFlowStatement().flowType;
+        ControlFlowElement.ControlFlowToken currentFlowToken = EnumUtils.getEnum(ControlFlowElement.ControlFlowToken.class, enumName);
+        ControlFlowElement.ControlFlowToken topToken = skipCommandsStack.peek();
+
+        if (currentFlowToken == null) {
+            throw new IllegalStateException("Internal error: control flow token is null at command " + currentCommandCounter);
+        }
+
+        switch (currentFlowToken) {
+            case IF:
+                // Look ahead if the next command might be a "Then" i.e. if it is a controlflow statement
+                if (commandListSize <= currentCommandCounter + 1) {
+                    throw new IllegalControlFlowException(-1, -1, "Illegal 'If' at the end of the program");
+                } else if (commandList.get(currentCommandCounter + 1).isControlFlowStatement) {
+                    skipCommandsStack.push(currentFlowToken);
+                    LOGGER.debug("Predicted multiline IF while skipping over command {}", currentCommandCounter);
+                } else {
+                    LOGGER.debug("Skipping over single line IF at command {}", currentCommandCounter);
+                    currentCommandCounter++;
+                }
+                break;
+            case THEN:
+                if (topToken != ControlFlowElement.ControlFlowToken.IF)
+                    throw new IllegalControlFlowException(-1, -1, "Illegal 'Then' Statement without preceding 'If'");
+                skipCommandsStack.pop();
+                skipCommandsStack.push(currentFlowToken);
+                break;
+            case ELSE:
+                if (skipCommandsStack.size() > 1 && topToken != ControlFlowElement.ControlFlowToken.THEN)
+                    throw new IllegalControlFlowException(-1, -1, "Illegal 'Else' Statement without preceding 'Then' ");
+                skipCommandsStack.pop();
+                if (!skipCommandsStack.empty())
+                    skipCommandsStack.push(topToken);
+                break;
+            case END:
+                skipCommandsStack.pop();
+                break;
+            default:
+                throw new IllegalStateException("Illegal flow token: " + currentFlowToken);
+        }
+        if (skipCommandsStack.empty()) {
+            LOGGER.debug("Skip stack is now empty - continuing execution at command {}", currentCommandCounter + 1);
+        }
+        return currentCommandCounter;
     }
 
     /**

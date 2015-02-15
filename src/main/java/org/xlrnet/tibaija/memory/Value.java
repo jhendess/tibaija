@@ -176,6 +176,19 @@ public class Value implements Comparable<Value> {
         return of(Complex.valueOf(real.doubleValue(), imaginary.doubleValue()));
     }
 
+    /**
+     * Retrieves the internal value as a boolean value. If the internal is not a number, this method will throw an
+     * {IllegalTypeException}. Use this method only if you know the underlying object type!
+     *
+     * @return The internal value as a boolean. If the numerical value is not zero, true will be returned. Otherwise
+     * false.
+     * @throws TIRuntimeException
+     */
+    public boolean bool() throws IllegalTypeException {
+        Complex c = complex();
+        return c.getReal() != 0 || c.getImaginary() != 0;
+    }
+
     @Override
     public int compareTo(@NotNull Value o) {
         checkNotNull(o);

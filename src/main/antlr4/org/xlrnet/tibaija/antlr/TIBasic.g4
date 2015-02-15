@@ -52,8 +52,11 @@ program
 commandList
        : (SEPARATOR command)*;
 
-command                        // Includes handling of the ANS variable
-       : (statement | expressionParent | );
+command returns [ boolean isControlFlowStatement ]                       // Includes handling of the ANS variable
+       : statement
+       | expressionParent
+       | controlFlowStatement { $isControlFlowStatement = true; }
+       | ;              // Epsilon
 
 expressionParent: expression;
 
@@ -105,7 +108,7 @@ expression_mul_div returns [
 ] locals [
     String lastExpr,
     boolean isImplicit = false
-]  @local {  }
+]
 @init { _localctx.operators = new ArrayList<String>(); }
        : expression_infix { $lastExpr = $expression_infix.text; }
        (
@@ -186,21 +189,21 @@ expression_value
 /* END Code for operator precedence */
 
 statement
-       : controlFlowStatement
-       | callStatement
+       : callStatement
        | storeStatement
        ;
 
-controlFlowStatement                      // Separated controlFlowStatement to allowing blocking of control flow statements in visitor
-       : ifStatement
-       | thenStatement
-       | elseStatement
-       | whileStatement
-       | repeatStatement
-       | endStatement
-       | forStatement
-       | labelStatement
-       | gotoStatement;
+controlFlowStatement returns [ String flowType ]                      // Separated controlFlowStatement to allowing blocking of control flow statements in visitor
+       : ifStatement { $flowType = "IF"; }
+       | thenStatement { $flowType = "THEN"; }
+       | elseStatement { $flowType = "ELSE"; }
+       | whileStatement { $flowType = "WHILE"; }
+       | repeatStatement { $flowType = "REPEAT"; }
+       | endStatement { $flowType = "END"; }
+       | forStatement { $flowType = "FOR"; }
+       | labelStatement { $flowType = "LABEL"; }
+       | gotoStatement { $flowType = "GOTO"; }
+       ; 
 
 ifStatement
        : IF expression;
