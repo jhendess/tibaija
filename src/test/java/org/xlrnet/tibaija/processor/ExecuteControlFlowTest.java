@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.xlrnet.tibaija.exception.IllegalControlFlowException;
+import org.xlrnet.tibaija.memory.Variables;
 
 /**
  * Tests for control flow logic.
@@ -39,6 +40,20 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":1" +
                 ":Else" +
                 ":2" +
+                ":End");
+    }
+
+    @Test(expected = IllegalControlFlowException.class)
+    public void testExecute_invalidProgram_controlFlow_while_then() {
+        storeAndExecute(":While 1" +
+                ":Then" +
+                ":End");
+    }
+
+    @Test(expected = IllegalControlFlowException.class)
+    public void testExecute_invalidProgram_controlFlow_while_then_skipped() {
+        storeAndExecute(":While 0" +
+                ":Then" +
                 ":End");
     }
 
@@ -122,5 +137,51 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":3" +
                 ":End");
         verifyLastResultValue(3);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_while_false() {
+        storeAndExecute(":1" +
+                ":While 0" +
+                ":2" +
+                ":End");
+        verifyLastResultValue(1);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_while_false_nested_true() {
+        storeAndExecute(":1→A:1→B" +
+                ":While 0" +
+                ":2→A" +
+                ":While 1" +
+                ":2→B" +
+                ":End" +
+                ":End");
+        assertNumberVariableValue(Variables.NumberVariable.A, 1, 0);
+        assertNumberVariableValue(Variables.NumberVariable.B, 1, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_while_increment() {
+        storeAndExecute(":0→A" +
+                ":While A<5" +
+                ":A+1→A" +
+                ":End");
+        verifyLastResultValue(5);
+        assertNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_while_nested() {
+        storeAndExecute(":1→A" +
+                ":While A<5" +
+                ":A+1→A" +
+                ":0→B" +
+                ":While B<A" +
+                ":B+1→B" +
+                ":End" +
+                ":End");
+        assertNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+        assertNumberVariableValue(Variables.NumberVariable.B, 5, 0);
     }
 }

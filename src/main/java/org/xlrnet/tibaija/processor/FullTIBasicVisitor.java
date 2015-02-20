@@ -81,7 +81,12 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         } else if (result != null) {
             LOGGER.debug("Command returned object of type {} with value {}", result.getClass().getSimpleName(), result);
         }
-        return super.visitCommand(ctx);
+
+        if (result != null) {
+            return result;
+        } else {
+            return super.visitCommand(ctx);
+        }
     }
 
     @Override
@@ -382,11 +387,17 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Object visitWhileStatement(@NotNull TIBasicParser.WhileStatementContext ctx) {
-        return super.visitWhileStatement(ctx);
+    public ControlFlowElement visitWhileStatement(@NotNull TIBasicParser.WhileStatementContext ctx) {
+        final int line = ctx.WHILE().getSymbol().getLine();
+        final int startIndex = ctx.WHILE().getSymbol().getStartIndex();
+
+        Value value = (Value) ctx.expression().accept(this);
+        boolean lastEvaluation = value.bool();
+
+        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.WHILE, lastEvaluation, true);
     }
 
-    private int internalHandleControlFlowLogic(int currentCommandCount, List<TIBasicParser.CommandContext> commandList, Stack<ControlFlowElement> flowElementStack, Stack<ControlFlowElement.ControlFlowToken> skipCommandsStack, TIBasicParser.CommandContext nextCommand) {
+    private int internalHandleControlFlowLogic(int commandIndex, List<TIBasicParser.CommandContext> commandList, Stack<ControlFlowElement> flowElementStack, Stack<ControlFlowElement.ControlFlowToken> skipCommandsStack, TIBasicParser.CommandContext nextCommand) {
         int commandListSize = commandList.size();
         ControlFlowElement currentFlowElement = (ControlFlowElement) nextCommand.accept(this);
         ControlFlowElement topFlowElement;
@@ -403,6 +414,15 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             case GOTO:
             case LABEL:
                 throw new NotImplementedException(currentFlowElement.getToken() + " is not yet implemented");
+            case WHILE:
+                if (!currentFlowElement.getLastEvaluation()) {
+                    LOGGER.debug("Skipping commands until next END from command {}", commandIndex);
+                    skipCommandsStack.push(ControlFlowElement.ControlFlowToken.WHILE);
+                } else {
+                    currentFlowElement.setCommandIndex(commandIndex);
+                    flowElementStack.push(currentFlowElement);
+                }
+                break;
             case THEN:
                 if (topFlowElement == null) {
                     throw new IllegalControlFlowException(line, charIndex, "Illegal 'Then' Statement");
@@ -415,7 +435,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 } else {
                     currentFlowElement.setLastEvaluation(false);
                     skipCommandsStack.push(ControlFlowElement.ControlFlowToken.ELSE);
-                    LOGGER.debug("Skipping commands until next ELSE from command {}", currentCommandCount);
+                    LOGGER.debug("Skipping commands until next ELSE from command {}", commandIndex);
                 }
                 flowElementStack.push(currentFlowElement);
                 break;
@@ -428,7 +448,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 }
                 if (topFlowElement.getLastEvaluation()) {        // Skip until next "END" if previous if was true
                     skipCommandsStack.push(ControlFlowElement.ControlFlowToken.END);
-                    LOGGER.debug("Skipping commands until next END from command {}", currentCommandCount);
+                    LOGGER.debug("Skipping commands until next END from command {}", commandIndex);
                 }
                 break;
             case END:
@@ -436,29 +456,28 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     throw new IllegalControlFlowException(line, charIndex, "Illegal 'End' Statement without preceding endable element");
                 }
                 if (topFlowElement.isRepeatable()) {
-                    currentCommandCount = topFlowElement.getCommandIndex();          // Move counter backwards
-                    LOGGER.debug("Moving command counter to index {}", currentCommandCount);
-                } else {
-                    flowElementStack.pop();
+                    commandIndex = topFlowElement.getCommandIndex() - 1;          // Move counter backwards
+                    LOGGER.debug("Moving command counter to index {}", commandIndex);
                 }
+                flowElementStack.pop();
                 break;
             case IF:
                 // Look ahead if the next command might be a "Then" i.e. if it is a controlflow statement
-                if (commandListSize <= currentCommandCount + 1) {
+                if (commandListSize <= commandIndex + 1) {
                     throw new IllegalControlFlowException(line, charIndex, "Illegal 'If' at the end of the program");
-                } else if (commandList.get(currentCommandCount + 1).isControlFlowStatement) {
+                } else if (commandList.get(commandIndex + 1).isControlFlowStatement) {
                     flowElementStack.push(currentFlowElement);
-                    LOGGER.debug("Predicted multiline IF at command {}", currentCommandCount);
+                    LOGGER.debug("Predicted multiline IF at command {}", commandIndex);
                 } else if (!currentFlowElement.getLastEvaluation()) {
                     // If the next command is not a flow statement and the If evaluated to false, skip the next command (i.e. no else allowed!)
-                    currentCommandCount++;
-                    LOGGER.debug("Skipped IF statement without ELSE clause at command {}", currentCommandCount);
+                    commandIndex++;
+                    LOGGER.debug("Skipped IF statement without ELSE clause at command {}", commandIndex);
                 }
                 break;
             default:
                 throw new NotImplementedException("Flow not implemented");
         }
-        return currentCommandCount;
+        return commandIndex;
     }
 
     private int internalHandleSkipFlowLogic(int currentCommandCounter, List<TIBasicParser.CommandContext> commandList, Stack<ControlFlowElement.ControlFlowToken> skipCommandsStack, TIBasicParser.CommandContext nextCommand) {
@@ -496,6 +515,9 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 skipCommandsStack.pop();
                 if (!skipCommandsStack.empty())
                     skipCommandsStack.push(topToken);
+                break;
+            case WHILE:
+                skipCommandsStack.push(ControlFlowElement.ControlFlowToken.WHILE);
                 break;
             case END:
                 skipCommandsStack.pop();

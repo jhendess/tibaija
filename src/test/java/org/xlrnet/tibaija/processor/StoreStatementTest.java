@@ -60,14 +60,14 @@ public class StoreStatementTest extends AbstractTI83PlusTest {
     @Test
     public void testInterpret_validProgram_store_numbervalue_numbervariable_1() {
         calculator.interpret("123->A");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 123, 0);
+        assertNumberVariableValue(Variables.NumberVariable.A, 123, 0);
         verifyLastResultValue(123);
     }
 
     @Test
     public void testInterpret_validProgram_store_numbervalue_numbervariable_complex() {
         calculator.interpret("123i+512.1024->B");
-        verifyNumberVariableValue(Variables.NumberVariable.B, 512.1024, 123);
+        assertNumberVariableValue(Variables.NumberVariable.B, 512.1024, 123);
         verifyLastResultValue(512.1024, 123);
     }
 
