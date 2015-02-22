@@ -139,6 +139,63 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
         verifyLastResultValue(3);
     }
 
+    @Test(timeout = 500L)
+    public void testExecute_validProgram_controlFlow_repeat_false_nested_stop() {
+        storeAndExecute(":1→A:1→B" +
+                ":Repeat 0" +
+                ":Repeat 1" +
+                ":B+1→B" +
+                ":End" +
+                ":A+1→A" +
+                ":If A=5:Stop" +
+                ":End");
+        assertNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+        assertNumberVariableValue(Variables.NumberVariable.B, 5, 0);
+    }
+
+    @Test(timeout = 500L)
+    public void testExecute_validProgram_controlFlow_repeat_false_stop() {
+        // Repeat loop must be called infinitely and then be stopped manually
+        storeAndExecute(":0→A" +
+                ":Repeat 0" +
+                ":A+1→A" +
+                ":If A=5:Stop" +
+                ":End");
+        assertNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_repeat_increment() {
+        storeAndExecute(":0→A" +
+                ":Repeat A>5" +
+                ":A+1→A" +
+                ":End");
+        verifyLastResultValue(6);
+        assertNumberVariableValue(Variables.NumberVariable.A, 6, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_repeat_skip() {
+        storeAndExecute(":1:" +
+                ":If 0:Then" +
+                ":Repeat 1" +
+                ":2" +
+                ":End" +
+                ":End");
+        verifyLastResultValue(1);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_repeat_true_stop() {
+        // Repeat loop must be called exactly one time and checked at the end
+        storeAndExecute(":0→A" +
+                ":Repeat 1" +
+                ":A+1→A" +
+                ":If A=5:Stop" +
+                ":End");
+        assertNumberVariableValue(Variables.NumberVariable.A, 1, 0);
+    }
+
     @Test
     public void testExecute_validProgram_controlFlow_while_false() {
         storeAndExecute(":1" +

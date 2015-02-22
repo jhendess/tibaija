@@ -191,6 +191,7 @@ expression_value
 statement
        : callStatement
        | storeStatement
+       | stopStatement
        ;
 
 controlFlowStatement returns [ String flowType ]                      // Separated controlFlowStatement to allowing blocking of control flow statements in visitor
@@ -232,6 +233,9 @@ labelStatement
 gotoStatement
        : GOTO labelIdentifier;
 
+stopStatement
+       : STOP;
+       
 callStatement
        : DISP expression;
 

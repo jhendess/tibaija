@@ -23,31 +23,13 @@
 package org.xlrnet.tibaija.exception;
 
 /**
- * Abstract base class for all runtime exceptions of the TI-Basic interpreter.
+ * An exception that indicates to stop the current program.
  */
-public abstract class TIRuntimeException extends RuntimeException {
+public class TIStopException extends TIRuntimeException {
 
-    private static final long serialVersionUID = 130566776018220551L;
+    private static final long serialVersionUID = 6759593476819366730L;
 
-    int linenumber;
-
-    int charInLine;
-
-    public TIRuntimeException(String message) {
-        this(-1, -1, message);
-    }
-
-    public TIRuntimeException(int linenumber, int charInLine, String message) {
-        super(message);
-        this.linenumber = linenumber;
-        this.charInLine = charInLine;
-    }
-
-    public int getCharInLine() {
-        return charInLine;
-    }
-
-    public int getLinenumber() {
-        return linenumber;
+    public TIStopException(int linenumber, int startIndex) {
+        super(linenumber, startIndex, "Program stop forced");
     }
 }

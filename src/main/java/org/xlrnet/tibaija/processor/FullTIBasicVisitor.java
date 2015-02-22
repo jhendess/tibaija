@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.antlr.TIBasicBaseVisitor;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
 import org.xlrnet.tibaija.exception.IllegalControlFlowException;
+import org.xlrnet.tibaija.exception.TIStopException;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.util.ContextUtils;
@@ -97,21 +98,25 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         Stack<ControlFlowElement> flowElementStack = new Stack<>();
         Stack<ControlFlowElement.ControlFlowToken> skipCommandsStack = new Stack<>();
 
-        for (int commandCounter = 0; commandCounter < commandListSize; commandCounter++) {
-            final TIBasicParser.CommandContext nextCommand = commandList.get(commandCounter);
+        try {
+            for (int commandCounter = 0; commandCounter < commandListSize; commandCounter++) {
+                final TIBasicParser.CommandContext nextCommand = commandList.get(commandCounter);
 
-            // Skipping logic
-            if (!skipCommandsStack.empty()) {
-                if (nextCommand.isControlFlowStatement) {
-                    commandCounter = internalHandleSkipFlowLogic(commandCounter, commandList, skipCommandsStack, nextCommand);
+                // Skipping logic
+                if (!skipCommandsStack.empty()) {
+                    if (nextCommand.isControlFlowStatement) {
+                        commandCounter = internalHandleSkipFlowLogic(commandCounter, commandList, skipCommandsStack, nextCommand);
+                    } else {
+                        LOGGER.debug("Skipping command {}", commandCounter);
+                    }
+                } else if (nextCommand.isControlFlowStatement) {
+                    commandCounter = internalHandleControlFlowLogic(commandCounter, commandList, flowElementStack, skipCommandsStack, nextCommand);
                 } else {
-                    LOGGER.debug("Skipping command {}", commandCounter);
+                    nextCommand.accept(this);
                 }
-            } else if (nextCommand.isControlFlowStatement) {
-                commandCounter = internalHandleControlFlowLogic(commandCounter, commandList, flowElementStack, skipCommandsStack, nextCommand);
-            } else {
-                nextCommand.accept(this);
             }
+        } catch (TIStopException stop) {
+            LOGGER.debug("Forced program stop in line {} at char {}", stop.getLinenumber(), stop.getCharInLine());
         }
         return null;
     }
@@ -124,14 +129,14 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Object visitElseStatement(@NotNull TIBasicParser.ElseStatementContext ctx) {
         int line = ctx.ELSE().getSymbol().getLine();
-        int startIndex = ctx.ELSE().getSymbol().getStartIndex();
+        int startIndex = ctx.ELSE().getSymbol().getCharPositionInLine();
         return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.ELSE, false, false);
     }
 
     @Override
     public Object visitEndStatement(@NotNull TIBasicParser.EndStatementContext ctx) {
         int line = ctx.END().getSymbol().getLine();
-        int startIndex = ctx.END().getSymbol().getStartIndex();
+        int startIndex = ctx.END().getSymbol().getCharPositionInLine();
         return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.END, false, false);
     }
 
@@ -284,7 +289,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public ControlFlowElement visitIfStatement(@NotNull TIBasicParser.IfStatementContext ctx) {
         final int line = ctx.IF().getSymbol().getLine();
-        final int startIndex = ctx.IF().getSymbol().getStartIndex();
+        final int startIndex = ctx.IF().getSymbol().getCharPositionInLine();
 
         Value value = (Value) ctx.expression().accept(this);
         boolean lastEvaluation = value.bool();
@@ -350,13 +355,21 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Object visitRepeatStatement(@NotNull TIBasicParser.RepeatStatementContext ctx) {
-        return super.visitRepeatStatement(ctx);
+    public ControlFlowElement visitRepeatStatement(@NotNull TIBasicParser.RepeatStatementContext ctx) {
+        final int line = ctx.REPEAT().getSymbol().getLine();
+        final int startIndex = ctx.REPEAT().getSymbol().getCharPositionInLine();
+        // No evaluation needed on repeat visit!
+        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.REPEAT, true, true);
     }
 
     @Override
     public Optional<Value> visitStatement(@NotNull TIBasicParser.StatementContext ctx) {
         return Optional.ofNullable((Value) super.visitStatement(ctx));
+    }
+
+    @Override
+    public Object visitStopStatement(@NotNull TIBasicParser.StopStatementContext ctx) {
+        throw new TIStopException(ctx.STOP().getSymbol().getLine(), ctx.STOP().getSymbol().getCharPositionInLine());
     }
 
     @Override
@@ -382,14 +395,14 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public ControlFlowElement visitThenStatement(@NotNull TIBasicParser.ThenStatementContext ctx) {
         int line = ctx.THEN().getSymbol().getLine();
-        int startIndex = ctx.THEN().getSymbol().getStartIndex();
+        int startIndex = ctx.THEN().getSymbol().getCharPositionInLine();
         return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.THEN, false, false);
     }
 
     @Override
     public ControlFlowElement visitWhileStatement(@NotNull TIBasicParser.WhileStatementContext ctx) {
         final int line = ctx.WHILE().getSymbol().getLine();
-        final int startIndex = ctx.WHILE().getSymbol().getStartIndex();
+        final int startIndex = ctx.WHILE().getSymbol().getCharPositionInLine();
 
         Value value = (Value) ctx.expression().accept(this);
         boolean lastEvaluation = value.bool();
@@ -414,6 +427,11 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             case GOTO:
             case LABEL:
                 throw new NotImplementedException(currentFlowElement.getToken() + " is not yet implemented");
+            case REPEAT:
+                currentFlowElement.setCommandIndex(commandIndex);
+                LOGGER.debug("Entering repeat loop at command {}", commandIndex);
+                flowElementStack.push(currentFlowElement);
+                break;
             case WHILE:
                 if (!currentFlowElement.getLastEvaluation()) {
                     LOGGER.debug("Skipping commands until next END from command {}", commandIndex);
@@ -454,6 +472,16 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             case END:
                 if (topFlowElement == null) {
                     throw new IllegalControlFlowException(line, charIndex, "Illegal 'End' Statement without preceding endable element");
+                }
+                if (topFlowElement.getToken() == ControlFlowElement.ControlFlowToken.REPEAT) {
+                    // Repeat will only be check at the END command!
+                    final TIBasicParser.CommandContext commandContext = commandList.get(topFlowElement.getCommandIndex());
+                    Value v = (Value) commandContext.controlFlowStatement().repeatStatement().expression().accept(this);
+                    if (v.bool()) {
+                        topFlowElement.setRepeatable(false);
+                    } else {
+                        topFlowElement.setRepeatable(true);
+                    }
                 }
                 if (topFlowElement.isRepeatable()) {
                     commandIndex = topFlowElement.getCommandIndex() - 1;          // Move counter backwards
@@ -517,7 +545,8 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     skipCommandsStack.push(topToken);
                 break;
             case WHILE:
-                skipCommandsStack.push(ControlFlowElement.ControlFlowToken.WHILE);
+            case REPEAT:
+                skipCommandsStack.push(currentFlowToken);
                 break;
             case END:
                 skipCommandsStack.pop();

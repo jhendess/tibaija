@@ -36,7 +36,7 @@ public class ControlFlowElement {
 
     private final int charIndex;
 
-    private final boolean repeatable;
+    private boolean repeatable;
 
     private int commandIndex;
 
@@ -82,6 +82,10 @@ public class ControlFlowElement {
 
     public boolean isRepeatable() {
         return repeatable;
+    }
+
+    public void setRepeatable(boolean repeatable) {
+        this.repeatable = repeatable;
     }
 
     static enum ControlFlowToken {
