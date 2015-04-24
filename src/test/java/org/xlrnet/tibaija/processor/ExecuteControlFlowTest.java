@@ -58,6 +58,91 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
     }
 
     @Test
+    public void testExecute_validProgram_controlFlow_forInIf() {
+        storeAndExecute(":If 0" +
+                ":Then" +
+                ":2" +
+                ":Else" +
+                ":For(X,0,10" +
+                ":1" +
+                ":End" +
+                ":3" +
+                ":End");
+        verifyLastResultValue(3);
+        assertNumberVariableValue(Variables.NumberVariable.X, 11, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_for_noEnd() {
+        // Program must be executed only one time when there is no end
+        storeAndExecute(":0→A" +
+                ":For(X,0,5)" +
+                ":A+1→A");
+        verifyLastResultValue(1);
+        assertNumberVariableValue(Variables.NumberVariable.X, 0, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_for_noExecBounds_decrement() {
+        storeAndExecute(":0→A" +
+                ":For(X,0-1,5,0-1)" +
+                ":A+1→A" +
+                ":End");
+        verifyLastResultValue(0);
+        assertNumberVariableValue(Variables.NumberVariable.X, -1, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_for_noExecBounds_increment() {
+        storeAndExecute(":0→A" +
+                ":For(X,1,0-5,1)" +
+                ":A+1→A" +
+                ":End");
+        verifyLastResultValue(0);
+        assertNumberVariableValue(Variables.NumberVariable.X, 1, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_for_simple() {
+        storeAndExecute(":0→A" +
+                ":For(X,0,5)" +
+                ":A+1→A" +
+                ":End");
+        verifyLastResultValue(5);
+        assertNumberVariableValue(Variables.NumberVariable.X, 6, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_for_simple_decrement() {
+        storeAndExecute(":0→A" +
+                ":For(X,0,0-5,0-2)" +
+                ":A+1→A" +
+                ":End");
+        verifyLastResultValue(3);
+        assertNumberVariableValue(Variables.NumberVariable.X, -6, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_for_simple_increment() {
+        storeAndExecute(":0→A" +
+                ":For(X,0,5,2)" +
+                ":A+1→A" +
+                ":End");
+        verifyLastResultValue(3);
+        assertNumberVariableValue(Variables.NumberVariable.X, 6, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_for_startEqualsEnd() {
+        storeAndExecute(":0→A" +
+                ":For(X,2,2" +
+                ":A+1→A" +
+                ":End");
+        verifyLastResultValue(1);
+        assertNumberVariableValue(Variables.NumberVariable.X, 3, 0);
+    }
+
+    @Test
     public void testExecute_validProgram_controlFlow_if_else_false() {
         storeAndExecute(":If 0:Then" +
                 ":2" +
@@ -112,6 +197,19 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":Ans + 3" +
                 ":End");
         verifyLastResultValue(5);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_nestedFor() {
+        storeAndExecute(
+                ":For(A,2,4" +
+                        ":For(B,2,3" +
+                        ":A*B" +
+                        ":End" +
+                ":End");
+        verifyLastResultValue(3 * 4);
+        assertNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+        assertNumberVariableValue(Variables.NumberVariable.B, 4, 0);
     }
 
     @Test
@@ -194,6 +292,21 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":If A=5:Stop" +
                 ":End");
         assertNumberVariableValue(Variables.NumberVariable.A, 1, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_skipFor() {
+        storeAndExecute(":If 1" +
+                ":Then" +
+                ":2" +
+                ":Else" +
+                ":For(X,0,10" +
+                ":1" +
+                ":End" +
+                ":3" +
+                ":End");
+        verifyLastResultValue(2);
+        assertNumberVariableValue(Variables.NumberVariable.X, 0, 0);
     }
 
     @Test

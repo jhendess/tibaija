@@ -24,6 +24,7 @@ package org.xlrnet.tibaija.processor;
 
 import org.apache.commons.math3.complex.Complex;
 import org.junit.Before;
+import org.junit.rules.Timeout;
 import org.mockito.Mock;
 import org.xlrnet.tibaija.TI83Plus;
 import org.xlrnet.tibaija.VirtualCalculator;
@@ -46,6 +47,9 @@ import static org.mockito.Mockito.verify;
  */
 public class AbstractTI83PlusTest {
 
+    //@Rule
+    public Timeout globalTimeout = new Timeout(1000);
+
     CalculatorMemory mockedMemory;
 
     @Mock
@@ -61,8 +65,8 @@ public class AbstractTI83PlusTest {
 
     protected void assertNumberVariableValue(Variables.NumberVariable variable, double real, double imaginary) {
         final Complex actualComplex = mockedMemory.getNumberVariableValue(variable).complex();
-        assertEquals("Actual real value doesn't match expected", actualComplex.getReal(), real, TestUtils.DEFAULT_TOLERANCE);
-        assertEquals("Actual imaginary value doesn't match expected", actualComplex.getImaginary(), imaginary, TestUtils.DEFAULT_TOLERANCE);
+        assertEquals("Actual real value doesn't match expected", real, actualComplex.getReal(), TestUtils.DEFAULT_TOLERANCE);
+        assertEquals("Actual imaginary value doesn't match expected", imaginary, actualComplex.getImaginary(), TestUtils.DEFAULT_TOLERANCE);
     }
 
     protected void storeAndExecute(String snippet) {

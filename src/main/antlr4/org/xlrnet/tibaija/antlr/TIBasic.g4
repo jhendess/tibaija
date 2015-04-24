@@ -263,17 +263,17 @@ listVariable
        ;
        
 labelIdentifier
-       : (CapitalTheta | DIGIT) (CapitalTheta | DIGIT)?;
+       : (CapitalOrTheta | DIGIT) (CapitalOrTheta | DIGIT)?;
 
 numericalVariable
-       : CapitalTheta;
+       : CapitalOrTheta;
 
 listIdentifier
-      : CapitalTheta
-       (CapitalTheta | DIGIT)?
-       (CapitalTheta | DIGIT)?
-       (CapitalTheta | DIGIT)?
-       (CapitalTheta | DIGIT)?
+      : CapitalOrTheta
+       (CapitalOrTheta | DIGIT)?
+       (CapitalOrTheta | DIGIT)?
+       (CapitalOrTheta | DIGIT)?
+       (CapitalOrTheta | DIGIT)?
       | DefaultList
       ;
 
@@ -283,7 +283,7 @@ lastResult
 
 
 /* Lexer rules for more readable code */
-CapitalTheta: (CAPITAL_LETTER | THETA);
+CapitalOrTheta: (CAPITAL_LETTER | THETA);
 DefaultList: ('₁' .. '₆');              // Characters are subscript UTF-8 numbers 0x2081 to 0x2086
 
 /* Parser rule for detecting numbers */

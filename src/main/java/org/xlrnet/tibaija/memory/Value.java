@@ -45,6 +45,8 @@ public class Value implements Comparable<Value> {
 
     public static final Value ZERO = Value.of(Complex.ZERO);
 
+    public static final Value ONE = Value.of(Complex.ONE);
+
     public static final Value NEGATIVE_ONE = Value.of(Complex.valueOf(-1));
 
     private static final Comparator<Complex> complexComparator = new ComplexComparator();

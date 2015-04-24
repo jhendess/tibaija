@@ -32,9 +32,11 @@ import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.antlr.TIBasicBaseVisitor;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
 import org.xlrnet.tibaija.exception.IllegalControlFlowException;
+import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.TIStopException;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
+import org.xlrnet.tibaija.util.CompareUtils;
 import org.xlrnet.tibaija.util.ContextUtils;
 import org.xlrnet.tibaija.util.TIMathUtils;
 
@@ -277,8 +279,34 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Object visitForStatement(@NotNull TIBasicParser.ForStatementContext ctx) {
-        return super.visitForStatement(ctx);
+    public ControlFlowElement visitForStatement(@NotNull TIBasicParser.ForStatementContext ctx) {
+        final int line = ctx.FOR().getSymbol().getLine();
+        final int startIndex = ctx.FOR().getSymbol().getStartIndex();
+
+        boolean enterLoop;
+
+        Value incrementValue = Value.ONE;
+        Value variableValue = (Value) ctx.numericalVariable().accept(this);
+        Value startValue = (Value) ctx.expression(0).accept(this);
+        Value endValue = (Value) ctx.expression(1).accept(this);
+        if (ctx.expression().size() == 3) {
+            incrementValue = (Value) ctx.expression(2).accept(this);
+        }
+
+        if (variableValue.hasImaginaryValue() || startValue.hasImaginaryValue() || endValue.hasImaginaryValue()) {
+            throw new IllegalTypeException("Value may not be imaginary", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
+        }
+
+        // Determine if the for loop will be entered
+        if (CompareUtils.isGreaterThan(incrementValue, Value.ZERO)) {
+            enterLoop = CompareUtils.isLessOrEqual(variableValue, endValue);
+        } else if (CompareUtils.isLessThan(incrementValue, Value.ZERO)) {
+            enterLoop = CompareUtils.isGreaterOrEqual(variableValue, endValue);
+        } else {
+            throw new IllegalTypeException("Increment may not be zero", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
+        }
+
+        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.FOR, enterLoop, true);
     }
 
     @Override
@@ -427,6 +455,32 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             case GOTO:
             case LABEL:
                 throw new NotImplementedException(currentFlowElement.getToken() + " is not yet implemented");
+            case FOR:
+                if ((topFlowElement == null || topFlowElement.getCommandIndex() != commandIndex)) {
+                    // Set start value (should be executed ALWAYS when this block is executed the *first* time from top-down
+                    TIBasicParser.ForStatementContext forStatementContext = commandList.get(commandIndex).controlFlowStatement().forStatement();
+                    String variableName = forStatementContext.numericalVariable().getText();
+                    Value value = (Value) forStatementContext.expression(0).accept(this);
+                    Variables.NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
+                    environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
+                }
+                if (currentFlowElement.getLastEvaluation()) {
+                    if (topFlowElement == null || topFlowElement.getCommandIndex() != commandIndex) {
+                        LOGGER.debug("Entering FOR loop at command {}", commandIndex);
+                    } else {
+                        LOGGER.debug("Continuing FOR loop at command {}", commandIndex);
+                        flowElementStack.pop();
+                    }
+                    currentFlowElement.setCommandIndex(commandIndex);
+                    flowElementStack.push(currentFlowElement);
+                } else {
+                    if (topFlowElement != null && topFlowElement.getCommandIndex() == commandIndex) {
+                        flowElementStack.pop();
+                    }
+                    LOGGER.debug("Skipping commands until next END from command {}", commandIndex);
+                    skipCommandsStack.push(ControlFlowElement.ControlFlowToken.FOR);
+                }
+                break;
             case REPEAT:
                 currentFlowElement.setCommandIndex(commandIndex);
                 LOGGER.debug("Entering repeat loop at command {}", commandIndex);
@@ -481,6 +535,22 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                         topFlowElement.setRepeatable(false);
                     } else {
                         topFlowElement.setRepeatable(true);
+                    }
+                } else if (topFlowElement.getToken() == ControlFlowElement.ControlFlowToken.FOR) {
+                    if (topFlowElement.getLastEvaluation()) {
+                        TIBasicParser.ForStatementContext forStatementContext = commandList.get(topFlowElement.getCommandIndex()).controlFlowStatement().forStatement();
+                        String variableName = forStatementContext.numericalVariable().getText();
+                        Value increment;
+                        if (forStatementContext.expression().size() == 3)
+                            increment = (Value) forStatementContext.expression(2).accept(this);
+                        else
+                            increment = Value.of(1);
+                        Variables.NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
+                        Value value = environment.runRegisteredCommand("+", environment.getMemory().getNumberVariableValue(targetVariable), increment).get();
+                        environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
+                        flowElementStack.push(topFlowElement);      // Push the flow element again -> workaround
+                    } else {
+                        topFlowElement.setRepeatable(false);
                     }
                 }
                 if (topFlowElement.isRepeatable()) {
@@ -544,6 +614,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 if (!skipCommandsStack.empty())
                     skipCommandsStack.push(topToken);
                 break;
+            case FOR:
             case WHILE:
             case REPEAT:
                 skipCommandsStack.push(currentFlowToken);
