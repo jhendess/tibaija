@@ -26,6 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.xlrnet.tibaija.exception.IllegalControlFlowException;
+import org.xlrnet.tibaija.exception.LabelNotFoundException;
+import org.xlrnet.tibaija.exception.PreprocessException;
 import org.xlrnet.tibaija.memory.Variables;
 
 /**
@@ -55,6 +57,16 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
         storeAndExecute(":While 0" +
                 ":Then" +
                 ":End");
+    }
+
+    @Test(expected = PreprocessException.class)
+    public void testExecute_invalidProgram_goto_invalidLabel() {
+        storeAndExecute(":Goto ABC");
+    }
+
+    @Test(expected = LabelNotFoundException.class)
+    public void testExecute_invalidProgram_goto_missing() {
+        storeAndExecute(":Goto A");
     }
 
     @Test
@@ -206,7 +218,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                         ":For(B,2,3" +
                         ":A*B" +
                         ":End" +
-                ":End");
+                        ":End");
         verifyLastResultValue(3 * 4);
         assertNumberVariableValue(Variables.NumberVariable.A, 5, 0);
         assertNumberVariableValue(Variables.NumberVariable.B, 4, 0);
@@ -353,5 +365,36 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":End");
         assertNumberVariableValue(Variables.NumberVariable.A, 5, 0);
         assertNumberVariableValue(Variables.NumberVariable.B, 5, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_goto_basic1() {
+        storeAndExecute(":1→A" +
+                ":Goto A" +
+                ":2→A" +
+                ":Lbl A");
+        assertNumberVariableValue(Variables.NumberVariable.A, 1, 0);
+    }
+
+    @Test(timeout = 50)
+    public void testExecute_validProgram_goto_flow() {
+        // If control flow or goto are not implemented correctly, the following code will cause an infinite loop
+        storeAndExecute(":If 1:Then" +
+                ":Goto A" +
+                ":Else" +
+                ":While 1" +
+                ":Lbl A" +
+                ":End");
+    }
+
+    @Test
+    public void testExecute_validProgram_goto_loop() {
+        storeAndExecute(":1→A" +
+                ":Lbl A" +
+                ":If A<5:Then" +
+                ":A+1→A" +
+                ":Goto A" +
+                ":End");
+        assertNumberVariableValue(Variables.NumberVariable.A, 5, 0);
     }
 }

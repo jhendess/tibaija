@@ -23,10 +23,7 @@
 package org.xlrnet.tibaija.processor;
 
 import org.junit.Test;
-import org.xlrnet.tibaija.antlr.TIBasicParser;
 import org.xlrnet.tibaija.exception.PreprocessException;
-
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -40,12 +37,10 @@ public class PreprocessorTest {
     @Test
     public void testComplexLabel() {
         ExecutableProgram executableProgram = preprocessor.preprocessProgramCode(VALID_PRGM_NAME, ":If X:Then:Goto B:Lbl A:End:While 1:Lbl B:End");
-        List<TIBasicParser.CommandContext> labelA = executableProgram.getLabelCommands("A");
-        assertNotNull(labelA);
-        assertEquals(5, labelA.size());
-        List<TIBasicParser.CommandContext> labelB = executableProgram.getLabelCommands("B");
-        assertNotNull(labelB);
-        assertEquals(2, labelB.size());
+        int labelTargetA = executableProgram.getLabelJumpTarget("A");
+        assertEquals(3, labelTargetA);
+        int labelTargetB = executableProgram.getLabelJumpTarget("B");
+        assertEquals(6, labelTargetB);
     }
 
     @Test
@@ -64,42 +59,35 @@ public class PreprocessorTest {
     @Test
     public void testMultiLabelProgram() {
         ExecutableProgram executableProgram = preprocessor.preprocessProgramCode(VALID_PRGM_NAME, ":Lbl A:Lbl B:0");
-        List<TIBasicParser.CommandContext> labelA = executableProgram.getLabelCommands("A");
-        assertNotNull(labelA);
-        assertEquals(3, labelA.size());
-        List<TIBasicParser.CommandContext> labelB = executableProgram.getLabelCommands("B");
-        assertNotNull(labelB);
-        assertEquals(2, labelB.size());
+        int labelTargetA = executableProgram.getLabelJumpTarget("A");
+        assertEquals(0, labelTargetA);
+        int labelTargetB = executableProgram.getLabelJumpTarget("B");
+        assertEquals(1, labelTargetB);
     }
 
     @Test
     public void testOverdefinedLabel() {
         ExecutableProgram executableProgram = preprocessor.preprocessProgramCode(VALID_PRGM_NAME, ":Lbl A:Lbl A");
-        List<TIBasicParser.CommandContext> labelA = executableProgram.getLabelCommands("A");
-        assertNotNull(labelA);
-        assertEquals(2, labelA.size());
+        int labelTargetA = executableProgram.getLabelJumpTarget("A");
+        assertEquals(0, labelTargetA);
     }
 
     @Test
     public void testRecursiveLabel() {
         ExecutableProgram executableProgram = preprocessor.preprocessProgramCode(VALID_PRGM_NAME, ":If 1:Lbl A:Goto B:Lbl B");
-        List<TIBasicParser.CommandContext> labelA = executableProgram.getLabelCommands("A");
-        assertNotNull(labelA);
-        assertEquals(3, labelA.size());
-        List<TIBasicParser.CommandContext> labelB = executableProgram.getLabelCommands("B");
-        assertNotNull(labelB);
-        assertEquals(1, labelB.size());
+        int labelTargetA = executableProgram.getLabelJumpTarget("A");
+        assertEquals(1, labelTargetA);
+        int labelTargetB = executableProgram.getLabelJumpTarget("B");
+        assertEquals(3, labelTargetB);
     }
 
     @Test
     public void testRecursiveLabelBlock() {
         ExecutableProgram executableProgram = preprocessor.preprocessProgramCode(VALID_PRGM_NAME, ":If 1:Then:Lbl A:Goto B:End:Lbl B");
-        List<TIBasicParser.CommandContext> labelA = executableProgram.getLabelCommands("A");
-        assertNotNull(labelA);
-        assertEquals(4, labelA.size());
-        List<TIBasicParser.CommandContext> labelB = executableProgram.getLabelCommands("B");
-        assertNotNull(labelB);
-        assertEquals(1, labelB.size());
+        int labelTargetA = executableProgram.getLabelJumpTarget("A");
+        assertEquals(2, labelTargetA);
+        int labelTargetB = executableProgram.getLabelJumpTarget("B");
+        assertEquals(5, labelTargetB);
     }
 
     @Test
@@ -110,9 +98,8 @@ public class PreprocessorTest {
     @Test
     public void testSimpleLabelProgram() {
         ExecutableProgram executableProgram = preprocessor.preprocessProgramCode(VALID_PRGM_NAME, ":Lbl A:0");
-        List<TIBasicParser.CommandContext> labelCommands = executableProgram.getLabelCommands("A");
-        assertNotNull(labelCommands);
-        assertEquals(2, labelCommands.size());
+        int labelTargetA = executableProgram.getLabelJumpTarget("A");
+        assertEquals(0, labelTargetA);
     }
 
     @Test(expected = PreprocessException.class)

@@ -25,7 +25,6 @@ package org.xlrnet.tibaija.processor;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
 import org.xlrnet.tibaija.exception.LabelNotFoundException;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,13 +41,13 @@ public class ExecutableProgram {
 
     TIBasicParser.ProgramContext mainProgramContext;
 
-    Map<String, List<TIBasicParser.CommandContext>> internalLabelMap;
+    Map<String, Integer> internalLabelMap;
 
-    public List<TIBasicParser.CommandContext> getLabelCommands(String labelName) throws LabelNotFoundException {
-        List<TIBasicParser.CommandContext> commandListContext = internalLabelMap.get(labelName);
-        if (commandListContext == null)
+    public Integer getLabelJumpTarget(String labelName) throws LabelNotFoundException {
+        Integer targetCommand = internalLabelMap.get(labelName);
+        if (targetCommand == null)
             throw new LabelNotFoundException(-1, -1, programName, labelName);
-        return commandListContext;
+        return targetCommand;
     }
 
     public TIBasicParser.ProgramContext getMainProgramContext() {
@@ -75,7 +74,7 @@ public class ExecutableProgram {
         this.programName = programName;
     }
 
-    protected void setInternalLabelMap(Map<String, List<TIBasicParser.CommandContext>> internalLabelMap) {
+    protected void setInternalLabelMap(Map<String, Integer> internalLabelMap) {
         this.internalLabelMap = internalLabelMap;
     }
 }

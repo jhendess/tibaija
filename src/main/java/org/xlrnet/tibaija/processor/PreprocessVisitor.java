@@ -55,7 +55,7 @@ public class PreprocessVisitor extends TIBasicBaseVisitor {
     public Object visitCommandList(@NotNull TIBasicParser.CommandListContext ctx) {
         List<TIBasicParser.CommandContext> commandContextList = ctx.command();
 
-        Map<String, List<TIBasicParser.CommandContext>> labelMap = new HashMap<>();
+        Map<String, Integer> labelMap = new HashMap<>();
 
         // Iterate through all commands and find labels
         for (int i = 0; i < commandContextList.size(); i++) {
@@ -64,11 +64,12 @@ public class PreprocessVisitor extends TIBasicBaseVisitor {
             if (result instanceof Label) {
                 Label label = (Label) result;
 
-                if (!labelMap.containsKey(label.getIdentifier())) {
-                    List<TIBasicParser.CommandContext> sublist = commandContextList.subList(i, commandContextList.size());
-                    labelMap.put(label.getIdentifier(), sublist);
+                String labelIdentifier = label.getIdentifier();
+                if (!labelMap.containsKey(labelIdentifier)) {
+                    labelMap.put(labelIdentifier, i);
+                    LOGGER.info("Registered label {} as command {}", labelIdentifier, i);
                 } else {
-                    LOGGER.warn("Label {} is already defined - ignoring new definition", label.getIdentifier());
+                    LOGGER.warn("Label {} is already defined - ignoring new definition", labelIdentifier);
                 }
             }
         }
@@ -109,14 +110,13 @@ public class PreprocessVisitor extends TIBasicBaseVisitor {
      */
     static class LabelMapWrapper {
 
-        Map<String, List<TIBasicParser.CommandContext>> content;
+        Map<String, Integer> content;
 
-        public LabelMapWrapper(Map<String, List<TIBasicParser.CommandContext>> content) {
+        public LabelMapWrapper(Map<String, Integer> content) {
             this.content = content;
         }
 
-        public Map<String, List<TIBasicParser.CommandContext>> getMap() {
-
+        public Map<String, Integer> getMap() {
             return content;
         }
     }

@@ -310,8 +310,12 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Object visitGotoStatement(@NotNull TIBasicParser.GotoStatementContext ctx) {
-        return super.visitGotoStatement(ctx);
+    public JumpingControlFlowElement visitGotoStatement(@NotNull TIBasicParser.GotoStatementContext ctx) {
+        String targetLabel = ctx.labelIdentifier().getText();
+
+        int line = ctx.GOTO().getSymbol().getLine();
+        int startIndex = ctx.GOTO().getSymbol().getCharPositionInLine();
+        return new JumpingControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.GOTO, targetLabel);
     }
 
     @Override
@@ -331,8 +335,12 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Object visitLabelStatement(@NotNull TIBasicParser.LabelStatementContext ctx) {
-        return super.visitLabelStatement(ctx);
+    public JumpingControlFlowElement visitLabelStatement(@NotNull TIBasicParser.LabelStatementContext ctx) {
+        String targetLabel = ctx.labelIdentifier().getText();
+
+        int line = ctx.LABEL().getSymbol().getLine();
+        int startIndex = ctx.LABEL().getSymbol().getCharPositionInLine();
+        return new JumpingControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.LABEL, targetLabel);
     }
 
     @Override
@@ -453,8 +461,13 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         final int charIndex = currentFlowElement.getCharIndex();
         switch (currentFlowElement.getToken()) {
             case GOTO:
+                JumpingControlFlowElement jumpElement = (JumpingControlFlowElement) currentFlowElement;
+                String targetLabel = jumpElement.getTargetLabel();
+                commandIndex = environment.getProgramStack().peek().getLabelJumpTarget(jumpElement.getTargetLabel());
+                LOGGER.debug("Jumping to label {} at command {}", targetLabel, commandIndex);
+                break;
             case LABEL:
-                throw new NotImplementedException(currentFlowElement.getToken() + " is not yet implemented");
+                break;  // Do nothing when encountering Label
             case FOR:
                 if ((topFlowElement == null || topFlowElement.getCommandIndex() != commandIndex)) {
                     // Set start value (should be executed ALWAYS when this block is executed the *first* time from top-down
@@ -621,6 +634,9 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 break;
             case END:
                 skipCommandsStack.pop();
+                break;
+            case GOTO:
+            case LABEL:
                 break;
             default:
                 throw new IllegalStateException("Illegal flow token: " + currentFlowToken);

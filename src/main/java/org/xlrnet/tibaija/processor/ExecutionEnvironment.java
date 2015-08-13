@@ -36,6 +36,7 @@ import org.xlrnet.tibaija.memory.Value;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Stack;
 
 /**
  * This class provides the main environment where programs and functions get executed.
@@ -47,6 +48,8 @@ public class ExecutionEnvironment {
     CalculatorIO calculatorIO;
 
     Map<String, Command> commandMap = new HashMap<>();
+
+    private Stack<ExecutableProgram> programStack = new Stack<>();
 
     private ExecutionEnvironment(CalculatorMemory memory, CalculatorIO calculatorIO) {
         this.memory = memory;
@@ -100,6 +103,17 @@ public class ExecutionEnvironment {
     }
 
     /**
+     * Get the stack of current program hierarchy. Whenever a new subprogram is executed, it must be placed on this
+     * stack to provide a context for accessing the program's labels. When the execution of a program has finished, it
+     * must be removed from this stack.
+     *
+     * @return
+     */
+    public Stack<ExecutableProgram> getProgramStack() {
+        return programStack;
+    }
+
+    /**
      * Register a command or function in the execution environment. All programs and other commands or functions can
      * run the new command once it has been registered. Every command may only be associated with at most one execution
      * environment.
@@ -133,7 +147,9 @@ public class ExecutionEnvironment {
      */
     public void run(@NotNull ExecutableProgram program, @NotNull FullTIBasicVisitor visitor) throws TIRuntimeException {
         visitor.setEnvironment(this);
+        programStack.push(program);
         visitor.visit(program.getMainProgramContext());
+        programStack.pop();
     }
 
     /**

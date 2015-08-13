@@ -284,7 +284,7 @@ lastResult
 
 /* Lexer rules for more readable code */
 CapitalOrTheta: (CAPITAL_LETTER | THETA);
-DefaultList: ('₁' .. '₆');              // Characters are subscript UTF-8 numbers 0x2081 to 0x2086
+DefaultList: ('₁' .. '₆');              // Valid characters are subscript UTF-8 numbers 0x2081 to 0x2086
 
 /* Parser rule for detecting numbers */
 digits: DIGIT+;     // Helper rule to get the token
