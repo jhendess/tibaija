@@ -34,6 +34,7 @@ import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
 
 import java.io.*;
+import java.nio.file.Path;
 
 /**
  * Main application class for starting the interpreter.
@@ -48,11 +49,7 @@ public class Application {
         new Application().run(args);
     }
 
-    public boolean isConfigured() {
-        return configured;
-    }
-
-    private VirtualCalculator getDefaultCalculator() {
+    private static VirtualCalculator getDefaultCalculator(CodeProvider codeProvider) {
         Reader reader;
         Writer writer;
 
@@ -69,7 +66,11 @@ public class Application {
 
         CalculatorIO io = new ConsoleIO(reader, writer);
         CalculatorMemory memory = new DefaultCalculatorMemory();
-        return new TI83Plus(memory, io);
+        return new TI83Plus(memory, io, codeProvider);
+    }
+
+    public boolean isConfigured() {
+        return configured;
     }
 
     private void parseArguments(String[] args) {
@@ -83,6 +84,8 @@ public class Application {
 
             if (config.isInteractive()) {
                 runInteractiveMode();
+            } else if (config.getStartFile() != null) {
+                runFileMode(config.getStartFile());
             } else if (config.isShowHelp()) {
                 printUsage(parser);
             }
@@ -107,10 +110,29 @@ public class Application {
         parseArguments(args);
     }
 
+    private void runFileMode(File startFile) {
+        LOGGER.info("Starting interpreter from file ...");
+
+        try {
+            Path filePath = startFile.toPath();
+            Path parentDirectory = filePath.toAbsolutePath().getParent();
+            FileSystemCodeProvider codeProvider = new FileSystemCodeProvider(parentDirectory);
+            String bootFile = codeProvider.registerFile(filePath);
+            VirtualCalculator calculator = getDefaultCalculator(codeProvider);
+
+            LOGGER.info("System booted");
+
+            calculator.executeProgram(bootFile);
+        } catch (IOException e) {
+            LOGGER.error("Program load error", e);
+        }
+
+    }
+
     private void runInteractiveMode() {
         LOGGER.info("Starting interpreter in interactive mode ...");
 
-        VirtualCalculator calculator = getDefaultCalculator();
+        VirtualCalculator calculator = getDefaultCalculator(new DummyCodeProvider());
         CalculatorIO io = calculator.getIODevice();
         CalculatorMemory memory = calculator.getMemory();
 
@@ -121,7 +143,7 @@ public class Application {
             try {
                 input = io.readInput();
 
-                if (StringUtils.equalsIgnoreCase("exit", input)) {
+                if (input == null || StringUtils.equalsIgnoreCase("exit", input)) {
                     break;
                 }
 

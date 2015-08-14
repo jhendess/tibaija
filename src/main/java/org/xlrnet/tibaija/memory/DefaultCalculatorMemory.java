@@ -30,10 +30,12 @@ import org.xlrnet.tibaija.exception.DuplicateProgramException;
 import org.xlrnet.tibaija.exception.ProgramNotFoundException;
 import org.xlrnet.tibaija.exception.UndefinedVariableException;
 import org.xlrnet.tibaija.processor.ExecutableProgram;
+import org.xlrnet.tibaija.util.ValidationUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.xlrnet.tibaija.util.ValueUtils.checkValueType;
 
@@ -57,6 +59,22 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
      */
     public DefaultCalculatorMemory() {
         numberVariableValueMap = newEnumValueMapWithDefault(Variables.NumberVariable.class, Value.ZERO);
+    }
+
+    /**
+     * Returns true if the underlying memory contains a program with the given name.
+     *
+     * @param programName
+     *         Name of the program, must consist of one to eight capital letters or digits.
+     * @return true if the underlying memory contains a program with the given name.
+     */
+    @Override
+    public boolean containsProgram(@NotNull String programName) {
+        checkNotNull(programName);
+        checkArgument(ValidationUtils.isValidProgramName(programName));
+
+        return programMap.containsKey(programName);
+
     }
 
     @NotNull
@@ -122,6 +140,7 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
     public void storeProgram(@NotNull String programName, @NotNull ExecutableProgram programCode) throws DuplicateProgramException {
         checkNotNull(programName);
         checkNotNull(programCode);
+        checkArgument(ValidationUtils.isValidProgramName(programName));
 
         if (programMap.containsKey(programName))
             throw new DuplicateProgramException(programName);

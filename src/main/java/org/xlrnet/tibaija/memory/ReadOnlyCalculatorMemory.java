@@ -32,6 +32,15 @@ import org.xlrnet.tibaija.processor.ExecutableProgram;
 public interface ReadOnlyCalculatorMemory {
 
     /**
+     * Returns true if the underlying memory contains a program with the given name.
+     *
+     * @param programName
+     *         Name of the program, must consist of one to eight capital letters or digits.
+     * @return true if the underlying memory contains a program with the given name.
+     */
+    public boolean containsProgram(@NotNull String programName);
+
+    /**
      * Returns the result of the last top-level expression. This is identical to the Ans-Variable on TI calculators.
      * Since there  may be every kind of value in this variable, you should query the type first to avoid type
      * mismatches.

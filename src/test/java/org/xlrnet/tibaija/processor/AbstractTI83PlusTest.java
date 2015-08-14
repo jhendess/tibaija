@@ -26,6 +26,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.junit.Before;
 import org.junit.rules.Timeout;
 import org.mockito.Mock;
+import org.xlrnet.tibaija.DummyCodeProvider;
 import org.xlrnet.tibaija.TI83Plus;
 import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.io.CalculatorIO;
@@ -60,7 +61,7 @@ public class AbstractTI83PlusTest {
     @Before
     public void setUp() {
         mockedMemory = spy(new DefaultCalculatorMemory());
-        calculator = new TI83Plus(mockedMemory, mockedIO);
+        calculator = new TI83Plus(mockedMemory, mockedIO, new DummyCodeProvider());
     }
 
     protected void assertNumberVariableValue(Variables.NumberVariable variable, double real, double imaginary) {

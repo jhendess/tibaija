@@ -36,6 +36,10 @@ import org.xlrnet.tibaija.processor.Preprocessor;
 import org.xlrnet.tibaija.util.ExecutionEnvironmentUtil;
 import org.xlrnet.tibaija.util.ValidationUtils;
 
+import java.io.IOException;
+
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * Virtual calculator based on the TI-83+ model.
  */
@@ -43,20 +47,35 @@ public class TI83Plus implements VirtualCalculator {
 
     private static Logger LOGGER = LoggerFactory.getLogger(TI83Plus.class);
 
-    private Preprocessor preprocessor = new Preprocessor();
+    private final Preprocessor preprocessor = new Preprocessor();
 
-    private CalculatorMemory calculatorMemory;
+    private final CalculatorMemory calculatorMemory;
 
-    private CalculatorIO calculatorIO;
+    private final CalculatorIO calculatorIO;
 
-    public TI83Plus(CalculatorMemory calculatorMemory, CalculatorIO calculatorIO) {
+    private final CodeProvider codeProvider;
+
+    public TI83Plus(CalculatorMemory calculatorMemory, CalculatorIO calculatorIO, CodeProvider codeProvider) {
         this.calculatorMemory = calculatorMemory;
         this.calculatorIO = calculatorIO;
+        this.codeProvider = codeProvider;
     }
 
     @Override
     public void executeProgram(String programName) throws ProgramNotFoundException {
+        programName = programName.toUpperCase();
+        if (!calculatorMemory.containsProgram(programName)) {
+            try {
+                loadProgram(programName, codeProvider.getProgramCode(programName));
+            } catch (IOException e) {
+                LOGGER.error("Loading external code failed", e);
+            }
+        }
+
         ExecutableProgram executableProgram = calculatorMemory.getStoredProgram(programName);
+
+        LOGGER.info("Starting program '{}'", programName);
+
         ExecutionEnvironmentUtil.newDefaultEnvironment(this).run(executableProgram, new FullTIBasicVisitor());
     }
 
@@ -86,10 +105,7 @@ public class TI83Plus implements VirtualCalculator {
 
     @Override
     public void loadProgram(String programName, CharSequence programCode) {
-
-        if (!ValidationUtils.isValidProgramName(programName)) {
-            getIODevice().printLine("Invalid program name: " + programName);
-        }
+        checkArgument(ValidationUtils.isValidProgramName(programName), "Invalid program name: %s", programName);
 
         try {
             ExecutableProgram executableProgram = internalPreprocessCode(programName, programCode);

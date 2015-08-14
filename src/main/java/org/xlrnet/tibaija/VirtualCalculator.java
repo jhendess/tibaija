@@ -59,7 +59,8 @@ public interface VirtualCalculator {
     public void interpret(String input);
 
     /**
-     * Load the given program with the given into main memory and do all neccessary steps to execute it.
+     * Load the given program with the given program code into main memory and do all neccessary steps to make it
+     * executable.
      *
      * @param programName
      *         Internal name of the program, must be one to eight capital letters or numbers.

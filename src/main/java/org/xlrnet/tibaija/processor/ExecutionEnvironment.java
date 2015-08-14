@@ -24,6 +24,8 @@ package org.xlrnet.tibaija.processor;
 
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.CodeProvider;
+import org.xlrnet.tibaija.DummyCodeProvider;
 import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.exception.CommandNotFoundException;
 import org.xlrnet.tibaija.exception.DuplicateCommandException;
@@ -47,17 +49,20 @@ public class ExecutionEnvironment {
 
     CalculatorIO calculatorIO;
 
+    CodeProvider codeProvider;
+
     Map<String, Command> commandMap = new HashMap<>();
 
     private Stack<ExecutableProgram> programStack = new Stack<>();
 
-    private ExecutionEnvironment(CalculatorMemory memory, CalculatorIO calculatorIO) {
+    private ExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider) {
         this.memory = memory;
         this.calculatorIO = calculatorIO;
+        this.codeProvider = codeProvider;
     }
 
     /**
-     * Instantiate a new environment without any preconfigured commands.
+     * Instantiate a new environment without any preconfigured commands and no code provider.
      *
      * @param memory
      *         The writable memory for the new environment.
@@ -67,7 +72,21 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO) {
-        return new ExecutionEnvironment(memory, calculatorIO);
+        return new ExecutionEnvironment(memory, calculatorIO, new DummyCodeProvider());
+    }
+
+    /**
+     * Instantiate a new environment without any preconfigured commands and no code provider.
+     *
+     * @param memory
+     *         The writable memory for the new environment.
+     * @param calculatorIO
+     *         The I/O device for the new environment.
+     * @return A new environment
+     */
+    @NotNull
+    public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider) {
+        return new ExecutionEnvironment(memory, calculatorIO, codeProvider);
     }
 
     /**
@@ -107,7 +126,7 @@ public class ExecutionEnvironment {
      * stack to provide a context for accessing the program's labels. When the execution of a program has finished, it
      * must be removed from this stack.
      *
-     * @return
+     * @return the stack of current program hierarchy.
      */
     public Stack<ExecutableProgram> getProgramStack() {
         return programStack;
