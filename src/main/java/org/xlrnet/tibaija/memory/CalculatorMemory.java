@@ -65,7 +65,8 @@ public interface CalculatorMemory extends ReadOnlyCalculatorMemory {
     /**
      * Sets a single element within an existing list variable. If the targetted index is exactly one higher than the
      * size of the existing list, then the element will be appended at the end of the list. The first index is always
-     * one and not zero! If the target list doesn't exist, an UndefinedVariableException will be thrown.
+     * one and not zero! If the target list doesn't exist, an UndefinedVariableException will be thrown unless the index
+     * is one - then a new list will be created.
      *
      * @param listName
      *         The variable to which the value should be written. Must be written uppercase and between one and five

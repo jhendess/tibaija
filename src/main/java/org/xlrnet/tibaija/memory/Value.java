@@ -31,6 +31,7 @@ import org.xlrnet.tibaija.exception.TIRuntimeException;
 import org.xlrnet.tibaija.util.ComplexComparator;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +49,8 @@ public class Value implements Comparable<Value> {
     public static final Value ONE = Value.of(Complex.ONE);
 
     public static final Value NEGATIVE_ONE = Value.of(Complex.valueOf(-1));
+
+    public static final Value EMPTY_LIST = Value.of(new ArrayList<>());
 
     private static final Comparator<Complex> complexComparator = new ComplexComparator();
 

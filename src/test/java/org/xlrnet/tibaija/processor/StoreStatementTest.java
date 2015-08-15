@@ -120,8 +120,14 @@ public class StoreStatementTest extends AbstractTI83PlusTest {
     }
 
     @Test(expected = UndefinedVariableException.class)
-    public void testInterpret_invalidProgram_store_list_element_missingList() {
+    public void testInterpret_invalidProgram_store_list_element_missingList_laterElement() {
+        storeAndExecute(":1->∟AZY(2");
+    }
+
+    @Test
+    public void testInterpret_invalidProgram_store_list_element_missingList_firstElement() {
         storeAndExecute(":1->∟AZY(1");
+        verifyElementInListVariable("AZY", 0, 1);
     }
 
     @Test(expected = IllegalTypeException.class)

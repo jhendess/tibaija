@@ -168,20 +168,27 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
     /**
      * Sets a single element within an existing list variable. If the targetted index is exactly one higher than the
      * size of the existing list, then the element will be appended at the end of the list. The first index is always
-     * one and not zero! If the target list doesn't exist, an UndefinedVariableException will be thrown.
+     * one and not zero! If the target list doesn't exist, an UndefinedVariableException will be thrown unless the index
+     * is one - then a new list will be created.
      *
      * @param listName
      *         The variable to which the value should be written. Must be written uppercase and between one and five
      *         characters without the leading list token "∟". Digits are allowed except for the first character.
      * @param index
      *         Index of the element inside the list. First index is always one. If the dimension is either to big or too
-     *         low, an {@link InvalidDimensionException} will be thrown.
+     *         low, an {@link org.xlrnet.tibaija.exception.InvalidDimensionException} will be thrown.
+     * @param value
+     *         The new value for the element at the given index.
      */
     @Override
     public void setListVariableElementValue(@NotNull String listName, int index, @NotNull Value value) {
-        if (!listVariableValueMap.containsKey(listName))
+        if (!listVariableValueMap.containsKey(listName) && index != 1)
             throw new UndefinedVariableException(listName);
+
         Value listValue = listVariableValueMap.get(listName);
+        if (listValue == null)
+            listValue = Value.EMPTY_LIST;
+
         if (index <= 0 || index > listValue.list().size() + 1)
             throw new InvalidDimensionException("Invalid index: " + index, index);
 

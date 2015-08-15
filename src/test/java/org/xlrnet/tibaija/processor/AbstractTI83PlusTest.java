@@ -109,7 +109,7 @@ public class AbstractTI83PlusTest {
     }
 
     protected void verifyElementInListVariable(String variable, int element, double realPart, double complexPart) {
-        Complex actual = calculator.getMemory().getListVariableValue("A").list().get(element);
+        Complex actual = calculator.getMemory().getListVariableValue(variable).list().get(element);
         assertThat(Value.of(actual), new EqualsWithComplexDeltaMatcher(realPart, complexPart, TestUtils.DEFAULT_TOLERANCE));
     }
 
