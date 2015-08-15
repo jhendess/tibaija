@@ -127,11 +127,23 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
     @Test
     public void testExecute_validProgram_controlFlow_for_simple_decrement() {
         storeAndExecute(":0→A" +
-                ":For(X,0,0-5,0-2)" +
+                ":For(X,5,0,0-2)" +
                 ":A+1→A" +
                 ":End");
         verifyLastResultValue(3);
-        verifyNumberVariableValue(Variables.NumberVariable.X, -6, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.X, -1, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_for_decrement() {
+        storeAndExecute(":5->N" +
+                ":0→A" +
+                ":For(X,N,1,0-1)" +
+                ":A+1→A" +
+                ":End");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+        // Iteration variable must be *zero* at the end!
+        verifyNumberVariableValue(Variables.NumberVariable.X, 0, 0);
     }
 
     @Test
@@ -150,7 +162,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":For(X,2,2" +
                 ":A+1→A" +
                 ":End");
-        verifyLastResultValue(1);
+        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
         verifyNumberVariableValue(Variables.NumberVariable.X, 3, 0);
     }
 

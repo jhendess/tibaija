@@ -284,7 +284,8 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         final int line = ctx.FOR().getSymbol().getLine();
         final int startIndex = ctx.FOR().getSymbol().getStartIndex();
 
-        boolean enterLoop;
+        boolean enterLoop;      // Enter in THIS iteration (compare actual variable value)
+        boolean isRepeatable;   // Enter EVER (start or end can be reached)
 
         Value incrementValue = Value.ONE;
         Value variableValue = (Value) ctx.numericalVariable().accept(this);
@@ -299,15 +300,17 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         }
 
         // Determine if the for loop will be entered
-        if (CompareUtils.isGreaterThan(incrementValue, Value.ZERO)) {
+        if (CompareUtils.isGreaterThan(incrementValue, Value.ZERO)) {   // Increment positive
             enterLoop = CompareUtils.isLessOrEqual(variableValue, endValue);
-        } else if (CompareUtils.isLessThan(incrementValue, Value.ZERO)) {
+            isRepeatable = CompareUtils.isLessOrEqual(startValue, endValue);
+        } else if (CompareUtils.isLessThan(incrementValue, Value.ZERO)) {  // Increment negative
             enterLoop = CompareUtils.isGreaterOrEqual(variableValue, endValue);
+            isRepeatable = CompareUtils.isGreaterOrEqual(startValue, endValue);
         } else {
             throw new IllegalTypeException("Increment may not be zero", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
         }
 
-        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.FOR, enterLoop, true);
+        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.FOR, enterLoop, isRepeatable);
     }
 
     @Override
@@ -540,6 +543,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             case LABEL:
                 break;  // Do nothing when encountering Label
             case FOR:
+                boolean isFirstIteration = false;
                 if ((topFlowElement == null || topFlowElement.getCommandIndex() != commandIndex)) {
                     // Set start value (should be executed ALWAYS when this block is executed the *first* time from top-down
                     TIBasicParser.ForStatementContext forStatementContext = commandList.get(commandIndex).controlFlowStatement().forStatement();
@@ -547,9 +551,11 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     Value value = (Value) forStatementContext.expression(0).accept(this);
                     Variables.NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
                     environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
+                    isFirstIteration = true;
                 }
-                if (currentFlowElement.getLastEvaluation()) {
-                    if (topFlowElement == null || topFlowElement.getCommandIndex() != commandIndex) {
+                if (currentFlowElement.isRepeatable() && (currentFlowElement.getLastEvaluation() || isFirstIteration)) {
+                    if (isFirstIteration) {
+                        currentFlowElement.setLastEvaluation(true);     // Hack for making sure, that the first increment is ALWAYS done at the end
                         LOGGER.debug("Entering FOR loop at command {}", commandIndex);
                     } else {
                         LOGGER.debug("Continuing FOR loop at command {}", commandIndex);
@@ -561,7 +567,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     if (topFlowElement != null && topFlowElement.getCommandIndex() == commandIndex) {
                         flowElementStack.pop();
                     }
-                    LOGGER.debug("Skipping commands until next END from command {}", commandIndex);
+                    LOGGER.debug("Skipping commands until next END from FOR command {}", commandIndex);
                     skipCommandsStack.push(ControlFlowElement.ControlFlowToken.FOR);
                 }
                 break;
@@ -572,7 +578,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 break;
             case WHILE:
                 if (!currentFlowElement.getLastEvaluation()) {
-                    LOGGER.debug("Skipping commands until next END from command {}", commandIndex);
+                    LOGGER.debug("Skipping commands until next END from WHILE command {}", commandIndex);
                     skipCommandsStack.push(ControlFlowElement.ControlFlowToken.WHILE);
                 } else {
                     currentFlowElement.setCommandIndex(commandIndex);
@@ -591,7 +597,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 } else {
                     currentFlowElement.setLastEvaluation(false);
                     skipCommandsStack.push(ControlFlowElement.ControlFlowToken.ELSE);
-                    LOGGER.debug("Skipping commands until next ELSE from command {}", commandIndex);
+                    LOGGER.debug("Skipping commands until next ELSE from THEN command {}", commandIndex);
                 }
                 flowElementStack.push(currentFlowElement);
                 break;
@@ -604,7 +610,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 }
                 if (topFlowElement.getLastEvaluation()) {        // Skip until next "END" if previous if was true
                     skipCommandsStack.push(ControlFlowElement.ControlFlowToken.END);
-                    LOGGER.debug("Skipping commands until next END from command {}", commandIndex);
+                    LOGGER.debug("Skipping commands until next END from ELSE command {}", commandIndex);
                 }
                 break;
             case END:
@@ -622,6 +628,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     }
                 } else if (topFlowElement.getToken() == ControlFlowElement.ControlFlowToken.FOR) {
                     if (topFlowElement.getLastEvaluation()) {
+                        topFlowElement.setRepeatable(true);
                         TIBasicParser.ForStatementContext forStatementContext = commandList.get(topFlowElement.getCommandIndex()).controlFlowStatement().forStatement();
                         String variableName = forStatementContext.numericalVariable().getText();
                         Value increment;
