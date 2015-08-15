@@ -28,6 +28,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
+import org.xlrnet.tibaija.exception.InvalidDimensionException;
+import org.xlrnet.tibaija.exception.UndefinedVariableException;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 
@@ -60,15 +62,79 @@ public class StoreStatementTest extends AbstractTI83PlusTest {
     @Test
     public void testInterpret_validProgram_store_numbervalue_numbervariable_1() {
         calculator.interpret("123->A");
-        assertNumberVariableValue(Variables.NumberVariable.A, 123, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.A, 123, 0);
         verifyLastResultValue(123);
     }
 
     @Test
     public void testInterpret_validProgram_store_numbervalue_numbervariable_complex() {
         calculator.interpret("123i+512.1024->B");
-        assertNumberVariableValue(Variables.NumberVariable.B, 512.1024, 123);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 512.1024, 123);
         verifyLastResultValue(512.1024, 123);
+    }
+
+    @Test
+    public void testInterpret_validProgram_store_list_element() {
+        storeAndExecute(":{1->∟A" +
+                ":2->∟A(1");
+        verifyElementInListVariable("A", 0, 2);
+        verifyLastResultValue(2);
+    }
+
+    @Test
+    public void testInterpret_validProgram_store_list_element_calc_index() {
+        storeAndExecute(":{1,2->∟A" +
+                ":3->∟A(1+1");
+        verifyElementInListVariable("A", 1, 3);
+        verifyLastResultValue(3);
+    }
+
+    @Test(expected = IllegalTypeException.class)
+    public void testInterpret_invalidProgram_store_list_in_list_element() {
+        storeAndExecute(":{1->∟A" +
+                ":{2->∟A(1");
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_store_list_element_index_tooHigh() {
+        storeAndExecute(":{1->∟A" +
+                ":2->∟A(12");
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_store_list_element_index_tooLow() {
+        storeAndExecute(":{1->∟A" +
+                ":2->∟A(0-1");
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_store_list_element_index_zero() {
+        storeAndExecute(":{1->∟A" +
+                ":2->∟A(0");
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_store_list_element_index_decimal() {
+        storeAndExecute(":{1->∟A" +
+                ":2->∟A(1.5");
+    }
+
+    @Test(expected = UndefinedVariableException.class)
+    public void testInterpret_invalidProgram_store_list_element_missingList() {
+        storeAndExecute(":1->∟AZY(1");
+    }
+
+    @Test(expected = IllegalTypeException.class)
+    public void testInterpret_invalidProgram_store_list_element_index_list() {
+        storeAndExecute(":{1->∟A" +
+                ":1->∟A(∟A");
+    }
+
+    @Test
+    public void testInterpret_validProgram_store_list_element_index_add() {
+        storeAndExecute(":{1->∟A" +
+                ":9->∟A(2");
+        verifyElementInListVariable("A", 1, 9);
     }
 
     // TODO: Write negative tests when other data types have been implemented

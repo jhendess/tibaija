@@ -58,6 +58,10 @@ public class EqualsWithComplexDeltaMatcher extends ArgumentMatcher<Value> implem
     }
 
     public boolean matches(Object actual) {
+        if (!((Value) actual).isNumber()) {
+            return false;
+        }
+
         Complex actualComplex = ((Value) actual).complex();
         return Precision.equals(wanted.complex().getReal(), actualComplex.getReal(), TestUtils.DEFAULT_TOLERANCE)
                 && Precision.equals(wanted.complex().getImaginary(), actualComplex.getImaginary(), TestUtils.DEFAULT_TOLERANCE);

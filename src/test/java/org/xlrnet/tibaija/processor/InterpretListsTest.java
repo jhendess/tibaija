@@ -24,11 +24,11 @@ package org.xlrnet.tibaija.processor;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.math3.complex.Complex;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.xlrnet.tibaija.exception.PreprocessException;
-import org.xlrnet.tibaija.exception.TIArgumentException;
+import org.xlrnet.tibaija.exception.*;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 
@@ -147,14 +147,6 @@ public class InterpretListsTest extends AbstractTI83PlusTest {
     }
 
     @Test
-    public void testInterpret_validProgram_multiply_implicit_numbervariable_right() {
-        doReturn(Value.of(ImmutableList.of(Complex.valueOf(2)))).when(mockedMemory).getListVariableValue("A");
-        doReturn(Value.of(2)).when(mockedMemory).getNumberVariableValue(Variables.NumberVariable.A);
-        calculator.interpret("∟A(A");
-        verifyLastResultValueList(4d);
-    }
-
-    @Test
     public void testInterpret_validProgram_multiply_implicit_single_right_list() {
         calculator.interpret("{1, 2}(2+3.5i)");
         verifyLastResultValueList(Complex.valueOf(2, 3.5), Complex.valueOf(4, 7));
@@ -164,6 +156,78 @@ public class InterpretListsTest extends AbstractTI83PlusTest {
     public void testInterpret_validProgram_multiply_single_right_list() {
         calculator.interpret("(2+3.5i) * {1, 2");
         verifyLastResultValueList(Complex.valueOf(2, 3.5), Complex.valueOf(4, 7));
+    }
+
+    @Test
+    public void testInterpret_validProgram_listVariable_element_access() {
+        storeAndExecute(":{1,2->∟A" +
+                ":∟A(2->A");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 2, 0);
+    }
+
+    @Test
+    @Ignore
+    public void testInterpret_validProgram_ans_list_element_access() {
+        // Very nasty bug :/
+        storeAndExecute(":{1,2,3" +
+                ":Ans(2");
+        verifyLastResultValue(2);
+    }
+
+    @Test
+    public void testInterpret_validProgram_list_element_access_variable() {
+        storeAndExecute(":2->A" +
+                ":{1,2,3}->∟A" +
+                ":∟A(A+1");
+        verifyLastResultValue(3);
+    }
+
+    @Test
+    public void testInterpret_validProgram_list_index_listValue() {
+        storeAndExecute(":{1,2,3->∟A" +
+                ":∟A(∟A(2");
+        verifyLastResultValue(2);
+    }
+
+    @Test(expected = UndefinedVariableException.class)
+    public void testInterpret_validProgram_list_notExisting() {
+        storeAndExecute(":∟ABCDE");
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_list_index_tooHigh() {
+        storeAndExecute(":{1,2,3->∟A" +
+                ":∟A(4");
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_list_index_complex() {
+        storeAndExecute(":{1,2,3->∟A" +
+                ":∟A(4i");
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_list_index_zero() {
+        storeAndExecute(":{1,2,3->∟A" +
+                ":∟A(0");
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_list_index_tooLow() {
+        storeAndExecute(":{1,2,3->∟A" +
+                ":∟A(0-1");
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_list_index_decimal() {
+        storeAndExecute(":{1,2,3->∟A" +
+                ":∟A(1.5");
+    }
+
+    @Test(expected = PreprocessException.class)
+    public void testInterpret_invalidProgram_list_index_list() {
+        storeAndExecute("{A->∟A" +
+                ":∟A(∟A");
     }
 
 }

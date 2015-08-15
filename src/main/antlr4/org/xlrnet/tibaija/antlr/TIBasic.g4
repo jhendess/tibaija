@@ -240,15 +240,17 @@ callStatement
        : DISP expression;
 
 storeStatement
-       : expression STORE numericalVariable      # StoreNumberStatement
-       | expression STORE listVariable           # StoreListStatement
+       : expression STORE numericalVariable                                                     # StoreNumberStatement
+       | expression STORE listVariable                                                          # StoreListStatement
+       | expression STORE listVariable LEFT_PARENTHESIS expression (RIGHT_PARENTHESIS)?   # StoreListElementStatement
        ;
 
 numericalValue
-       : numericalVariable
-       | number
+       : numericalVariable                                                       # NumericalVariableExpression
+       | listVariable LEFT_PARENTHESIS expression (RIGHT_PARENTHESIS)?     # ListElementExpression             // Workaround for accessing a single list element
+       | number                                                                  # NumberExpression
        ;
-       
+
 listValue
        : listVariable   { !(isListMode) }? {isListMode = false; }      // Disable list mode after visiting the expression/variable
        | listExpression {isListMode = false; }

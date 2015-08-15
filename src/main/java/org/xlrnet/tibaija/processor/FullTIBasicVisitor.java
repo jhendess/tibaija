@@ -33,6 +33,7 @@ import org.xlrnet.tibaija.antlr.TIBasicBaseVisitor;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
 import org.xlrnet.tibaija.exception.IllegalControlFlowException;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
+import org.xlrnet.tibaija.exception.InvalidDimensionException;
 import org.xlrnet.tibaija.exception.TIStopException;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
@@ -373,9 +374,55 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         return ContextUtils.extractValueFromNumberContext(ctx);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
     @Override
-    public Value visitNumericalValue(@NotNull TIBasicParser.NumericalValueContext ctx) {
-        return (Value) ctx.getChild(0).accept(this);        // Automatically pass-through the next value
+    public Object visitNumericalVariableExpression(@NotNull TIBasicParser.NumericalVariableExpressionContext ctx) {
+        return ctx.numericalVariable().accept(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Object visitNumberExpression(@NotNull TIBasicParser.NumberExpressionContext ctx) {
+        return ctx.number().accept(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Value visitListElementExpression(@NotNull TIBasicParser.ListElementExpressionContext ctx) {
+        int line = ctx.listVariable().LIST_TOKEN().getSymbol().getLine();
+        int startIndex = ctx.listVariable().LIST_TOKEN().getSymbol().getCharPositionInLine();
+
+        String listVariable = ctx.listVariable().listIdentifier().getText();
+        Value index = (Value) ctx.expression().accept(this);
+        double indexValue = index.complex().getReal();
+
+        if (index.hasImaginaryValue()) {
+            throw new InvalidDimensionException(line, startIndex, "Index may not be imaginary", index);
+        }
+
+        if (indexValue % 1 != 0) {
+            throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", index);
+        }
+
+        return environment.getMemory().getListVariableElementValue(listVariable, (int) indexValue);
     }
 
     @Override
@@ -401,6 +448,30 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Optional<Value> visitStatement(@NotNull TIBasicParser.StatementContext ctx) {
         return Optional.ofNullable((Value) super.visitStatement(ctx));
+    }
+
+    @Override
+    public Object visitStoreListElementStatement(@NotNull TIBasicParser.StoreListElementStatementContext ctx) {
+        int line = ctx.LEFT_PARENTHESIS().getSymbol().getLine();
+        int startIndex = ctx.LEFT_PARENTHESIS().getSymbol().getStartIndex();
+
+
+        String variableName = ctx.listVariable().listIdentifier().getText();
+        Value newValue = (Value) ctx.expression(0).accept(this);
+        Value index = (Value) ctx.expression(1).accept(this);
+        double indexValue = index.complex().getReal();
+
+        if (index.hasImaginaryValue()) {
+            throw new InvalidDimensionException(line, startIndex, "Index may not be imaginary", index);
+        }
+
+        if (indexValue % 1 != 0) {
+            throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", index);
+        }
+
+        environment.getWritableMemory().setListVariableElementValue(variableName, (int) indexValue, newValue);
+
+        return newValue;
     }
 
     @Override

@@ -34,9 +34,11 @@ import org.xlrnet.tibaija.matchers.EqualsTIListMatcher;
 import org.xlrnet.tibaija.matchers.EqualsWithComplexDeltaMatcher;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
+import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.test.TestUtils;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -64,7 +66,7 @@ public class AbstractTI83PlusTest {
         calculator = new TI83Plus(mockedMemory, mockedIO, new DummyCodeProvider());
     }
 
-    protected void assertNumberVariableValue(Variables.NumberVariable variable, double real, double imaginary) {
+    protected void verifyNumberVariableValue(Variables.NumberVariable variable, double real, double imaginary) {
         final Complex actualComplex = mockedMemory.getNumberVariableValue(variable).complex();
         assertEquals("Actual real value doesn't match expected", real, actualComplex.getReal(), TestUtils.DEFAULT_TOLERANCE);
         assertEquals("Actual imaginary value doesn't match expected", imaginary, actualComplex.getImaginary(), TestUtils.DEFAULT_TOLERANCE);
@@ -100,6 +102,15 @@ public class AbstractTI83PlusTest {
 
     protected void verifyListVariableValue(String variable, Complex... values) {
         verify(mockedMemory).setListVariableValue(eq(variable), argThat(new EqualsTIListMatcher(values, TestUtils.DEFAULT_TOLERANCE)));
+    }
+
+    protected void verifyElementInListVariable(String variable, int element, double realPart) {
+        verifyElementInListVariable(variable, element, realPart, 0);
+    }
+
+    protected void verifyElementInListVariable(String variable, int element, double realPart, double complexPart) {
+        Complex actual = calculator.getMemory().getListVariableValue("A").list().get(element);
+        assertThat(Value.of(actual), new EqualsWithComplexDeltaMatcher(realPart, complexPart, TestUtils.DEFAULT_TOLERANCE));
     }
 
 }

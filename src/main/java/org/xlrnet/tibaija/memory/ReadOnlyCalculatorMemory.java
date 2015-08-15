@@ -55,13 +55,27 @@ public interface ReadOnlyCalculatorMemory {
      * UndefinedVariableException will be thrown.
      *
      * @param variable
-     *         The list variable name from which value should be returned. Must be written uppercase and between one
-     *         and
+     *         The list variable name from which value should be returned. Must be written uppercase and between one and
      *         five characters without the leading list token "∟". Digits are allowed except for the first character.
      * @return Value of the selected variable.
      */
     @NotNull
     public Value getListVariableValue(@NotNull String variable);
+
+    /**
+     * Returns the stored value of a certain element in a given list variable. The first index is always one and not
+     * zero! If a variable has not yet been written to, an UndefinedVariableException will be thrown.
+     *
+     * @param variable
+     *         The list variable name from which value should be returned. Must be written uppercase and between one and
+     *         five characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @param index
+     *         Index of the element inside the list. First index is always one. If the dimension is either to big or too
+     *         low, an {@link org.xlrnet.tibaija.exception.InvalidDimensionException} will be thrown.
+     * @return Value of the selected variable.
+     */
+    @NotNull
+    public Value getListVariableElementValue(@NotNull String variable, int index);
 
     /**
      * Returns the stored value of a given number variable. If a variable has not yet been written to, the value is
