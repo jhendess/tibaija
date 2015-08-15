@@ -1,0 +1,15 @@
+:{5,4,3,2,1->∟A
+:5->N
+:
+:
+:Lbl BS
+:For(X,N,1,0-1
+ :For(I,1,X-1
+  :If ∟A(I) > ∟A(I+1):Then
+   :∟A(I)->T
+   :∟A(I+1)->∟A(I)
+   :T->∟A(I+1)
+  :End
+ :End
+:End
+:∟A
