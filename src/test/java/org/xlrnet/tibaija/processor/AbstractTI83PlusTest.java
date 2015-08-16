@@ -23,7 +23,9 @@
 package org.xlrnet.tibaija.processor;
 
 import org.apache.commons.math3.complex.Complex;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.rules.Timeout;
 import org.mockito.Mock;
 import org.xlrnet.tibaija.DummyCodeProvider;
@@ -41,7 +43,6 @@ import org.xlrnet.tibaija.test.TestUtils;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -50,7 +51,7 @@ import static org.mockito.Mockito.verify;
  */
 public class AbstractTI83PlusTest {
 
-    //@Rule
+    @Rule
     public Timeout globalTimeout = new Timeout(1000);
 
     CalculatorMemory mockedMemory;
@@ -100,8 +101,9 @@ public class AbstractTI83PlusTest {
         verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.BIG_TOLERANCE)));
     }
 
-    protected void verifyListVariableValue(String variable, Complex... values) {
-        verify(mockedMemory).setListVariableValue(eq(variable), argThat(new EqualsTIListMatcher(values, TestUtils.DEFAULT_TOLERANCE)));
+    protected void verifyListVariableValue(String variable, Complex... expectedValues) {
+        Value actual = mockedMemory.getListVariableValue(variable);
+        Assert.assertThat(actual, new EqualsTIListMatcher(expectedValues, TestUtils.DEFAULT_TOLERANCE));
     }
 
     protected void verifyElementInListVariable(String variable, int element, double realPart) {
@@ -111,6 +113,11 @@ public class AbstractTI83PlusTest {
     protected void verifyElementInListVariable(String variable, int element, double realPart, double complexPart) {
         Complex actual = calculator.getMemory().getListVariableValue(variable).list().get(element);
         assertThat(Value.of(actual), new EqualsWithComplexDeltaMatcher(realPart, complexPart, TestUtils.DEFAULT_TOLERANCE));
+    }
+
+    protected void verifyListVariableSize(String variable, int expected) {
+        int actual = calculator.getMemory().getListVariableValue(variable).list().size();
+        assertEquals(expected, actual);
     }
 
 }

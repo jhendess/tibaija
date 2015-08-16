@@ -94,6 +94,29 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
+    public Value visitStoreListDimensionStatement(@NotNull TIBasicParser.StoreListDimensionStatementContext ctx) {
+        int line = ctx.STORE().getSymbol().getLine();
+        int startIndex = ctx.STORE().getSymbol().getCharPositionInLine();
+
+        Value newDimension = (Value) ctx.expression().accept(this);
+        String listVariable = ctx.listVariable().listIdentifier().getText();
+
+        double dimensionValue = newDimension.complex().getReal();
+
+        if (newDimension.hasImaginaryValue()) {
+            throw new InvalidDimensionException(line, startIndex, "Index may not be imaginary", newDimension);
+        }
+
+        if (dimensionValue % 1 != 0) {
+            throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", newDimension);
+        }
+
+        environment.getWritableMemory().setListVariableSize(listVariable, (int) dimensionValue);
+
+        return newDimension;
+    }
+
+    @Override
     public Object visitCommandList(@NotNull TIBasicParser.CommandListContext ctx) {
         final List<TIBasicParser.CommandContext> commandList = ctx.command();
         final int commandListSize = commandList.size();

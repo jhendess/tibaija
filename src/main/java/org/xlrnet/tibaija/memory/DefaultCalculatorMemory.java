@@ -35,6 +35,7 @@ import org.xlrnet.tibaija.exception.UndefinedVariableException;
 import org.xlrnet.tibaija.processor.ExecutableProgram;
 import org.xlrnet.tibaija.util.ValidationUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -218,6 +219,46 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
             programMap.put(programName, programCode);
 
         LOGGER.debug("Stored new program {}", programName);
+    }
+
+    /**
+     * Changes the size of a list variable. If this increases the size, zero elements will be added to the end of the
+     * list; if this decreases the size, elements will be removed starting from the end. The variable does not need to
+     * exist for this command to work.
+     *
+     * @param listName
+     *         The variable to which the value should be written. Must be written uppercase and between one and five
+     *         characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @param newSize
+     *          New size of the list. Must not be decimal and less than zero.
+     */
+    @Override
+    public void setListVariableSize(@NotNull String listName, int newSize) {
+        checkNotNull(listName);
+
+        Value listValue = listVariableValueMap.get(listName);
+        if (listValue == null)
+            listValue = Value.EMPTY_LIST;
+
+        if (newSize < 0)
+            throw new InvalidDimensionException("Invalid new size: " + newSize, newSize);
+
+        List<Complex> resizedList;
+
+        if (newSize == 0) {
+            resizedList = new ArrayList<>();
+        } else if (newSize < listValue.list().size()) {
+            resizedList = listValue.list().subList(0, newSize);
+        } else {
+            resizedList = Lists.newCopyOnWriteArrayList(listValue.list());
+            while (resizedList.size() < newSize) {
+                resizedList.add(Complex.ZERO);
+            }
+        }
+
+        listVariableValueMap.put(listName, Value.of(resizedList));
+
+        LOGGER.debug("Resized list {} to {} elements", listName, newSize);
     }
 
     /**

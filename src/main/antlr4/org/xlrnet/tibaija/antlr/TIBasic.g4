@@ -240,9 +240,10 @@ callStatement
        : DISP expression;
 
 storeStatement
-       : expression STORE numericalVariable                                                     # StoreNumberStatement
-       | expression STORE listVariable                                                          # StoreListStatement
-       | expression STORE listVariable LEFT_PARENTHESIS expression (RIGHT_PARENTHESIS)?   # StoreListElementStatement
+       : expression STORE numericalVariable                                                  # StoreNumberStatement
+       | expression STORE listVariable                                                       # StoreListStatement
+       | expression STORE listVariable LEFT_PARENTHESIS expression (RIGHT_PARENTHESIS)?      # StoreListElementStatement
+       | expression STORE 'dim' LEFT_PARENTHESIS listVariable (RIGHT_PARENTHESIS)?           # StoreListDimensionStatement
        ;
 
 numericalValue

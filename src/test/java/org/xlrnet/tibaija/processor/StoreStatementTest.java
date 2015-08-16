@@ -119,6 +119,54 @@ public class StoreStatementTest extends AbstractTI83PlusTest {
                 ":2->∟A(1.5");
     }
 
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_store_list_dimension_index_decimal() {
+        storeAndExecute(":1.5->dim(∟A");
+    }
+
+    @Test
+    public void testInterpret_validProgram_store_list_dimension_index_zero() {
+        storeAndExecute(":0->dim(∟A");
+        verifyLastResultValue(0);
+        verifyListVariableSize("A", 0);
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_store_list_dimension_index_negative() {
+        storeAndExecute(":0-5->dim(∟A");
+    }
+
+    @Test(expected = InvalidDimensionException.class)
+    public void testInterpret_invalidProgram_store_list_dimension_index_complex() {
+        storeAndExecute(":5i->dim(∟A");
+    }
+
+    @Test
+    public void testInterpret_validProgram_store_list_dimension() {
+        storeAndExecute(":5->dim(∟A");
+        verifyLastResultValue(5);
+        verifyListVariableSize("A", 5);
+        verifyListVariableValue("A", Complex.ZERO, Complex.ZERO, Complex.ZERO, Complex.ZERO, Complex.ZERO);
+    }
+
+    @Test
+    public void testInterpret_validProgram_store_list_dimension_existing_scaleDown() {
+        storeAndExecute(":{1,2,3,4,5->∟A" +
+                ":2->dim(∟A");
+        verifyLastResultValue(2);
+        verifyListVariableSize("A", 2);
+        verifyListVariableValue("A", Complex.ONE, Complex.valueOf(2));
+    }
+
+    @Test
+    public void testInterpret_validProgram_store_list_dimension_existing_scaleUp() {
+        storeAndExecute(":{1,2->∟A" +
+                ":5->dim(∟A");
+        verifyLastResultValue(5);
+        verifyListVariableSize("A", 5);
+        verifyListVariableValue("A", Complex.ONE, Complex.valueOf(2), Complex.ZERO, Complex.ZERO, Complex.ZERO);
+    }
+
     @Test(expected = UndefinedVariableException.class)
     public void testInterpret_invalidProgram_store_list_element_missingList_laterElement() {
         storeAndExecute(":1->∟AZY(2");

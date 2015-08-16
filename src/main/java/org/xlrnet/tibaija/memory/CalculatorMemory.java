@@ -89,4 +89,17 @@ public interface CalculatorMemory extends ReadOnlyCalculatorMemory {
      */
     public void storeProgram(String programName, @NotNull ExecutableProgram programCode) throws DuplicateProgramException;
 
+    /**
+     * Changes the size of a list variable. If this increases the size, zero elements will be added to the end of the
+     * list; if this decreases the size, elements will be removed starting from the end. The variable does not need to
+     * exist for this command to work.
+     *
+     * @param listName
+     *         The variable to which the value should be written. Must be written uppercase and between one and five
+     *         characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @param newSize
+     *         New size of the list. Must not be decimal and less than zero.
+     */
+    public void setListVariableSize(@NotNull String listName, int newSize);
+
 }
