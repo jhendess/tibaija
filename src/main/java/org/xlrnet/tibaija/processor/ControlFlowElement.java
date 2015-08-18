@@ -89,7 +89,7 @@ public class ControlFlowElement {
     }
 
     static enum ControlFlowToken {
-        IF, THEN, ELSE, END, WHILE, REPEAT, GOTO, LABEL, FOR
+        IF, THEN, ELSE, END, WHILE, REPEAT, GOTO, LABEL, FOR, INCREMENT_SKIP_GREATER, DECREMENT_SKIP_LESS
     }
 
 }

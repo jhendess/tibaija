@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.xlrnet.tibaija.exception.IllegalControlFlowException;
+import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.LabelNotFoundException;
 import org.xlrnet.tibaija.exception.PreprocessException;
 import org.xlrnet.tibaija.memory.Variables;
@@ -59,6 +60,27 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":End");
     }
 
+    @Test(expected = IllegalTypeException.class)
+    public void testExecute_invalidProgram_decrementSkip_complex() {
+        storeAndExecute(":1i->A" +
+                ":DS<(A,5" +
+                ":2->B");
+    }
+
+    @Test(expected = PreprocessException.class)
+    public void testExecute_invalidProgram_decrementSkip_listVariable() {
+        storeAndExecute(":1->A" +
+                ":DS<(∟A,5" +
+                ":2->B");
+    }
+
+    @Test(expected = PreprocessException.class)
+    public void testExecute_invalidProgram_decrementSkip_number() {
+        storeAndExecute(":1i->A" +
+                ":DS<(1,5" +
+                ":2->B");
+    }
+
     @Test(expected = PreprocessException.class)
     public void testExecute_invalidProgram_goto_invalidLabel() {
         storeAndExecute(":Goto ABC");
@@ -67,6 +89,27 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
     @Test(expected = LabelNotFoundException.class)
     public void testExecute_invalidProgram_goto_missing() {
         storeAndExecute(":Goto A");
+    }
+
+    @Test(expected = IllegalTypeException.class)
+    public void testExecute_invalidProgram_incrementSkip_complex() {
+        storeAndExecute(":1i->A" +
+                ":IS>(A,5" +
+                ":2->B");
+    }
+
+    @Test(expected = PreprocessException.class)
+    public void testExecute_invalidProgram_incrementSkip_listVariable() {
+        storeAndExecute(":1->A" +
+                ":IS>(∟A,5" +
+                ":2->B");
+    }
+
+    @Test(expected = PreprocessException.class)
+    public void testExecute_invalidProgram_incrementSkip_number() {
+        storeAndExecute(":1i->A" +
+                ":IS>(1,5" +
+                ":2->B");
     }
 
     @Test
@@ -82,6 +125,18 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":End");
         verifyLastResultValue(3);
         verifyNumberVariableValue(Variables.NumberVariable.X, 11, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_controlFlow_for_decrement() {
+        storeAndExecute(":5->N" +
+                ":0→A" +
+                ":For(X,N,1,0-1)" +
+                ":A+1→A" +
+                ":End");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+        // Iteration variable must be *zero* at the end!
+        verifyNumberVariableValue(Variables.NumberVariable.X, 0, 0);
     }
 
     @Test
@@ -132,18 +187,6 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":End");
         verifyLastResultValue(3);
         verifyNumberVariableValue(Variables.NumberVariable.X, -1, 0);
-    }
-
-    @Test
-    public void testExecute_validProgram_controlFlow_for_decrement() {
-        storeAndExecute(":5->N" +
-                ":0→A" +
-                ":For(X,N,1,0-1)" +
-                ":A+1→A" +
-                ":End");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
-        // Iteration variable must be *zero* at the end!
-        verifyNumberVariableValue(Variables.NumberVariable.X, 0, 0);
     }
 
     @Test
@@ -380,6 +423,65 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
     }
 
     @Test
+    public void testExecute_validProgram_decrementSkip_basic() {
+        storeAndExecute(":3->A" +
+                ":DS<(A,0" +
+                ":2->B");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 2, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 2, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_decrementSkip_decimal() {
+        storeAndExecute(":2.5->A" +
+                ":DS<(A,1" +
+                ":2->B");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 1.5, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 2, 0);
+    }
+
+    @Test(expected = IllegalControlFlowException.class)
+    public void testExecute_validProgram_decrementSkip_missingNext_1() {
+        storeAndExecute(":0->A" +
+                ":DS<(A,2");
+    }
+
+    @Test(expected = IllegalControlFlowException.class)
+    public void testExecute_validProgram_decrementSkip_missingNext_2() {
+        storeAndExecute(":3->A" +
+                ":DS<(A,2");
+    }
+
+    @Test
+    public void testExecute_validProgram_decrementSkip_skip2() {
+        storeAndExecute(":2->A" +
+                ":DS<(A,2" +
+                ":2->B" +
+                ":3->C");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.C, 3, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_decrementSkip_skip3() {
+        storeAndExecute(":0->A" +
+                ":DS<(A,2" +
+                ":2->B");
+        verifyNumberVariableValue(Variables.NumberVariable.A, -1, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_decrementSkip_skip_1() {
+        storeAndExecute(":2->A" +
+                ":DS<(A,2" +
+                ":2->B");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
+    }
+
+    @Test
     public void testExecute_validProgram_goto_basic1() {
         storeAndExecute(":1→A" +
                 ":Goto A" +
@@ -409,4 +511,64 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":End");
         verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
     }
+
+    @Test
+    public void testExecute_validProgram_incrementSkip_basic() {
+        storeAndExecute(":0->A" +
+                ":IS>(A,2" +
+                ":2->B");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 2, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_incrementSkip_decimal() {
+        storeAndExecute(":.5->A" +
+                ":IS>(A,2" +
+                ":2->B");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 1.5, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 2, 0);
+    }
+
+    @Test(expected = IllegalControlFlowException.class)
+    public void testExecute_validProgram_incrementSkip_missingNext_1() {
+        storeAndExecute(":0->A" +
+                ":IS>(A,2");
+    }
+
+    @Test(expected = IllegalControlFlowException.class)
+    public void testExecute_validProgram_incrementSkip_missingNext_2() {
+        storeAndExecute(":4->A" +
+                ":IS>(A,2");
+    }
+
+    @Test
+    public void testExecute_validProgram_incrementSkip_skip2() {
+        storeAndExecute(":2->A" +
+                ":IS>(A,2" +
+                ":2->B" +
+                ":3->C");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 3, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.C, 3, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_incrementSkip_skip3() {
+        storeAndExecute(":3->A" +
+                ":IS>(A,2" +
+                ":2->B");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 4, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
+    }
+
+    @Test
+    public void testExecute_validProgram_incrementSkip_skip_1() {
+        storeAndExecute(":2->A" +
+                ":IS>(A,2" +
+                ":2->B");
+        verifyNumberVariableValue(Variables.NumberVariable.A, 3, 0);
+        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
+    }
+
 }

@@ -204,6 +204,8 @@ controlFlowStatement returns [ String flowType ]                      // Separat
        | forStatement { $flowType = "FOR"; }
        | labelStatement { $flowType = "LABEL"; }
        | gotoStatement { $flowType = "GOTO"; }
+       | incrementSkipGreaterStatement { $flowType = "INCREMENT_SKIP_GREATER"; }
+       | decrementSkipLessStatement  { $flowType = "DECREMENT_SKIP_LESS"; }
        ; 
 
 ifStatement
@@ -232,6 +234,12 @@ labelStatement
 
 gotoStatement
        : GOTO labelIdentifier;
+
+incrementSkipGreaterStatement
+       : INCREMENT_SKIP_GREATER numericalVariable COMMA expression (RIGHT_PARENTHESIS)?;
+
+decrementSkipLessStatement
+       : DECREMENT_SKIP_LESS numericalVariable COMMA expression (RIGHT_PARENTHESIS)?;
 
 stopStatement
        : STOP;
@@ -368,8 +376,8 @@ END: 'End';
 PAUSE: 'Pause';
 LABEL: 'Lbl';
 GOTO: 'Goto';
-IS: 'IS>(';
-DS: 'DS<(';
+INCREMENT_SKIP_GREATER: 'IS>(';
+DECREMENT_SKIP_LESS: 'DS<(';
 MENU: 'Menu(';
 PRGM: 'prgm';
 RETURN: 'Return';

@@ -59,8 +59,18 @@ public class IllegalControlFlowTests extends AbstractTI83PlusTest {
     }
 
     @Test(expected = IllegalControlFlowException.class)
+    public void testInterpret_invalidProgram_decrementSkip() throws Exception {
+        calculator.interpret("DS<(X,1");
+    }
+
+    @Test(expected = IllegalControlFlowException.class)
     public void testInterpret_invalidProgram_if() throws Exception {
         calculator.interpret("If 1");
+    }
+
+    @Test(expected = IllegalControlFlowException.class)
+    public void testInterpret_invalidProgram_incrementSkip() throws Exception {
+        calculator.interpret("IS>(X,1");
     }
 
 }

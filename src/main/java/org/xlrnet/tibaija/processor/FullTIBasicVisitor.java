@@ -94,29 +94,6 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Value visitStoreListDimensionStatement(@NotNull TIBasicParser.StoreListDimensionStatementContext ctx) {
-        int line = ctx.STORE().getSymbol().getLine();
-        int startIndex = ctx.STORE().getSymbol().getCharPositionInLine();
-
-        Value newDimension = (Value) ctx.expression().accept(this);
-        String listVariable = ctx.listVariable().listIdentifier().getText();
-
-        double dimensionValue = newDimension.complex().getReal();
-
-        if (newDimension.hasImaginaryValue()) {
-            throw new InvalidDimensionException(line, startIndex, "Index may not be imaginary", newDimension);
-        }
-
-        if (dimensionValue % 1 != 0) {
-            throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", newDimension);
-        }
-
-        environment.getWritableMemory().setListVariableSize(listVariable, (int) dimensionValue);
-
-        return newDimension;
-    }
-
-    @Override
     public Object visitCommandList(@NotNull TIBasicParser.CommandListContext ctx) {
         final List<TIBasicParser.CommandContext> commandList = ctx.command();
         final int commandListSize = commandList.size();
@@ -150,6 +127,35 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Object visitControlFlowStatement(@NotNull TIBasicParser.ControlFlowStatementContext ctx) {
         return super.visitControlFlowStatement(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Object visitDecrementSkipLessStatement(@NotNull TIBasicParser.DecrementSkipLessStatementContext ctx) {
+        int line = ctx.DECREMENT_SKIP_LESS().getSymbol().getLine();
+        int startIndex = ctx.DECREMENT_SKIP_LESS().getSymbol().getCharPositionInLine();
+
+        Variables.NumberVariable numberVariable = Variables.resolveNumberVariable(ctx.numericalVariable().getText());
+        Value oldVariableValue = environment.getMemory().getNumberVariableValue(numberVariable);
+        Value compareValue = (Value) ctx.expression().accept(this);
+
+        if (oldVariableValue.hasImaginaryValue())
+            throw new IllegalTypeException(line, startIndex, "Unexpected imaginary value", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
+
+        Value newVariableValue = environment.runRegisteredCommand("-", oldVariableValue, Value.ONE).get();
+        environment.getWritableMemory().setNumberVariableValue(numberVariable, newVariableValue);
+
+        // If new (decremented) value is greater than the expected, skip the next command
+        boolean skipNext = CompareUtils.isLessThan(newVariableValue, compareValue);
+
+        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.INCREMENT_SKIP_GREATER, !skipNext, true);
     }
 
     @Override
@@ -356,6 +362,35 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.IF, lastEvaluation, false);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public ControlFlowElement visitIncrementSkipGreaterStatement(@NotNull TIBasicParser.IncrementSkipGreaterStatementContext ctx) {
+        int line = ctx.INCREMENT_SKIP_GREATER().getSymbol().getLine();
+        int startIndex = ctx.INCREMENT_SKIP_GREATER().getSymbol().getCharPositionInLine();
+
+        Variables.NumberVariable numberVariable = Variables.resolveNumberVariable(ctx.numericalVariable().getText());
+        Value oldVariableValue = environment.getMemory().getNumberVariableValue(numberVariable);
+        Value compareValue = (Value) ctx.expression().accept(this);
+
+        if (oldVariableValue.hasImaginaryValue())
+            throw new IllegalTypeException(line, startIndex, "Unexpected imaginary value", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
+
+        Value newVariableValue = environment.runRegisteredCommand("+", oldVariableValue, Value.ONE).get();
+        environment.getWritableMemory().setNumberVariableValue(numberVariable, newVariableValue);
+
+        // If new (incremented) value is greater than the expected, skip the next command
+        boolean skipNext = CompareUtils.isGreaterThan(newVariableValue, compareValue);
+
+        return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.INCREMENT_SKIP_GREATER, !skipNext, true);
+    }
+
     @Override
     public Object visitLabelIdentifier(@NotNull TIBasicParser.LabelIdentifierContext ctx) {
         return super.visitLabelIdentifier(ctx);
@@ -373,6 +408,33 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Value visitLastResult(@NotNull TIBasicParser.LastResultContext ctx) {
         return environment.getMemory().getLastResult();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Value visitListElementExpression(@NotNull TIBasicParser.ListElementExpressionContext ctx) {
+        int line = ctx.listVariable().LIST_TOKEN().getSymbol().getLine();
+        int startIndex = ctx.listVariable().LIST_TOKEN().getSymbol().getCharPositionInLine();
+
+        String listVariable = ctx.listVariable().listIdentifier().getText();
+        Value index = (Value) ctx.expression().accept(this);
+        double indexValue = index.complex().getReal();
+
+        if (index.hasImaginaryValue()) {
+            throw new InvalidDimensionException(line, startIndex, "Index may not be imaginary", index);
+        }
+
+        if (indexValue % 1 != 0) {
+            throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", index);
+        }
+
+        return environment.getMemory().getListVariableElementValue(listVariable, (int) indexValue);
     }
 
     @Override
@@ -408,47 +470,8 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
      * @param ctx
      */
     @Override
-    public Object visitNumericalVariableExpression(@NotNull TIBasicParser.NumericalVariableExpressionContext ctx) {
-        return ctx.numericalVariable().accept(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * <p>The default implementation returns the result of calling {@link #visitChildren} on {@code ctx}.</p>
-     *
-     * @param ctx
-     */
-    @Override
     public Object visitNumberExpression(@NotNull TIBasicParser.NumberExpressionContext ctx) {
         return ctx.number().accept(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p/>
-     * <p>The default implementation returns the result of calling {@link #visitChildren} on {@code ctx}.</p>
-     *
-     * @param ctx
-     */
-    @Override
-    public Value visitListElementExpression(@NotNull TIBasicParser.ListElementExpressionContext ctx) {
-        int line = ctx.listVariable().LIST_TOKEN().getSymbol().getLine();
-        int startIndex = ctx.listVariable().LIST_TOKEN().getSymbol().getCharPositionInLine();
-
-        String listVariable = ctx.listVariable().listIdentifier().getText();
-        Value index = (Value) ctx.expression().accept(this);
-        double indexValue = index.complex().getReal();
-
-        if (index.hasImaginaryValue()) {
-            throw new InvalidDimensionException(line, startIndex, "Index may not be imaginary", index);
-        }
-
-        if (indexValue % 1 != 0) {
-            throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", index);
-        }
-
-        return environment.getMemory().getListVariableElementValue(listVariable, (int) indexValue);
     }
 
     @Override
@@ -456,6 +479,18 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         String variableName = ctx.getText();
         Variables.NumberVariable variable = Variables.resolveNumberVariable(variableName);
         return environment.getMemory().getNumberVariableValue(variable);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Object visitNumericalVariableExpression(@NotNull TIBasicParser.NumericalVariableExpressionContext ctx) {
+        return ctx.numericalVariable().accept(this);
     }
 
     @Override
@@ -474,6 +509,34 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Optional<Value> visitStatement(@NotNull TIBasicParser.StatementContext ctx) {
         return Optional.ofNullable((Value) super.visitStatement(ctx));
+    }
+
+    @Override
+    public Object visitStopStatement(@NotNull TIBasicParser.StopStatementContext ctx) {
+        throw new TIStopException(ctx.STOP().getSymbol().getLine(), ctx.STOP().getSymbol().getCharPositionInLine());
+    }
+
+    @Override
+    public Value visitStoreListDimensionStatement(@NotNull TIBasicParser.StoreListDimensionStatementContext ctx) {
+        int line = ctx.STORE().getSymbol().getLine();
+        int startIndex = ctx.STORE().getSymbol().getCharPositionInLine();
+
+        Value newDimension = (Value) ctx.expression().accept(this);
+        String listVariable = ctx.listVariable().listIdentifier().getText();
+
+        double dimensionValue = newDimension.complex().getReal();
+
+        if (newDimension.hasImaginaryValue()) {
+            throw new InvalidDimensionException(line, startIndex, "Index may not be imaginary", newDimension);
+        }
+
+        if (dimensionValue % 1 != 0) {
+            throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", newDimension);
+        }
+
+        environment.getWritableMemory().setListVariableSize(listVariable, (int) dimensionValue);
+
+        return newDimension;
     }
 
     @Override
@@ -498,11 +561,6 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         environment.getWritableMemory().setListVariableElementValue(variableName, (int) indexValue, newValue);
 
         return newValue;
-    }
-
-    @Override
-    public Object visitStopStatement(@NotNull TIBasicParser.StopStatementContext ctx) {
-        throw new TIStopException(ctx.STOP().getSymbol().getLine(), ctx.STOP().getSymbol().getCharPositionInLine());
     }
 
     @Override
@@ -557,6 +615,16 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         final int line = currentFlowElement.getLine();
         final int charIndex = currentFlowElement.getCharIndex();
         switch (currentFlowElement.getToken()) {
+            case INCREMENT_SKIP_GREATER:
+            case DECREMENT_SKIP_LESS:
+                if (commandIndex + 1 >= commandList.size()) {
+                    throw new IllegalControlFlowException(line, charIndex, "Missing next command");
+                }
+                if (!currentFlowElement.getLastEvaluation()) {
+                    LOGGER.debug("Skipping next command...");
+                    commandIndex++;
+                }
+                break;
             case GOTO:
                 JumpingControlFlowElement jumpElement = (JumpingControlFlowElement) currentFlowElement;
                 String targetLabel = jumpElement.getTargetLabel();
