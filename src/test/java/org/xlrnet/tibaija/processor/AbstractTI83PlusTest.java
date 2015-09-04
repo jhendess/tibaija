@@ -33,6 +33,7 @@ import org.xlrnet.tibaija.TI83Plus;
 import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.matchers.EqualsTIListMatcher;
+import org.xlrnet.tibaija.matchers.EqualsTIStringMatcher;
 import org.xlrnet.tibaija.matchers.EqualsWithComplexDeltaMatcher;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
@@ -67,15 +68,18 @@ public class AbstractTI83PlusTest {
         calculator = new TI83Plus(mockedMemory, mockedIO, new DummyCodeProvider());
     }
 
-    protected void verifyNumberVariableValue(Variables.NumberVariable variable, double real, double imaginary) {
-        final Complex actualComplex = mockedMemory.getNumberVariableValue(variable).complex();
-        assertEquals("Actual real value doesn't match expected", real, actualComplex.getReal(), TestUtils.DEFAULT_TOLERANCE);
-        assertEquals("Actual imaginary value doesn't match expected", imaginary, actualComplex.getImaginary(), TestUtils.DEFAULT_TOLERANCE);
-    }
-
     protected void storeAndExecute(String snippet) {
         calculator.loadProgram("TEST", snippet);
         calculator.executeProgram("TEST");
+    }
+
+    protected void verifyElementInListVariable(String variable, int element, double realPart) {
+        verifyElementInListVariable(variable, element, realPart, 0);
+    }
+
+    protected void verifyElementInListVariable(String variable, int element, double realPart, double complexPart) {
+        Complex actual = calculator.getMemory().getListVariableValue(variable).list().get(element);
+        assertThat(Value.of(actual), new EqualsWithComplexDeltaMatcher(realPart, complexPart, TestUtils.DEFAULT_TOLERANCE));
     }
 
     protected void verifyLastResultValue(double realPart, double imaginaryPart) {
@@ -84,6 +88,10 @@ public class AbstractTI83PlusTest {
 
     protected void verifyLastResultValue(double realPart) {
         verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.DEFAULT_TOLERANCE)));
+    }
+
+    protected void verifyLastResultValue(String string) {
+        verify(mockedMemory).setLastResult(argThat(new EqualsTIStringMatcher(string)));
     }
 
     protected void verifyLastResultValueList(Complex... values) {
@@ -101,23 +109,20 @@ public class AbstractTI83PlusTest {
         verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.BIG_TOLERANCE)));
     }
 
+    protected void verifyListVariableSize(String variable, int expected) {
+        int actual = calculator.getMemory().getListVariableValue(variable).list().size();
+        assertEquals(expected, actual);
+    }
+
     protected void verifyListVariableValue(String variable, Complex... expectedValues) {
         Value actual = mockedMemory.getListVariableValue(variable);
         Assert.assertThat(actual, new EqualsTIListMatcher(expectedValues, TestUtils.DEFAULT_TOLERANCE));
     }
 
-    protected void verifyElementInListVariable(String variable, int element, double realPart) {
-        verifyElementInListVariable(variable, element, realPart, 0);
-    }
-
-    protected void verifyElementInListVariable(String variable, int element, double realPart, double complexPart) {
-        Complex actual = calculator.getMemory().getListVariableValue(variable).list().get(element);
-        assertThat(Value.of(actual), new EqualsWithComplexDeltaMatcher(realPart, complexPart, TestUtils.DEFAULT_TOLERANCE));
-    }
-
-    protected void verifyListVariableSize(String variable, int expected) {
-        int actual = calculator.getMemory().getListVariableValue(variable).list().size();
-        assertEquals(expected, actual);
+    protected void verifyNumberVariableValue(Variables.NumberVariable variable, double real, double imaginary) {
+        final Complex actualComplex = mockedMemory.getNumberVariableValue(variable).complex();
+        assertEquals("Actual real value doesn't match expected", real, actualComplex.getReal(), TestUtils.DEFAULT_TOLERANCE);
+        assertEquals("Actual imaginary value doesn't match expected", imaginary, actualComplex.getImaginary(), TestUtils.DEFAULT_TOLERANCE);
     }
 
 }

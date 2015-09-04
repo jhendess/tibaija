@@ -36,7 +36,11 @@ import static org.xlrnet.tibaija.util.ValueUtils.checkIfAnyValueIsImaginary;
  */
 public enum BinaryCommandOperator {
 
-    PLUS((lhs, rhs) -> Value.of(lhs.complex().add(rhs.complex()))),
+    PLUS((lhs, rhs) -> {
+        if (lhs.isString() && rhs.isString())
+            return Value.of(lhs.string().concat(rhs.string()));
+        return Value.of(lhs.complex().add(rhs.complex()));
+    }),
 
     MINUS((lhs, rhs) -> Value.of(lhs.complex().subtract(rhs.complex()))),
 

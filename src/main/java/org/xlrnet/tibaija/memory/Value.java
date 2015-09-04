@@ -71,9 +71,19 @@ public class Value implements Comparable<Value> {
     }
 
     /**
+     * Create a new Value object from a string and set the according type.
+     *
+     * @param string
+     *         The string value.
+     */
+    private Value(@NotNull String string) {
+        value = string;
+        type = Variables.VariableType.STRING;
+    }
+
+    /**
      * Create a new Value object from an immutable list of complex numbers and set the according type. Note: Numbers
-     * are
-     * always represented as complex values!
+     * are  always represented as complex values!
      *
      * @param complexImmutableList
      *         The immutable list of complex numbers.
@@ -92,6 +102,17 @@ public class Value implements Comparable<Value> {
     @NotNull
     public static Value of(@NotNull ImmutableList<Complex> complexImmutableList) {
         return new Value(complexImmutableList);
+    }
+
+    /**
+     * Create a new string Value object from a {@link String}.
+     *
+     * @param string
+     *         The string to store inside the new value. May not be null.
+     */
+    @NotNull
+    public static Value of(@NotNull String string) {
+        return new Value(string);
     }
 
     /**
@@ -285,6 +306,15 @@ public class Value implements Comparable<Value> {
     }
 
     /**
+     * Check if this object contains a string value.
+     *
+     * @return True if this object contains a string value; false otherwise.
+     */
+    public boolean isString() {
+        return isType(Variables.VariableType.STRING);
+    }
+
+    /**
      * Retrieves the internal value as a list of Complex objects. If the internal is not a Complex, this method will
      * throw an
      * {IllegalTypeException}. Use this method only if you know the underlying object type!
@@ -295,12 +325,25 @@ public class Value implements Comparable<Value> {
     @NotNull
     public ImmutableList<Complex> list() throws IllegalTypeException {
         internalTypeCheck(Variables.VariableType.LIST);
-        return (ImmutableList) value;
+        return (ImmutableList<Complex>) value;
+    }
+
+    /**
+     * Retrieves the internal value as a boolean value. If the internal is not a number, this method will throw an
+     * {IllegalTypeException}. Use this method only if you know the underlying object type!
+     *
+     * @return The internal value as a boolean. If the numerical value is not zero, true will be returned. Otherwise
+     * false.
+     * @throws TIRuntimeException
+     */
+    public String string() throws IllegalTypeException {
+        internalTypeCheck(Variables.VariableType.STRING);
+        return (String) value;
     }
 
     @Override
     public String toString() {
-        return "AnswerVariable{" +
+        return "Value{" +
                 "value=" + value +
                 ", type=" + type +
                 '}';

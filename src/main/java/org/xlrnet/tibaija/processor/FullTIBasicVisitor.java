@@ -26,6 +26,7 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.complex.Complex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -581,6 +582,22 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
 
         return value;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Object visitStringExpression(@NotNull TIBasicParser.StringExpressionContext ctx) {
+        String text = ctx.STRING().getText();
+        String stringValue = StringUtils.remove(text, "\"");
+
+        return Value.of(stringValue);
     }
 
     @Override

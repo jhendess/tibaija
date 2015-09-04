@@ -91,10 +91,16 @@ public class BinaryCommand extends Command {
         checkNotNull(lhs);
         checkNotNull(rhs);
 
-        if (!ValueUtils.isNumberOrList(lhs))
-            throw new IllegalTypeException("Left hand side of expression is not a list or number: " + lhs.getValue(), Variables.VariableType.NUMBER, lhs.getType());
-        if (!ValueUtils.isNumberOrList(rhs))
-            throw new IllegalTypeException("Right hand side of expression is not a list or number: " + rhs.getValue(), Variables.VariableType.NUMBER, rhs.getType());
+        if (operator == BinaryCommandOperator.PLUS && lhs.isString()) {
+            // Type check for string concatenation
+            if (!rhs.isString())
+                throw new IllegalTypeException("Right hand side of concatenation expression is not a string: " + rhs.getValue(), Variables.VariableType.STRING, rhs.getType());
+        } else {
+            if (!ValueUtils.isNumberOrList(lhs))
+                throw new IllegalTypeException("Left hand side of expression is not a list or number: " + lhs.getValue(), Variables.VariableType.NUMBER, lhs.getType());
+            if (!ValueUtils.isNumberOrList(rhs))
+                throw new IllegalTypeException("Right hand side of expression is not a list or number: " + rhs.getValue(), Variables.VariableType.NUMBER, rhs.getType());
+        }
 
         return true;
     }

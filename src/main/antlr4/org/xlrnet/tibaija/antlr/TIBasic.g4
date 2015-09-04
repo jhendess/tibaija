@@ -181,6 +181,7 @@ expression_value
        : LEFT_PARENTHESIS expression RIGHT_PARENTHESIS?
        | numericalValue
        | listValue
+       | stringValue
        | lastResult
          // TODO: Implement other data types
        ;
@@ -252,12 +253,18 @@ storeStatement
        | expression STORE listVariable                                                       # StoreListStatement
        | expression STORE listVariable LEFT_PARENTHESIS expression (RIGHT_PARENTHESIS)?      # StoreListElementStatement
        | expression STORE 'dim' LEFT_PARENTHESIS listVariable (RIGHT_PARENTHESIS)?           # StoreListDimensionStatement
+       | expression STORE STRING_VARIABLE                                                    # StoreStringStatement
        ;
 
 numericalValue
        : numericalVariable                                                       # NumericalVariableExpression
-       | listVariable LEFT_PARENTHESIS expression (RIGHT_PARENTHESIS)?     # ListElementExpression             // Workaround for accessing a single list element
+       | listVariable LEFT_PARENTHESIS expression (RIGHT_PARENTHESIS)?           # ListElementExpression             // Workaround for accessing a single list element
        | number                                                                  # NumberExpression
+       ;
+
+stringValue
+       : STRING                                   # StringExpression
+       | STRING_VARIABLE                          # StringVariableExpression
        ;
 
 listValue
@@ -291,8 +298,6 @@ listIdentifier
 lastResult
        : 'Ans';
 
-
-
 /* Lexer rules for more readable code */
 CapitalOrTheta: (CAPITAL_LETTER | THETA);
 DefaultList: ('₁' .. '₆');              // Valid characters are subscript UTF-8 numbers 0x2081 to 0x2086
@@ -307,6 +312,15 @@ number returns [
      DOT?
      digits { $decimal = $digits.text; }
      ;
+
+/* Parser rules for detecting a string */
+STRING
+    :   QUOTATION_MARK
+        (
+            ~('\r' | '\n' | '→' | '"')
+        )*
+        QUOTATION_MARK?
+    ;
 
 /* Main Token */
 
@@ -352,13 +366,16 @@ RIGHT_PARENTHESIS: ')';
 LEFT_BRACE: '{';
 RIGHT_BRACE: '}';
 COMMA: ',';
-STORE: '->' | '→';
+STORE: '->' | TI_STORE;
+TI_STORE: '→';
 IMAGINARY: 'i';
 DIGIT: '0' .. '9';
 DOT: '.';
 THETA: 'θ';
 CAPITAL_LETTER: 'A' .. 'Z';
 LIST_TOKEN: '∟';
+QUOTATION_MARK: '"';
+STRING_VARIABLE: 'Str' DIGIT;
 
 /* Skip whitespace */
 

@@ -35,7 +35,8 @@ import org.junit.runners.Suite;
         InterpretLogicTest.class,           // Tests for correct logic operators
         InterpretStructuralTest.class,      // Tests for structural issues
         SimpleArithmeticsTest.class,        // Tests for simpler arithmetics
-        InterpretListsTest.class            // Tests for all list logic
+        InterpretListsTest.class,           // Tests for list logic
+        InterpretStringsTest.class          // Tests for string logic
 })
 public class TI83PlusInterpretSuite extends AbstractTI83PlusTest {
 
