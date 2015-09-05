@@ -25,7 +25,6 @@ package org.xlrnet.tibaija.processor;
 import org.apache.commons.math3.complex.Complex;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.rules.Timeout;
 import org.mockito.Mock;
 import org.xlrnet.tibaija.DummyCodeProvider;
@@ -51,7 +50,7 @@ import static org.mockito.Mockito.*;
  */
 public class AbstractTI83PlusTest {
 
-    @Rule
+    //@Rule
     public Timeout globalTimeout = new Timeout(1000);
 
     CalculatorMemory mockedMemory;
@@ -65,6 +64,10 @@ public class AbstractTI83PlusTest {
     public void setUp() {
         mockedMemory = spy(new DefaultCalculatorMemory());
         calculator = new TI83Plus(mockedMemory, mockedIO, new DummyCodeProvider());
+    }
+
+    protected ExecutionEnvironment getEnvironment() {
+        return ((TI83Plus) calculator).getEnvironment();
     }
 
     protected void storeAndExecute(String snippet) {

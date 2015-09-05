@@ -23,7 +23,6 @@
 package org.xlrnet.tibaija.processor;
 
 import org.junit.Test;
-import org.xlrnet.tibaija.exception.PreprocessException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -101,10 +100,4 @@ public class PreprocessorTest {
         int labelTargetA = executableProgram.getLabelJumpTarget("A");
         assertEquals(0, labelTargetA);
     }
-
-    @Test(expected = PreprocessException.class)
-    public void testSyntaxError() {
-        preprocessor.preprocessProgramCode(VALID_PRGM_NAME, ":Label A");
-    }
-
 }

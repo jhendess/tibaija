@@ -29,10 +29,7 @@ import org.xlrnet.tibaija.exception.PreprocessException;
 import org.xlrnet.tibaija.exception.ProgramNotFoundException;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
-import org.xlrnet.tibaija.processor.ControlflowLessTIBasicVisitor;
-import org.xlrnet.tibaija.processor.ExecutableProgram;
-import org.xlrnet.tibaija.processor.FullTIBasicVisitor;
-import org.xlrnet.tibaija.processor.Preprocessor;
+import org.xlrnet.tibaija.processor.*;
 import org.xlrnet.tibaija.util.ExecutionEnvironmentUtil;
 import org.xlrnet.tibaija.util.ValidationUtils;
 
@@ -55,10 +52,13 @@ public class TI83Plus implements VirtualCalculator {
 
     private final CodeProvider codeProvider;
 
+    private final ExecutionEnvironment environment;
+
     public TI83Plus(CalculatorMemory calculatorMemory, CalculatorIO calculatorIO, CodeProvider codeProvider) {
         this.calculatorMemory = calculatorMemory;
         this.calculatorIO = calculatorIO;
         this.codeProvider = codeProvider;
+        this.environment = ExecutionEnvironmentUtil.newDefaultEnvironment(this);
     }
 
     @Override
@@ -76,7 +76,11 @@ public class TI83Plus implements VirtualCalculator {
 
         LOGGER.info("Starting program '{}'", programName);
 
-        ExecutionEnvironmentUtil.newDefaultEnvironment(this).run(executableProgram, new FullTIBasicVisitor());
+        environment.run(executableProgram, new FullTIBasicVisitor());
+    }
+
+    public ExecutionEnvironment getEnvironment() {
+        return environment;
     }
 
     @Override
@@ -96,7 +100,7 @@ public class TI83Plus implements VirtualCalculator {
 
         try {
             ExecutableProgram executableProgram = internalPreprocessCode("TMP", input);
-            ExecutionEnvironmentUtil.newDefaultEnvironment(this).run(executableProgram, new ControlflowLessTIBasicVisitor());
+            environment.run(executableProgram, new ControlflowLessTIBasicVisitor());
         } catch (PreprocessException e) {
             LOGGER.error("Preprocessing commands failed: {}", e.getMessage());
             throw e;

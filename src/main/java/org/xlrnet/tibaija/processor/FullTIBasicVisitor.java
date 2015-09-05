@@ -67,11 +67,6 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Object visitCallStatement(@NotNull TIBasicParser.CallStatementContext ctx) {
-        return super.visitCallStatement(ctx);
-    }
-
-    @Override
     public Object visitCommand(@NotNull TIBasicParser.CommandContext ctx) {
         Object result = null;
         if (ctx.expressionParent() != null) {
@@ -81,10 +76,13 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         }
 
         if (result instanceof Optional) {
-            Value lastResult = (Value) ((Optional) result).get();
-            environment.getWritableMemory().setLastResult(lastResult);
+            Optional optionalResult = (Optional) result;
+            if (optionalResult.isPresent()) {
+                Value lastResult = (Value) (optionalResult).get();
+                environment.getWritableMemory().setLastResult(lastResult);
+            }
         } else if (result != null) {
-            LOGGER.debug("Command returned object of type {} with value {}", result.getClass().getSimpleName(), result);
+            LOGGER.warn("Command returned unexpected object of type {} with value {}", result.getClass().getSimpleName(), result);
         }
 
         if (result != null) {
@@ -92,6 +90,24 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         } else {
             return super.visitCommand(ctx);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Object visitCommandFunction(@NotNull TIBasicParser.CommandFunctionContext ctx) {
+        String commandFunctionName = ctx.commandFunctionIdentifier().getText();
+        Value[] parameters = (Value[]) ctx.parameterList().accept(this);
+
+        environment.runRegisteredCommandFunction(commandFunctionName, parameters);
+
+        return null;
     }
 
     @Override
@@ -125,6 +141,24 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Object visitCommandStatement(@NotNull TIBasicParser.CommandStatementContext ctx) {
+        String commandStatementName = ctx.commandStatementIdentifier().getText();
+        Value[] parameters = (Value[]) ctx.parameterList().accept(this);
+
+        environment.runRegisteredCommandStatement(commandStatementName, parameters);
+
+        return null;
+    }
+
     @Override
     public Object visitControlFlowStatement(@NotNull TIBasicParser.ControlFlowStatementContext ctx) {
         return super.visitControlFlowStatement(ctx);
@@ -150,7 +184,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         if (oldVariableValue.hasImaginaryValue())
             throw new IllegalTypeException(line, startIndex, "Unexpected imaginary value", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
 
-        Value newVariableValue = environment.runRegisteredCommand("-", oldVariableValue, Value.ONE).get();
+        Value newVariableValue = environment.runRegisteredExpressionFunction("-", oldVariableValue, Value.ONE).get();
         environment.getWritableMemory().setNumberVariableValue(numberVariable, newVariableValue);
 
         // If new (decremented) value is greater than the expected, skip the next command
@@ -177,6 +211,22 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     public Object visitExpression(@NotNull TIBasicParser.ExpressionContext ctx) {
         // Nothing to do here -> just return the value ...
         return super.visitExpression(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Value visitExpressionFunctionCall(@NotNull TIBasicParser.ExpressionFunctionCallContext ctx) {
+        String functionName = ctx.expressionFunctionIdentifier().getText();
+        Value[] parameters = (Value[]) ctx.parameterList().accept(this);
+
+        return environment.runRegisteredExpressionFunction(functionName, parameters).get();
     }
 
     @Override
@@ -224,7 +274,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         if (ctx.NEGATIVE_MINUS() == null)
             return lhs;                 // Return left hand side if no negation is wanted
         Value rhs = Value.NEGATIVE_ONE;
-        return environment.runRegisteredCommand("*", lhs, rhs).get();
+        return environment.runRegisteredExpressionFunction("*", lhs, rhs).get();
     }
 
     @Override
@@ -249,7 +299,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             // Run regular right-associative postfix logic without imaginary parts
             Value expressionValue = (Value) ctx.expression_preeval().accept(this);
             for (String op : operators)
-                expressionValue = environment.runRegisteredCommand(op, expressionValue).get();
+                expressionValue = environment.runRegisteredExpressionFunction(op, expressionValue).get();
             return expressionValue;
         } else {
             // Run imaginary logic -> e.g. ii²² == i(i²)²
@@ -258,7 +308,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             LOGGER.debug("(IMAGINARY) -> {}", lhs.complex());
             for (String op : operators) {
                 if (imaginaryCount >= 0) {
-                    lhs = environment.runRegisteredCommand(op, lhs).get();
+                    lhs = environment.runRegisteredExpressionFunction(op, lhs).get();
                     if (imaginaryCount > 0) {
                         Value before = lhs;
                         lhs = Value.of(lhs.complex().multiply(Complex.I));
@@ -286,11 +336,29 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         return processGenericExpressions(operators, contextRules);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Object visitExpression_preeval(@NotNull TIBasicParser.Expression_preevalContext ctx) {
+        if (ctx.expression_prefix() != null)
+            return ctx.expression_prefix().accept(this);
+        else if (ctx.expression_value() != null)
+            return ctx.expression_value().accept(this);
+        else
+            throw new UnsupportedOperationException();
+    }
+
     @Override
     public Value visitExpression_prefix(@NotNull TIBasicParser.Expression_prefixContext ctx) {
         Value lhs = (Value) ctx.expression_xor().accept(this);
         if (ctx.operator != null)
-            return environment.runRegisteredCommand(ctx.operator, lhs).get();
+            return environment.runRegisteredExpressionFunction(ctx.operator, lhs).get();
         return lhs;
     }
 
@@ -383,7 +451,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         if (oldVariableValue.hasImaginaryValue())
             throw new IllegalTypeException(line, startIndex, "Unexpected imaginary value", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
 
-        Value newVariableValue = environment.runRegisteredCommand("+", oldVariableValue, Value.ONE).get();
+        Value newVariableValue = environment.runRegisteredExpressionFunction("+", oldVariableValue, Value.ONE).get();
         environment.getWritableMemory().setNumberVariableValue(numberVariable, newVariableValue);
 
         // If new (incremented) value is greater than the expected, skip the next command
@@ -492,6 +560,27 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Object visitNumericalVariableExpression(@NotNull TIBasicParser.NumericalVariableExpressionContext ctx) {
         return ctx.numericalVariable().accept(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Value[] visitParameterList(@NotNull TIBasicParser.ParameterListContext ctx) {
+        Value[] parameterList = new Value[ctx.expression().size()];
+
+        List<TIBasicParser.ExpressionContext> expression = ctx.expression();
+        for (int i = 0; i < expression.size(); i++) {
+            TIBasicParser.ExpressionContext expressionContext = expression.get(i);
+            parameterList[i] = (Value) expressionContext.accept(this);
+        }
+
+        return parameterList;
     }
 
     @Override
@@ -778,7 +867,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                         else
                             increment = Value.of(1);
                         Variables.NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
-                        Value value = environment.runRegisteredCommand("+", environment.getMemory().getNumberVariableValue(targetVariable), increment).get();
+                        Value value = environment.runRegisteredExpressionFunction("+", environment.getMemory().getNumberVariableValue(targetVariable), increment).get();
                         environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
                         flowElementStack.push(topFlowElement);      // Push the flow element again -> workaround
                     } else {
@@ -888,7 +977,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         Value lhs = (Value) contextRules.get(0).accept(this);
         for (int i = 1; i < contextRules.size(); i++) {
             Value rhs = (Value) contextRules.get(i).accept(this);
-            lhs = environment.runRegisteredCommand(operators.get(i - 1), lhs, rhs).get();
+            lhs = environment.runRegisteredExpressionFunction(operators.get(i - 1), lhs, rhs).get();
         }
         return lhs;
     }

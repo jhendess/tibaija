@@ -51,37 +51,37 @@ public class ExecutionEnvironmentUtil {
 
     private static void registerCommands(@NotNull ExecutionEnvironment env) {
         // Register binary arithmetic operators
-        env.registerCommand("+", new BinaryCommand(BinaryCommandOperator.PLUS));
-        env.registerCommand("-", new BinaryCommand(BinaryCommandOperator.MINUS));
-        env.registerCommand("*", new BinaryCommand(BinaryCommandOperator.MULTIPLY));
-        env.registerCommand("/", new BinaryCommand(BinaryCommandOperator.DIVIDE));
-        env.registerCommand("^", new BinaryCommand(BinaryCommandOperator.POWER));
+        env.registerExpressionFunction("+", new BinaryCommand(BinaryCommandOperator.PLUS));
+        env.registerExpressionFunction("-", new BinaryCommand(BinaryCommandOperator.MINUS));
+        env.registerExpressionFunction("*", new BinaryCommand(BinaryCommandOperator.MULTIPLY));
+        env.registerExpressionFunction("/", new BinaryCommand(BinaryCommandOperator.DIVIDE));
+        env.registerExpressionFunction("^", new BinaryCommand(BinaryCommandOperator.POWER));
 
         // Register more advances binary operators
-        env.registerCommand("×√", new BinaryCommand(BinaryCommandOperator.NTH_ROOT));
-        env.registerCommand("nCr", new BinaryCommand(BinaryCommandOperator.NCR));
-        env.registerCommand("nPr", new BinaryCommand(BinaryCommandOperator.NPR));
+        env.registerExpressionFunction("×√", new BinaryCommand(BinaryCommandOperator.NTH_ROOT));
+        env.registerExpressionFunction("nCr", new BinaryCommand(BinaryCommandOperator.NCR));
+        env.registerExpressionFunction("nPr", new BinaryCommand(BinaryCommandOperator.NPR));
 
         // Register unary arithmetic operators
-        env.registerCommand("²", new UnaryCommand(UnaryCommandOperator.SQUARED));
-        env.registerCommand("³", new UnaryCommand(UnaryCommandOperator.CUBED));
-        env.registerCommand("√(", new UnaryCommand(UnaryCommandOperator.SQUARE_ROOT));
-        env.registerCommand("∛(", new UnaryCommand(UnaryCommandOperator.CUBIC_ROOT));
-        env.registerCommand("!", new UnaryCommand(UnaryCommandOperator.FACTORIAL));
+        env.registerExpressionFunction("²", new UnaryCommand(UnaryCommandOperator.SQUARED));
+        env.registerExpressionFunction("³", new UnaryCommand(UnaryCommandOperator.CUBED));
+        env.registerExpressionFunction("√(", new UnaryCommand(UnaryCommandOperator.SQUARE_ROOT));
+        env.registerExpressionFunction("∛(", new UnaryCommand(UnaryCommandOperator.CUBIC_ROOT));
+        env.registerExpressionFunction("!", new UnaryCommand(UnaryCommandOperator.FACTORIAL));
         
         // Register comparison operators
-        env.registerCommand("=", new BinaryCommand(BinaryCommandOperator.EQUALS));
-        env.registerCommand("≠", new BinaryCommand(BinaryCommandOperator.NOT_EQUALS));
-        env.registerCommand("<", new BinaryCommand(BinaryCommandOperator.LESS_THAN));
-        env.registerCommand("≤", new BinaryCommand(BinaryCommandOperator.LESS_EQUALS));
-        env.registerCommand(">", new BinaryCommand(BinaryCommandOperator.GREATER_THAN));
-        env.registerCommand("≥", new BinaryCommand(BinaryCommandOperator.GREATER_EQUALS));
+        env.registerExpressionFunction("=", new BinaryCommand(BinaryCommandOperator.EQUALS));
+        env.registerExpressionFunction("≠", new BinaryCommand(BinaryCommandOperator.NOT_EQUALS));
+        env.registerExpressionFunction("<", new BinaryCommand(BinaryCommandOperator.LESS_THAN));
+        env.registerExpressionFunction("≤", new BinaryCommand(BinaryCommandOperator.LESS_EQUALS));
+        env.registerExpressionFunction(">", new BinaryCommand(BinaryCommandOperator.GREATER_THAN));
+        env.registerExpressionFunction("≥", new BinaryCommand(BinaryCommandOperator.GREATER_EQUALS));
 
         // Register logical operators
-        env.registerCommand("and", new BinaryCommand(BinaryCommandOperator.AND));
-        env.registerCommand("or", new BinaryCommand(BinaryCommandOperator.OR));
-        env.registerCommand("xor", new BinaryCommand(BinaryCommandOperator.XOR));
-        env.registerCommand("not(", new UnaryCommand(UnaryCommandOperator.NOT));
+        env.registerExpressionFunction("and", new BinaryCommand(BinaryCommandOperator.AND));
+        env.registerExpressionFunction("or", new BinaryCommand(BinaryCommandOperator.OR));
+        env.registerExpressionFunction("xor", new BinaryCommand(BinaryCommandOperator.XOR));
+        env.registerExpressionFunction("not(", new UnaryCommand(UnaryCommandOperator.NOT));
     }
 
 }

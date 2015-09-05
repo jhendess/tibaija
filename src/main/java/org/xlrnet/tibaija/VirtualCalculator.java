@@ -34,19 +34,19 @@ import org.xlrnet.tibaija.memory.CalculatorMemory;
  */
 public interface VirtualCalculator {
 
-    public void executeProgram(String programName) throws ProgramNotFoundException;
+    void executeProgram(String programName) throws ProgramNotFoundException;
 
     /**
      * Returns a reference to the IODevice of the virtual device. The IO device provides methods for reading
      * inputs and printing output.
      */
-    public CalculatorIO getIODevice();
+    CalculatorIO getIODevice();
 
     /**
      * Returns a reference to internal memory model of the virtual calculator. The memory model provides
      * methods for both reading from and writing to the calculator's variables and programs.
      */
-    public CalculatorMemory getMemory();
+    CalculatorMemory getMemory();
 
     /**
      * Execute and the given input string on the virtual calculator. This will execute in a stateful manner and
@@ -56,7 +56,7 @@ public interface VirtualCalculator {
      * @param input
      *         The commands to be interpreted. The leading colon may be omitted.
      */
-    public void interpret(String input);
+    void interpret(String input);
 
     /**
      * Load the given program with the given program code into main memory and do all neccessary steps to make it
@@ -67,6 +67,6 @@ public interface VirtualCalculator {
      * @param programCode
      *         Valid TI-Basic code
      */
-    public void loadProgram(String programName, CharSequence programCode);
+    void loadProgram(String programName, CharSequence programCode);
 
 }

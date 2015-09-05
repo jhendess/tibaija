@@ -20,25 +20,30 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.processor;
+package org.xlrnet.tibaija.commands;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import com.google.common.collect.ImmutableList;
+import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.processor.Command;
+
+import java.util.Optional;
 
 /**
- * Testsuite for all test concerning the interactive interpreter mode of the virtual TI-83+.
+ * Dummy command which returns the exact value that it was called with.
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        IllegalControlFlowTests.class,      // Control flow statements are not allowed in interactive mode
-        InterpretComparisonTest.class,      // Tests for correct comparisons
-        InterpretLogicTest.class,           // Tests for correct logic operators
-        InterpretStructuralTest.class,      // Tests for structural issues
-        SimpleArithmeticsTest.class,        // Tests for simpler arithmetics
-        InterpretListsTest.class,           // Tests for list logic
-        InterpretStringsTest.class,         // Tests for string logic
-        InterpretCommandTest.class          // Tests for correct command registration
-})
-public class TI83PlusInterpretSuite extends AbstractTI83PlusTest {
+public class DummyCommand extends Command {
+
+    /**
+     * Main method for invoking a command. Must be overwritten by the specific implementation. When this method gets
+     * called by the framework, both hasValidArgumentValues() and hasValidNumberOfArguments() have already been called.
+     *
+     * @param arguments
+     *         The arguments for the command.
+     * @return An optional return value.
+     */
+    @Override
+    protected Optional<Value> execute(ImmutableList<Value> arguments) {
+        return Optional.of(arguments.get(0));
+    }
 
 }

@@ -99,7 +99,7 @@ public abstract class Command {
      * Checks if the number of parameters is in range.
      *
      * @param numberOfParametersEntered
-     *         Number of parameters passed by the caller.
+     *         Number of parameters passed by the caller. Value is never below zero.
      * @return True if the number of parameters is within the expected range, otherwise false.
      */
     protected boolean hasValidNumberOfArguments(int numberOfParametersEntered) {

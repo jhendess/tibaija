@@ -23,6 +23,8 @@
 package org.xlrnet.tibaija.processor;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.CharUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.CodeProvider;
 import org.xlrnet.tibaija.DummyCodeProvider;
@@ -40,6 +42,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Stack;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * This class provides the main environment where programs and functions get executed.
  */
@@ -51,7 +56,11 @@ public class ExecutionEnvironment {
 
     CodeProvider codeProvider;
 
-    Map<String, Command> commandMap = new HashMap<>();
+    Map<String, Command> commandFunctionMap = new HashMap<>();
+
+    Map<String, Command> expressionFunction = new HashMap<>();
+
+    Map<String, Command> commandStatementMap = new HashMap<>();
 
     private Stack<ExecutableProgram> programStack = new Stack<>();
 
@@ -133,24 +142,89 @@ public class ExecutionEnvironment {
     }
 
     /**
-     * Register a command or function in the execution environment. All programs and other commands or functions can
-     * run the new command once it has been registered. Every command may only be associated with at most one execution
-     * environment.
+     * Register a command as a function command in the execution environment. All programs and other commands can use
+     * the new function once it has been registered. Every command may only be associated with at most one execution
+     * environment. If a command is registered as a command function (i.e. through this function) it cannot be used as
+     * an expression and won't return any value but will probably modify the system state (e.g. display output).
      *
      * @param commandName
      *         Name of the new command under which it can be accessed.
      * @param command
      *         An instance of the concrete command.
      */
-    public void registerCommand(@NotNull String commandName, @NotNull Command command) throws TIRuntimeException {
-        if (commandMap.get(commandName) != null)
-            throw new DuplicateCommandException("Command already exists: " + commandName);
+    public void registerCommandFunction(@NotNull String commandName, @NotNull Command command) throws TIRuntimeException {
+        checkNotNull(commandName);
+        checkNotNull(command);
+
+        checkArgument(StringUtils.isNotBlank(commandName), "Function command name may not be blank");
+        checkArgument(StringUtils.isAllUpperCase(commandName.substring(0, 1)), "Function command name must begin with a uppercase letter");
+
+        if (commandFunctionMap.get(commandName) != null)
+            throw new DuplicateCommandException("Command function is already registered: " + commandName);
 
         if (command.getEnvironment() != null)
             throw new DuplicateCommandException("New command instance is already registered in another environment");
 
         command.setEnvironment(this);
-        commandMap.put(commandName, command);
+        commandFunctionMap.put(commandName, command);
+    }
+
+    /**
+     * Register a command as a statement in the execution environment. All programs and other commands can
+     * use the new statement once it has been registered. Every command may only be associated with at most one
+     * execution environment. If a command is registered as a command statement (i.e. through this function) it will
+     * not be available in expressions and should not be called with parentheses. E.g. "DISP 123". Command statements
+     * should be used when the system state must be manipulated (e.g. display output).
+     *
+     * @param commandName
+     *         Name of the new command under which it can be accessed. Must begin with an uppercase letter.
+     * @param command
+     *         An instance of the concrete command.
+     */
+    public void registerCommandStatement(@NotNull String commandName, @NotNull Command command) throws TIRuntimeException {
+        checkNotNull(commandName);
+        checkNotNull(command);
+
+        checkArgument(StringUtils.isNotBlank(commandName), "Command statement name may not be blank");
+        checkArgument(StringUtils.isAllUpperCase(commandName.substring(0, 1)), "Command statement name must begin with a uppercase letter");
+
+        if (commandStatementMap.get(commandName) != null)
+            throw new DuplicateCommandException("Command statement is already registered: " + commandName);
+
+        if (command.getEnvironment() != null)
+            throw new DuplicateCommandException("New command instance is already registered in another environment");
+
+        command.setEnvironment(this);
+        commandStatementMap.put(commandName, command);
+    }
+
+    /**
+     * Register a command as an expression function in the execution environment. All programs and other commands can
+     * use the new function once it has been registered. Every command may only be associated with at most one
+     * execution environment. If a command is registered as a function expression (i.e. through this function) it can
+     * be used in or as an expression and must return a value.
+     *
+     * @param commandName
+     *         Name of the new command under which it can be accessed.
+     * @param command
+     *         An instance of the concrete command.
+     */
+    public void registerExpressionFunction(@NotNull String commandName, @NotNull Command command) throws TIRuntimeException {
+        checkNotNull(commandName);
+        checkNotNull(command);
+
+        checkArgument(StringUtils.isNotBlank(commandName), "Expression function name may not be blank");
+        Character firstChar = commandName.charAt(0);
+        checkArgument(CharUtils.isAsciiAlphaLower(firstChar) || !CharUtils.isAsciiAlphanumeric(firstChar), "Expression function name must begin with a lowercase letter or be non-alphanumeric");
+
+        if (expressionFunction.get(commandName) != null)
+            throw new DuplicateCommandException("Function expression name is already registered: " + commandName);
+
+        if (command.getEnvironment() != null)
+            throw new DuplicateCommandException("New command instance is already registered in another environment");
+
+        command.setEnvironment(this);
+        expressionFunction.put(commandName, command);
     }
 
     /**
@@ -172,7 +246,9 @@ public class ExecutionEnvironment {
     }
 
     /**
-     * Run a previously registered function with the given arguments.
+     * Run a previously registered command function with the given arguments. The command to run must be registered as
+     * a function through {@link #registerCommandFunction(String, Command)}. The return value of the function will be
+     * returned and as an {@link Optional}.
      *
      * @param commandName
      *         Internal name of the previously registered function to execute.
@@ -183,15 +259,54 @@ public class ExecutionEnvironment {
      *         Can be thrown on type errors, internal problems or illegal parameters.
      */
     @NotNull
-    public Optional<Value> runRegisteredCommand(@NotNull String commandName, @NotNull Value... arguments) throws TIRuntimeException {
-        Command command = commandMap.get(commandName);
+    public Optional<Value> runRegisteredCommandFunction(@NotNull String commandName, @NotNull Value... arguments) throws TIRuntimeException {
+        Command command = commandFunctionMap.get(commandName);
         if (command == null)
             throw new CommandNotFoundException(-1, -1, commandName);
 
-        ImmutableList<Value> argumentList = ImmutableList.copyOf(arguments);
-        command.checkArguments(argumentList);
+        return internalExecuteCommand(command, arguments);
+    }
 
-        return command.execute(argumentList);
+    /**
+     * Run a previously registered command statement with the given arguments. The command to run must be registered as
+     * a statement command through {@link #registerCommandStatement(String, Command)}. The return value of the function
+     * will be <i>not</i> returned.
+     *
+     * @param commandName
+     *         Internal name of the previously registered statement to execute.
+     * @param arguments
+     *         The arguments with which the command will be called.
+     * @throws TIRuntimeException
+     *         Can be thrown on type errors, internal problems or illegal parameters.
+     */
+    public void runRegisteredCommandStatement(@NotNull String commandName, @NotNull Value... arguments) throws TIRuntimeException {
+        Command command = commandStatementMap.get(commandName);
+        if (command == null)
+            throw new CommandNotFoundException(-1, -1, commandName);
+
+        internalExecuteCommand(command, arguments);
+    }
+
+    /**
+     * Run a previously registered command function with the given arguments. The command to run must be registered as
+     * a function through {@link #registerExpressionFunction(String, Command)}. The return value of the function will be
+     * returned and as an {@link Optional}.
+     *
+     * @param commandName
+     *         Internal name of the previously registered function to execute.
+     * @param arguments
+     *         The arguments with which the command will be called.
+     * @return An optional return value.
+     * @throws TIRuntimeException
+     *         Can be thrown on type errors, internal problems or illegal parameters.
+     */
+    @NotNull
+    public Optional<Value> runRegisteredExpressionFunction(@NotNull String commandName, @NotNull Value... arguments) throws TIRuntimeException {
+        Command command = expressionFunction.get(commandName);
+        if (command == null)
+            throw new CommandNotFoundException(-1, -1, commandName);
+
+        return internalExecuteCommand(command, arguments);
     }
 
     /**
@@ -202,6 +317,13 @@ public class ExecutionEnvironment {
     @NotNull
     protected CalculatorMemory getWritableMemory() {
         return memory;
+    }
+
+    @NotNull
+    private Optional<Value> internalExecuteCommand(Command command, @NotNull Value[] arguments) {
+        ImmutableList<Value> argumentList = ImmutableList.copyOf(arguments);
+        command.checkArguments(argumentList);
+        return command.execute(argumentList);
     }
 
 }

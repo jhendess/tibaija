@@ -53,13 +53,17 @@ commandList
        : (SEPARATOR command)*;
 
 command returns [ boolean isControlFlowStatement ]                       // Includes handling of the ANS variable
-       : statement
+       :
+       | commandFunction
+       | statement
        | expressionParent
        | controlFlowStatement { $isControlFlowStatement = true; }
        | ;              // Epsilon
 
 expressionParent: expression;
 
+commandFunction
+       : commandFunctionIdentifier LEFT_PARENTHESIS parameterList RIGHT_PARENTHESIS?;
 
 /* BEGIN Code for operator precendece          */
 /* See http://tibasicdev.wikidot.com/operators */
@@ -161,8 +165,8 @@ expression_imaginary                 // Imaginary part must be treated as a sepa
        ;
 
 expression_preeval              // Helper rule to simplify decisions
-       : expression_prefix
-       | expression_value
+       : SPACE* expression_prefix SPACE*
+       | SPACE* expression_value SPACE*
      //  | expression_imaginary
        ;
 
@@ -183,14 +187,14 @@ expression_value
        | listValue
        | stringValue
        | lastResult
+       | expressionFunctionCall
          // TODO: Implement other data types
        ;
-
 
 /* END Code for operator precedence */
 
 statement
-       : callStatement
+       : commandStatement
        | storeStatement
        | stopStatement
        ;
@@ -210,7 +214,7 @@ controlFlowStatement returns [ String flowType ]                      // Separat
        ; 
 
 ifStatement
-       : IF expression;
+       : IF SPACE expression;
 
 thenStatement
        : THEN;
@@ -222,19 +226,19 @@ endStatement
        : END;
 
 whileStatement
-       : WHILE expression;
+       : WHILE SPACE expression;
 
 repeatStatement
-       : REPEAT expression;
+       : REPEAT SPACE expression;
 
 forStatement
        : FOR LEFT_PARENTHESIS numericalVariable COMMA expression COMMA expression (COMMA expression)? (RIGHT_PARENTHESIS)?;
 
 labelStatement
-       : LABEL labelIdentifier;
+       : LABEL SPACE labelIdentifier;
 
 gotoStatement
-       : GOTO labelIdentifier;
+       : GOTO SPACE labelIdentifier;
 
 incrementSkipGreaterStatement
        : INCREMENT_SKIP_GREATER numericalVariable COMMA expression (RIGHT_PARENTHESIS)?;
@@ -245,14 +249,17 @@ decrementSkipLessStatement
 stopStatement
        : STOP;
        
-callStatement
-       : DISP expression;
+commandStatement
+       : commandStatementIdentifier SPACE parameterList;
+
+parameterList
+       : (expression (COMMA expression)*)?;
 
 storeStatement
        : expression STORE numericalVariable                                                  # StoreNumberStatement
        | expression STORE listVariable                                                       # StoreListStatement
        | expression STORE listVariable LEFT_PARENTHESIS expression (RIGHT_PARENTHESIS)?      # StoreListElementStatement
-       | expression STORE 'dim' LEFT_PARENTHESIS listVariable (RIGHT_PARENTHESIS)?           # StoreListDimensionStatement
+       | expression STORE DIMENSION LEFT_PARENTHESIS listVariable (RIGHT_PARENTHESIS)?           # StoreListDimensionStatement
        | expression STORE STRING_VARIABLE                                                    # StoreStringStatement
        ;
 
@@ -297,6 +304,9 @@ listIdentifier
 
 lastResult
        : 'Ans';
+
+expressionFunctionCall
+       : expressionFunctionIdentifier LEFT_PARENTHESIS parameterList RIGHT_PARENTHESIS?;
 
 /* Lexer rules for more readable code */
 CapitalOrTheta: (CAPITAL_LETTER | THETA);
@@ -343,9 +353,9 @@ LESS_OR_EQUAL: '≤';
 EQUALS: '=';
 NOT_EQUALS: '≠';
 // Boolean Operators:
-AND: 'and';
-OR: 'or';
-XOR: 'xor';
+AND: ' and ';
+OR: ' or ';
+XOR: ' xor ';
 NOT: 'not(';            // Prefix!
 // Prefix operators
 NEGATIVE_MINUS: '‾';                      // TI-Basic forces its own minus symbol - the regular MINUS is not allowed!
@@ -373,9 +383,25 @@ DIGIT: '0' .. '9';
 DOT: '.';
 THETA: 'θ';
 CAPITAL_LETTER: 'A' .. 'Z';
+LOWERCASE_LETTER: 'a' .. 'z';
 LIST_TOKEN: '∟';
+DIMENSION: 'dim';
 QUOTATION_MARK: '"';
+SPACE: ' ';
 STRING_VARIABLE: 'Str' DIGIT;
+
+expressionFunctionIdentifier
+        : (LOWERCASE_LETTER (LOWERCASE_LETTER | CapitalOrTheta | IMAGINARY)*)
+        | DIMENSION;
+
+commandFunctionIdentifier
+        : (CapitalOrTheta (LOWERCASE_LETTER | CapitalOrTheta | IMAGINARY | MINUS)+)
+        ;
+
+commandStatementIdentifier
+        : (CapitalOrTheta (LOWERCASE_LETTER | CapitalOrTheta | IMAGINARY | MINUS)+)
+        ;
+
 
 /* Skip whitespace */
 
@@ -406,7 +432,6 @@ GRAPHSTYLE: 'GraphStyle(';
 
 INPUT: 'Input';
 PROMPT: 'Prompt';
-DISP: 'Disp';
 DISPGRAPH: 'DispGraph';
 DISPTABLE: 'DispTable';
 OUTPUT: 'Output';
