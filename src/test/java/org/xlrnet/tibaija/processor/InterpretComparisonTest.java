@@ -25,6 +25,7 @@ package org.xlrnet.tibaija.processor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 
 /**
@@ -194,6 +195,11 @@ public class InterpretComparisonTest extends AbstractTI83PlusTest {
         verifyLastResultValue(0);
     }
 
+    @Test(expected = IllegalTypeException.class)
+    public void testInterpret_validProgram_comparison_list_string() {
+        calculator.interpret("{1,2}=\"Hello\"");
+    }
+
     @Test
     public void testInterpret_validProgram_comparison_not_equals_1() {
         calculator.interpret("1≠0");
@@ -219,6 +225,21 @@ public class InterpretComparisonTest extends AbstractTI83PlusTest {
     public void testInterpret_validProgram_comparison_not_equals_complex() {
         calculator.interpret("12345.678i≠3.14i");
         verifyLastResultValue(1);
+    }
+
+    @Test(expected = IllegalTypeException.class)
+    public void testInterpret_validProgram_comparison_number_string() {
+        calculator.interpret("1=\"Hello\"");
+    }
+
+    @Test(expected = IllegalTypeException.class)
+    public void testInterpret_validProgram_comparison_string_list() {
+        calculator.interpret("\"Hello\"={1,2");
+    }
+
+    @Test(expected = IllegalTypeException.class)
+    public void testInterpret_validProgram_comparison_string_number() {
+        calculator.interpret("\"Hello\"=1");
     }
 
 }

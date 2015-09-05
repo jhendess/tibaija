@@ -59,11 +59,14 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
 
     private Map<String, ExecutableProgram> programMap = new HashMap<>();
 
+    private Map<Variables.StringVariable, Value> stringVariableValueMap = new HashMap<>();
+
     /**
      * Creates a new instance of a TI-Basic capable calculator's memory model.
      */
     public DefaultCalculatorMemory() {
         numberVariableValueMap = newEnumValueMapWithDefault(Variables.NumberVariable.class, Value.ZERO);
+        stringVariableValueMap = newEnumValueMapWithDefault(Variables.StringVariable.class, Value.EMPTY_STRING);
     }
 
     /**
@@ -95,23 +98,17 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
         LOGGER.debug("Updated ANS variable to value {} of type {}", lastResult.getValue(), lastResult.getType());
     }
 
-    @NotNull
-    @Override
-    public Value getListVariableValue(@NotNull String variable) throws UndefinedVariableException {
-        if (!listVariableValueMap.containsKey(variable))
-            throw new UndefinedVariableException(variable);
-        return listVariableValueMap.get(variable);
-    }
-
     /**
      * Returns the stored value of a certain element in a given list variable. The first index is always one and not
      * zero! If a variable has not yet been written to, an UndefinedVariableException will be thrown.
      *
      * @param variable
-     *         The list variable name from which value should be returned. Must be written uppercase and between one and
+     *         The list variable name from which value should be returned. Must be written uppercase and between one
+     *         and
      *         five characters without the leading list token "∟". Digits are allowed except for the first character.
      * @param index
-     *         Index of the element inside the list. First index is always one. If the dimension is either to big or too
+     *         Index of the element inside the list. First index is always one. If the dimension is either to big or
+     *         too
      *         low, an {@link InvalidDimensionException} will be thrown.
      * @return Value of the selected variable.
      */
@@ -127,6 +124,14 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
         LOGGER.debug("Accessing element at index {} of list variable {}", index, variable);
 
         return Value.of(listVariable.list().get(index - 1));
+    }
+
+    @NotNull
+    @Override
+    public Value getListVariableValue(@NotNull String variable) throws UndefinedVariableException {
+        if (!listVariableValueMap.containsKey(variable))
+            throw new UndefinedVariableException(variable);
+        return listVariableValueMap.get(variable);
     }
 
     @NotNull
@@ -147,36 +152,34 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
         return programMap.get(programName);
     }
 
+    /**
+     * Returns the stored value of a given string variable. If a variable has not yet been written to, the value is an
+     * empty string.
+     *
+     * @param variable
+     *         The string variable name from which value should be returned.
+     * @return Value of the selected variable.
+     */
+    @NotNull
     @Override
-    public void setListVariableValue(@NotNull String listName, @NotNull Value value) {
-        checkNotNull(listName);
-        checkNotNull(value);
-        checkValueType(value, Variables.VariableType.LIST);
-
-        listVariableValueMap.put(listName, value);
-        LOGGER.debug("Changed value in list variable {} to {}", listName, value);
-    }
-
-    @Override
-    public void setNumberVariableValue(@NotNull Variables.NumberVariable variable, @NotNull Value value) {
+    public Value getStringVariableValue(@NotNull Variables.StringVariable variable) {
         checkNotNull(variable);
-        checkValueType(value, Variables.VariableType.NUMBER);
-
-        numberVariableValueMap.put(variable, value);
-        LOGGER.debug("Changed value in numerical variable {} to {}", variable, value);
+        return stringVariableValueMap.get(variable);
     }
 
     /**
      * Sets a single element within an existing list variable. If the targetted index is exactly one higher than the
      * size of the existing list, then the element will be appended at the end of the list. The first index is always
-     * one and not zero! If the target list doesn't exist, an UndefinedVariableException will be thrown unless the index
+     * one and not zero! If the target list doesn't exist, an UndefinedVariableException will be thrown unless the
+     * index
      * is one - then a new list will be created.
      *
      * @param listName
      *         The variable to which the value should be written. Must be written uppercase and between one and five
      *         characters without the leading list token "∟". Digits are allowed except for the first character.
      * @param index
-     *         Index of the element inside the list. First index is always one. If the dimension is either to big or too
+     *         Index of the element inside the list. First index is always one. If the dimension is either to big or
+     *         too
      *         low, an {@link org.xlrnet.tibaija.exception.InvalidDimensionException} will be thrown.
      * @param value
      *         The new value for the element at the given index.
@@ -207,20 +210,6 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
         }
     }
 
-    @Override
-    public void storeProgram(@NotNull String programName, @NotNull ExecutableProgram programCode) throws DuplicateProgramException {
-        checkNotNull(programName);
-        checkNotNull(programCode);
-        checkArgument(ValidationUtils.isValidProgramName(programName));
-
-        if (programMap.containsKey(programName))
-            throw new DuplicateProgramException(programName);
-        else
-            programMap.put(programName, programCode);
-
-        LOGGER.debug("Stored new program {}", programName);
-    }
-
     /**
      * Changes the size of a list variable. If this increases the size, zero elements will be added to the end of the
      * list; if this decreases the size, elements will be removed starting from the end. The variable does not need to
@@ -230,7 +219,7 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
      *         The variable to which the value should be written. Must be written uppercase and between one and five
      *         characters without the leading list token "∟". Digits are allowed except for the first character.
      * @param newSize
-     *          New size of the list. Must not be decimal and less than zero.
+     *         New size of the list. Must not be decimal and less than zero.
      */
     @Override
     public void setListVariableSize(@NotNull String listName, int newSize) {
@@ -259,6 +248,57 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
         listVariableValueMap.put(listName, Value.of(resizedList));
 
         LOGGER.debug("Resized list {} to {} elements", listName, newSize);
+    }
+
+    @Override
+    public void setListVariableValue(@NotNull String listName, @NotNull Value value) {
+        checkNotNull(listName);
+        checkNotNull(value);
+        checkValueType(value, Variables.VariableType.LIST);
+
+        listVariableValueMap.put(listName, value);
+        LOGGER.debug("Changed value in list variable {} to {}", listName, value);
+    }
+
+    @Override
+    public void setNumberVariableValue(@NotNull Variables.NumberVariable variable, @NotNull Value value) {
+        checkNotNull(variable);
+        checkValueType(value, Variables.VariableType.NUMBER);
+
+        numberVariableValueMap.put(variable, value);
+        LOGGER.debug("Changed value in numerical variable {} to {}", variable, value);
+    }
+
+    /**
+     * Sets the internal value of the given string variable.
+     *
+     * @param variable
+     *         The variable to which the value should be written.
+     * @param value
+     *         The new value of the selected variable.
+     */
+    @Override
+    public void setStringVariableValue(@NotNull Variables.StringVariable variable, @NotNull Value value) {
+        checkNotNull(variable);
+        checkNotNull(value);
+        checkValueType(value, Variables.VariableType.STRING);
+
+        stringVariableValueMap.put(variable, value);
+        LOGGER.debug("Changed value in string variable {} to {}", variable, value);
+    }
+
+    @Override
+    public void storeProgram(@NotNull String programName, @NotNull ExecutableProgram programCode) throws DuplicateProgramException {
+        checkNotNull(programName);
+        checkNotNull(programCode);
+        checkArgument(ValidationUtils.isValidProgramName(programName));
+
+        if (programMap.containsKey(programName))
+            throw new DuplicateProgramException(programName);
+        else
+            programMap.put(programName, programCode);
+
+        LOGGER.debug("Stored new program {}", programName);
     }
 
     /**

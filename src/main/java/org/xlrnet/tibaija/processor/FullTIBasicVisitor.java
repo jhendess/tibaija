@@ -593,11 +593,44 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
      * @param ctx
      */
     @Override
+    public Value visitStoreStringStatement(@NotNull TIBasicParser.StoreStringStatementContext ctx) {
+        String variableName = ctx.STRING_VARIABLE().getText();
+        Variables.StringVariable stringVariable = Variables.resolveStringVariable(variableName);
+
+        Value value = (Value) ctx.expression().accept(this);
+        environment.getWritableMemory().setStringVariableValue(stringVariable, value);
+        return value;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
     public Object visitStringExpression(@NotNull TIBasicParser.StringExpressionContext ctx) {
         String text = ctx.STRING().getText();
         String stringValue = StringUtils.remove(text, "\"");
 
         return Value.of(stringValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Value visitStringVariableExpression(@NotNull TIBasicParser.StringVariableExpressionContext ctx) {
+        String variableName = ctx.STRING_VARIABLE().getText();
+        Variables.StringVariable stringVariable = Variables.resolveStringVariable(variableName);
+        return environment.getMemory().getStringVariableValue(stringVariable);
     }
 
     @Override

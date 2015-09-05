@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.PreprocessException;
+import org.xlrnet.tibaija.memory.Variables;
 
 /**
  * Tests for interpreting strings.
@@ -81,6 +82,32 @@ public class InterpretStringsTest extends AbstractTI83PlusTest {
     @Test
     public void testInterpret_validProgram_string_add_2() {
         storeAndExecute(":\"Hello\"+\" \"+\"World\"");
+        verifyLastResultValue("Hello World");
+    }
+
+    @Test
+    public void testInterpret_validProgram_string_concat_save() {
+        storeAndExecute(":\"Hello\"+\" \"+\"World\"->Str1");
+        verifyStringVariableValue(Variables.StringVariable.Str1, "Hello World");
+    }
+
+    @Test
+    public void testInterpret_validProgram_string_save() {
+        storeAndExecute(":\"Hello World\"->Str1");
+        verifyStringVariableValue(Variables.StringVariable.Str1, "Hello World");
+    }
+
+    @Test
+    public void testInterpret_validProgram_string_variable_empty() {
+        storeAndExecute(":Str1");
+        verifyLastResultValue("");
+    }
+
+    @Test
+    public void testInterpret_validProgram_string_variable_saved() {
+        storeAndExecute(":\"Hello\"+\" \"+\"World\"->Str1" +
+                ":1" +
+                ":Str1");
         verifyLastResultValue("Hello World");
     }
 

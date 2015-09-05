@@ -38,7 +38,7 @@ public interface ReadOnlyCalculatorMemory {
      *         Name of the program, must consist of one to eight capital letters or digits.
      * @return true if the underlying memory contains a program with the given name.
      */
-    public boolean containsProgram(@NotNull String programName);
+    boolean containsProgram(@NotNull String programName);
 
     /**
      * Returns the result of the last top-level expression. This is identical to the Ans-Variable on TI calculators.
@@ -48,34 +48,37 @@ public interface ReadOnlyCalculatorMemory {
      * @return The result of the last top-level expression.
      */
     @NotNull
-    public Value getLastResult();
-
-    /**
-     * Returns the stored value of a given list variable. If a variable has not yet been written to, an
-     * UndefinedVariableException will be thrown.
-     *
-     * @param variable
-     *         The list variable name from which value should be returned. Must be written uppercase and between one and
-     *         five characters without the leading list token "∟". Digits are allowed except for the first character.
-     * @return Value of the selected variable.
-     */
-    @NotNull
-    public Value getListVariableValue(@NotNull String variable);
+    Value getLastResult();
 
     /**
      * Returns the stored value of a certain element in a given list variable. The first index is always one and not
      * zero! If a variable has not yet been written to, an UndefinedVariableException will be thrown.
      *
      * @param variable
-     *         The list variable name from which value should be returned. Must be written uppercase and between one and
+     *         The list variable name from which value should be returned. Must be written uppercase and between one
+     *         and
      *         five characters without the leading list token "∟". Digits are allowed except for the first character.
      * @param index
-     *         Index of the element inside the list. First index is always one. If the dimension is either to big or too
+     *         Index of the element inside the list. First index is always one. If the dimension is either to big or
+     *         too
      *         low, an {@link org.xlrnet.tibaija.exception.InvalidDimensionException} will be thrown.
      * @return Value of the selected variable.
      */
     @NotNull
-    public Value getListVariableElementValue(@NotNull String variable, int index);
+    Value getListVariableElementValue(@NotNull String variable, int index);
+
+    /**
+     * Returns the stored value of a given list variable. If a variable has not yet been written to, an
+     * UndefinedVariableException will be thrown.
+     *
+     * @param variable
+     *         The list variable name from which value should be returned. Must be written uppercase and between one
+     *         and
+     *         five characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @return Value of the selected variable.
+     */
+    @NotNull
+    Value getListVariableValue(@NotNull String variable);
 
     /**
      * Returns the stored value of a given number variable. If a variable has not yet been written to, the value is
@@ -86,7 +89,7 @@ public interface ReadOnlyCalculatorMemory {
      * @return Value of the selected variable.
      */
     @NotNull
-    public Value getNumberVariableValue(@NotNull Variables.NumberVariable variable);
+    Value getNumberVariableValue(@NotNull Variables.NumberVariable variable);
 
     /**
      * Get a reference to a read-only executable program that was stored in the virtual calculator's memory.
@@ -98,6 +101,17 @@ public interface ReadOnlyCalculatorMemory {
      *         Will be thrown if the requested program could not be found.
      */
     @NotNull
-    public ExecutableProgram getStoredProgram(@NotNull String programName) throws ProgramNotFoundException;
+    ExecutableProgram getStoredProgram(@NotNull String programName) throws ProgramNotFoundException;
+
+    /**
+     * Returns the stored value of a given string variable. If a variable has not yet been written to, the value is an
+     * empty string.
+     *
+     * @param variable
+     *         The string variable name from which value should be returned.
+     * @return Value of the selected variable.
+     */
+    @NotNull
+    Value getStringVariableValue(@NotNull Variables.StringVariable variable);
 
 }

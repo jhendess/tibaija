@@ -52,6 +52,8 @@ public class Value implements Comparable<Value> {
 
     public static final Value EMPTY_LIST = Value.of(new ArrayList<>());
 
+    public static final Value EMPTY_STRING = Value.of("");
+
     private static final Comparator<Complex> complexComparator = new ComplexComparator();
 
     private final Object value;

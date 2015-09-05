@@ -39,55 +39,26 @@ public interface CalculatorMemory extends ReadOnlyCalculatorMemory {
      * @param value
      *         New value of the last result variable.
      */
-    public void setLastResult(@NotNull Value value);
-
-    /**
-     * Sets the internal value of the given list variable.
-     *
-     * @param listName
-     *         The variable to which the value should be written. Must be written uppercase and between one and five
-     *         characters without the leading list token "∟". Digits are allowed except for the first character.
-     * @param value
-     *         The new value of the selected variable.
-     */
-    public void setListVariableValue(@NotNull String listName, @NotNull Value value);
-
-    /**
-     * Sets the internal value of the given number variable.
-     *
-     * @param variable
-     *         The variable to which the value should be written.
-     * @param value
-     *         The new value of the selected variable.
-     */
-    public void setNumberVariableValue(@NotNull Variables.NumberVariable variable, @NotNull Value value);
+    void setLastResult(@NotNull Value value);
 
     /**
      * Sets a single element within an existing list variable. If the targetted index is exactly one higher than the
      * size of the existing list, then the element will be appended at the end of the list. The first index is always
-     * one and not zero! If the target list doesn't exist, an UndefinedVariableException will be thrown unless the index
+     * one and not zero! If the target list doesn't exist, an UndefinedVariableException will be thrown unless the
+     * index
      * is one - then a new list will be created.
      *
      * @param listName
      *         The variable to which the value should be written. Must be written uppercase and between one and five
      *         characters without the leading list token "∟". Digits are allowed except for the first character.
      * @param index
-     *         Index of the element inside the list. First index is always one. If the dimension is either to big or too
+     *         Index of the element inside the list. First index is always one. If the dimension is either to big or
+     *         too
      *         low, an {@link org.xlrnet.tibaija.exception.InvalidDimensionException} will be thrown.
      * @param value
      *         The new value for the element at the given index.
      */
-    public void setListVariableElementValue(@NotNull String listName, int index, @NotNull Value value);
-
-    /**
-     * Stores the raw code of a program in internal memory.
-     *
-     * @param programName
-     *         Name of the program, must consist of one to eight capital letters or digits.
-     * @param programCode
-     *         A preprocessed and executable TI-Basic program.
-     */
-    public void storeProgram(String programName, @NotNull ExecutableProgram programCode) throws DuplicateProgramException;
+    void setListVariableElementValue(@NotNull String listName, int index, @NotNull Value value);
 
     /**
      * Changes the size of a list variable. If this increases the size, zero elements will be added to the end of the
@@ -100,6 +71,47 @@ public interface CalculatorMemory extends ReadOnlyCalculatorMemory {
      * @param newSize
      *         New size of the list. Must not be decimal and less than zero.
      */
-    public void setListVariableSize(@NotNull String listName, int newSize);
+    void setListVariableSize(@NotNull String listName, int newSize);
+
+    /**
+     * Sets the internal value of the given list variable.
+     *
+     * @param listName
+     *         The variable to which the value should be written. Must be written uppercase and between one and five
+     *         characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @param value
+     *         The new value of the selected variable.
+     */
+    void setListVariableValue(@NotNull String listName, @NotNull Value value);
+
+    /**
+     * Sets the internal value of the given number variable.
+     *
+     * @param variable
+     *         The variable to which the value should be written.
+     * @param value
+     *         The new value of the selected variable.
+     */
+    void setNumberVariableValue(@NotNull Variables.NumberVariable variable, @NotNull Value value);
+
+    /**
+     * Sets the internal value of the given string variable.
+     *
+     * @param variable
+     *         The variable to which the value should be written.
+     * @param value
+     *         The new value of the selected variable.
+     */
+    void setStringVariableValue(@NotNull Variables.StringVariable variable, @NotNull Value value);
+
+    /**
+     * Stores the raw code of a program in internal memory.
+     *
+     * @param programName
+     *         Name of the program, must consist of one to eight capital letters or digits.
+     * @param programCode
+     *         A preprocessed and executable TI-Basic program.
+     */
+    void storeProgram(String programName, @NotNull ExecutableProgram programCode) throws DuplicateProgramException;
 
 }

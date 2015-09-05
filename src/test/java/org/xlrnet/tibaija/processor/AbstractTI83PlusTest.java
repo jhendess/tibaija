@@ -44,8 +44,7 @@ import org.xlrnet.tibaija.test.TestUtils;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * Abstract class with all necessary mocks.
@@ -91,7 +90,7 @@ public class AbstractTI83PlusTest {
     }
 
     protected void verifyLastResultValue(String string) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsTIStringMatcher(string)));
+        verify(mockedMemory, atLeastOnce()).setLastResult(argThat(new EqualsTIStringMatcher(string)));
     }
 
     protected void verifyLastResultValueList(Complex... values) {
@@ -123,6 +122,11 @@ public class AbstractTI83PlusTest {
         final Complex actualComplex = mockedMemory.getNumberVariableValue(variable).complex();
         assertEquals("Actual real value doesn't match expected", real, actualComplex.getReal(), TestUtils.DEFAULT_TOLERANCE);
         assertEquals("Actual imaginary value doesn't match expected", imaginary, actualComplex.getImaginary(), TestUtils.DEFAULT_TOLERANCE);
+    }
+
+    protected void verifyStringVariableValue(Variables.StringVariable variable, String expected) {
+        Value variableValue = mockedMemory.getStringVariableValue(variable);
+        assertEquals(expected, variableValue.string());
     }
 
 }

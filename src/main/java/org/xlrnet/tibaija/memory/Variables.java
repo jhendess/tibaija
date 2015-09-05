@@ -34,6 +34,10 @@ public class Variables {
         return internalResolveVariableName(NumberVariable.class, variableName);
     }
 
+    public static StringVariable resolveStringVariable(String variableName) {
+        return internalResolveVariableName(StringVariable.class, variableName);
+    }
+
     private static <E extends Enum<E>> E internalResolveVariableName(final Class<E> clazz, String variableName) {
         E result = EnumUtils.getEnum(clazz, variableName);
         if (result == null)
@@ -50,6 +54,10 @@ public class Variables {
         STRING,
         LIST,
         MATRIX
+    }
+
+    public enum StringVariable {
+        Str0, Str1, Str2, Str3, Str4, Str5, Str6, Str7, Str8, Str9,
     }
 
 }
