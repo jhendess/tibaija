@@ -250,7 +250,7 @@ stopStatement
        : STOP;
        
 commandStatement
-       : commandStatementIdentifier SPACE parameterList;
+       : commandStatementIdentifier (SPACE parameterList)?;
 
 parameterList
        : (expression (COMMA expression)*)?;
@@ -399,7 +399,7 @@ commandFunctionIdentifier
         ;
 
 commandStatementIdentifier
-        : (CapitalOrTheta (LOWERCASE_LETTER | CapitalOrTheta | IMAGINARY | MINUS)+)
+        : (CapitalOrTheta (LOWERCASE_LETTER | (LOWERCASE_LETTER CapitalOrTheta) | IMAGINARY | MINUS)+)  // TODO: Needs maybe some optimizations
         ;
 
 

@@ -26,16 +26,22 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.CodeProvider;
 import org.xlrnet.tibaija.DummyCodeProvider;
 import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.exception.CommandNotFoundException;
 import org.xlrnet.tibaija.exception.DuplicateCommandException;
 import org.xlrnet.tibaija.exception.TIRuntimeException;
+import org.xlrnet.tibaija.graphics.DecimalDisplayMode;
+import org.xlrnet.tibaija.graphics.HomeScreen;
+import org.xlrnet.tibaija.graphics.NullHomeScreen;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.ReadOnlyCalculatorMemory;
 import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.util.ValueFormatUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +56,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class ExecutionEnvironment {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionEnvironment.class);
+
     CalculatorMemory memory;
 
     CalculatorIO calculatorIO;
@@ -62,12 +70,17 @@ public class ExecutionEnvironment {
 
     Map<String, Command> commandStatementMap = new HashMap<>();
 
+    HomeScreen homeScreen;
+
     private Stack<ExecutableProgram> programStack = new Stack<>();
 
-    private ExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider) {
+    private DecimalDisplayMode decimalDisplayMode;
+
+    private ExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen) {
         this.memory = memory;
         this.calculatorIO = calculatorIO;
         this.codeProvider = codeProvider;
+        this.homeScreen = homeScreen;
     }
 
     /**
@@ -81,21 +94,41 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO) {
-        return new ExecutionEnvironment(memory, calculatorIO, new DummyCodeProvider());
+        return new ExecutionEnvironment(memory, calculatorIO, new DummyCodeProvider(), new NullHomeScreen());
     }
 
     /**
-     * Instantiate a new environment without any preconfigured commands and no code provider.
+     * Instantiate a new environment without any preconfigured commands and a code provider.
      *
      * @param memory
      *         The writable memory for the new environment.
      * @param calculatorIO
      *         The I/O device for the new environment.
+     * @param codeProvider
+     *         The code provider for the new environment.
      * @return A new environment
      */
     @NotNull
     public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider) {
-        return new ExecutionEnvironment(memory, calculatorIO, codeProvider);
+        return new ExecutionEnvironment(memory, calculatorIO, codeProvider, new NullHomeScreen());
+    }
+
+    /**
+     * Instantiate a new environment without any preconfigured commands, but with a code provider and a home screen.
+     *
+     * @param memory
+     *         The writable memory for the new environment.
+     * @param calculatorIO
+     *         The I/O device for the new environment.
+     * @param codeProvider
+     *         The code provider for the new environment.
+     * @param homeScreen
+     *         The home screen on which should be printed.
+     * @return A new environment
+     */
+    @NotNull
+    public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen) {
+        return new ExecutionEnvironment(memory, calculatorIO, codeProvider, homeScreen);
     }
 
     /**
@@ -108,6 +141,18 @@ public class ExecutionEnvironment {
     @NotNull
     public static ExecutionEnvironment newEnvironment(@NotNull VirtualCalculator virtualCalculator) {
         return ExecutionEnvironment.newEnvironment(virtualCalculator.getMemory(), virtualCalculator.getIODevice());
+    }
+
+    /**
+     * Formats a given {@link Value} object according to the currently configured {@link DecimalDisplayMode}. The
+     * current configuration can be changed through {@link #setDecimalDisplayMode(DecimalDisplayMode)}
+     *
+     * @param value
+     *         The value to format.
+     * @return The formatted value.
+     */
+    public String formatValue(Value value) {
+        return ValueFormatUtils.formatValue(value, decimalDisplayMode);
     }
 
     /**
@@ -167,6 +212,8 @@ public class ExecutionEnvironment {
 
         command.setEnvironment(this);
         commandFunctionMap.put(commandName, command);
+
+        LOGGER.debug("Registered new command function '{}'", commandName);
     }
 
     /**
@@ -196,6 +243,8 @@ public class ExecutionEnvironment {
 
         command.setEnvironment(this);
         commandStatementMap.put(commandName, command);
+
+        LOGGER.debug("Registered new command statement '{}'", commandName);
     }
 
     /**
@@ -225,6 +274,8 @@ public class ExecutionEnvironment {
 
         command.setEnvironment(this);
         expressionFunction.put(commandName, command);
+
+        LOGGER.debug("Registered new expression function '{}'", commandName);
     }
 
     /**
@@ -289,7 +340,8 @@ public class ExecutionEnvironment {
 
     /**
      * Run a previously registered command function with the given arguments. The command to run must be registered as
-     * a function through {@link #registerExpressionFunction(String, Command)}. The return value of the function will be
+     * a function through {@link #registerExpressionFunction(String, Command)}. The return value of the function will
+     * be
      * returned and as an {@link Optional}.
      *
      * @param commandName
@@ -307,6 +359,17 @@ public class ExecutionEnvironment {
             throw new CommandNotFoundException(-1, -1, commandName);
 
         return internalExecuteCommand(command, arguments);
+    }
+
+    /**
+     * Set the current mode of how decimals should be displayed. Setting this value will affect all formatting through
+     * {@link #formatValue(Value)}.
+     *
+     * @param decimalDisplayMode
+     *         The display mode to set.
+     */
+    public void setDecimalDisplayMode(@NotNull DecimalDisplayMode decimalDisplayMode) {
+        this.decimalDisplayMode = decimalDisplayMode;
     }
 
     /**
