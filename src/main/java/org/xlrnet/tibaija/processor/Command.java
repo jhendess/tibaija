@@ -24,6 +24,7 @@ package org.xlrnet.tibaija.processor;
 
 import com.google.common.collect.ImmutableList;
 import org.xlrnet.tibaija.exception.TIArgumentException;
+import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.Value;
 
 import java.util.Optional;
@@ -56,7 +57,7 @@ public abstract class Command {
      * @throws TIArgumentException
      *         Will be thrown if either the count or the value of any argument is invalid.
      */
-    protected final boolean checkArguments(ImmutableList<Value> arguments) throws TIArgumentException {
+    protected final boolean checkArguments(ImmutableList<Parameter> arguments) throws TIArgumentException {
         if (!hasValidNumberOfArguments(arguments.size())) {
             throw new TIArgumentException(-1, -1, "Invalid argument count", arguments);
         }
@@ -75,7 +76,7 @@ public abstract class Command {
      *         The arguments for the command.
      * @return An optional return value.
      */
-    protected abstract Optional<Value> execute(ImmutableList<Value> arguments);
+    protected abstract Optional<Value> execute(ImmutableList<Parameter> arguments);
 
     /**
      * Can be overwritten by the concrete commands if at least the value of one parameter must be checked.
@@ -87,7 +88,7 @@ public abstract class Command {
      * @return True if all values of all passed parameters are correct. False if at least one value of one parameter is
      * incorrect.
      */
-    protected boolean hasValidArgumentValues(ImmutableList<Value> parameters) {
+    protected boolean hasValidArgumentValues(ImmutableList<Parameter> parameters) {
         if (parameters == null) {
             throw new IllegalArgumentException("parameters are null");
         }

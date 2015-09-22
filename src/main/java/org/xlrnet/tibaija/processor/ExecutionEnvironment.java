@@ -37,8 +37,10 @@ import org.xlrnet.tibaija.exception.TIRuntimeException;
 import org.xlrnet.tibaija.graphics.DecimalDisplayMode;
 import org.xlrnet.tibaija.graphics.HomeScreen;
 import org.xlrnet.tibaija.graphics.NullHomeScreen;
+import org.xlrnet.tibaija.graphics.NumberDisplayFormat;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
+import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.ReadOnlyCalculatorMemory;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.util.ValueFormatUtils;
@@ -75,6 +77,8 @@ public class ExecutionEnvironment {
     private Stack<ExecutableProgram> programStack = new Stack<>();
 
     private DecimalDisplayMode decimalDisplayMode;
+
+    private NumberDisplayFormat numberDisplayFormat;
 
     private ExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen) {
         this.memory = memory;
@@ -152,7 +156,7 @@ public class ExecutionEnvironment {
      * @return The formatted value.
      */
     public String formatValue(Value value) {
-        return ValueFormatUtils.formatValue(value, decimalDisplayMode);
+        return ValueFormatUtils.formatValue(value, numberDisplayFormat, decimalDisplayMode);
     }
 
     /**
@@ -165,6 +169,21 @@ public class ExecutionEnvironment {
         return calculatorIO;
     }
 
+    public DecimalDisplayMode getDecimalDisplayMode() {
+        return decimalDisplayMode;
+    }
+
+    /**
+     * Set the current mode of how decimals should be displayed. Setting this value will affect all formatting through
+     * {@link #formatValue(Value)}.
+     *
+     * @param decimalDisplayMode
+     *         The display mode to set.
+     */
+    public void setDecimalDisplayMode(@NotNull DecimalDisplayMode decimalDisplayMode) {
+        this.decimalDisplayMode = decimalDisplayMode;
+    }
+
     /**
      * Get readable access to the calculator memory.
      *
@@ -173,6 +192,14 @@ public class ExecutionEnvironment {
     @NotNull
     public ReadOnlyCalculatorMemory getMemory() {
         return memory;
+    }
+
+    public NumberDisplayFormat getNumberDisplayFormat() {
+        return numberDisplayFormat;
+    }
+
+    public void setNumberDisplayFormat(NumberDisplayFormat numberDisplayFormat) {
+        this.numberDisplayFormat = numberDisplayFormat;
     }
 
     /**
@@ -310,7 +337,7 @@ public class ExecutionEnvironment {
      *         Can be thrown on type errors, internal problems or illegal parameters.
      */
     @NotNull
-    public Optional<Value> runRegisteredCommandFunction(@NotNull String commandName, @NotNull Value... arguments) throws TIRuntimeException {
+    public Optional<Value> runRegisteredCommandFunction(@NotNull String commandName, @NotNull Parameter... arguments) throws TIRuntimeException {
         Command command = commandFunctionMap.get(commandName);
         if (command == null)
             throw new CommandNotFoundException(-1, -1, commandName);
@@ -330,7 +357,7 @@ public class ExecutionEnvironment {
      * @throws TIRuntimeException
      *         Can be thrown on type errors, internal problems or illegal parameters.
      */
-    public void runRegisteredCommandStatement(@NotNull String commandName, @NotNull Value... arguments) throws TIRuntimeException {
+    public void runRegisteredCommandStatement(@NotNull String commandName, @NotNull Parameter... arguments) throws TIRuntimeException {
         Command command = commandStatementMap.get(commandName);
         if (command == null)
             throw new CommandNotFoundException(-1, -1, commandName);
@@ -341,8 +368,29 @@ public class ExecutionEnvironment {
     /**
      * Run a previously registered command function with the given arguments. The command to run must be registered as
      * a function through {@link #registerExpressionFunction(String, Command)}. The return value of the function will
-     * be
-     * returned and as an {@link Optional}.
+     * be returned and as an {@link Optional}.
+     *
+     * @param commandName
+     *         Internal name of the previously registered function to execute.
+     * @param arguments
+     *         The arguments with which the command will be called.
+     * @return An optional return value.
+     * @throws TIRuntimeException
+     *         Can be thrown on type errors, internal problems or illegal parameters.
+     */
+    @NotNull
+    public Optional<Value> runRegisteredExpressionFunction(@NotNull String commandName, @NotNull Parameter... arguments) throws TIRuntimeException {
+        Command command = expressionFunction.get(commandName);
+        if (command == null)
+            throw new CommandNotFoundException(-1, -1, commandName);
+
+        return internalExecuteCommand(command, arguments);
+    }
+
+    /**
+     * Run a previously registered command function with the given arguments. The command to run must be registered as
+     * a function through {@link #registerExpressionFunction(String, Command)}. The return value of the function will
+     * be returned and as an {@link Optional}.
      *
      * @param commandName
      *         Internal name of the previously registered function to execute.
@@ -354,22 +402,14 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public Optional<Value> runRegisteredExpressionFunction(@NotNull String commandName, @NotNull Value... arguments) throws TIRuntimeException {
-        Command command = expressionFunction.get(commandName);
-        if (command == null)
-            throw new CommandNotFoundException(-1, -1, commandName);
+        Parameter[] parameters = new Parameter[arguments.length];
 
-        return internalExecuteCommand(command, arguments);
-    }
+        for (int i = 0, argumentsLength = arguments.length; i < argumentsLength; i++) {
+            Value argument = arguments[i];
+            parameters[i] = Parameter.value(argument);
+        }
 
-    /**
-     * Set the current mode of how decimals should be displayed. Setting this value will affect all formatting through
-     * {@link #formatValue(Value)}.
-     *
-     * @param decimalDisplayMode
-     *         The display mode to set.
-     */
-    public void setDecimalDisplayMode(@NotNull DecimalDisplayMode decimalDisplayMode) {
-        this.decimalDisplayMode = decimalDisplayMode;
+        return runRegisteredExpressionFunction(commandName, parameters);
     }
 
     /**
@@ -383,10 +423,9 @@ public class ExecutionEnvironment {
     }
 
     @NotNull
-    private Optional<Value> internalExecuteCommand(Command command, @NotNull Value[] arguments) {
-        ImmutableList<Value> argumentList = ImmutableList.copyOf(arguments);
+    private Optional<Value> internalExecuteCommand(Command command, @NotNull Parameter[] arguments) {
+        ImmutableList<Parameter> argumentList = ImmutableList.copyOf(arguments);
         command.checkArguments(argumentList);
         return command.execute(argumentList);
     }
-
 }

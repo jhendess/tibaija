@@ -229,7 +229,7 @@ public class Value implements Comparable<Value> {
                 throw new IllegalTypeException("Comparison not supported for right type", Variables.VariableType.NUMBER, type);
             return complexComparator.compare(this.complex(), o.complex());
         } catch (UnsupportedOperationException u) {
-            throw new TIArgumentException("Illegal operation: " + u.getMessage(), ImmutableList.of(this, o));
+            throw new TIArgumentException("Illegal operation: " + u.getMessage(), this, o);
         }
     }
 
@@ -325,6 +325,7 @@ public class Value implements Comparable<Value> {
      * @throws TIRuntimeException
      */
     @NotNull
+    @SuppressWarnings("unchecked")
     public ImmutableList<Complex> list() throws IllegalTypeException {
         internalTypeCheck(Variables.VariableType.LIST);
         return (ImmutableList<Complex>) value;

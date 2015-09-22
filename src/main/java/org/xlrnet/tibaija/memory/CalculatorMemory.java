@@ -48,9 +48,8 @@ public interface CalculatorMemory extends ReadOnlyCalculatorMemory {
      * index
      * is one - then a new list will be created.
      *
-     * @param listName
-     *         The variable to which the value should be written. Must be written uppercase and between one and five
-     *         characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @param listVariable
+     *         The variable to which the value should be written.
      * @param index
      *         Index of the element inside the list. First index is always one. If the dimension is either to big or
      *         too
@@ -58,31 +57,29 @@ public interface CalculatorMemory extends ReadOnlyCalculatorMemory {
      * @param value
      *         The new value for the element at the given index.
      */
-    void setListVariableElementValue(@NotNull String listName, int index, @NotNull Value value);
+    void setListVariableElementValue(@NotNull ListVariable listVariable, int index, @NotNull Value value);
 
     /**
      * Changes the size of a list variable. If this increases the size, zero elements will be added to the end of the
      * list; if this decreases the size, elements will be removed starting from the end. The variable does not need to
      * exist for this command to work.
      *
-     * @param listName
-     *         The variable to which the value should be written. Must be written uppercase and between one and five
-     *         characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @param listVariable
+     *         The variable to which the value should be written.
      * @param newSize
      *         New size of the list. Must not be decimal and less than zero.
      */
-    void setListVariableSize(@NotNull String listName, int newSize);
+    void setListVariableSize(@NotNull ListVariable listVariable, int newSize);
 
     /**
      * Sets the internal value of the given list variable.
      *
-     * @param listName
-     *         The variable to which the value should be written. Must be written uppercase and between one and five
-     *         characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @param listVariable
+     *         The variable to which the value should be written.
      * @param value
      *         The new value of the selected variable.
      */
-    void setListVariableValue(@NotNull String listName, @NotNull Value value);
+    void setListVariableValue(@NotNull ListVariable listVariable, @NotNull Value value);
 
     /**
      * Sets the internal value of the given number variable.

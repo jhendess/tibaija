@@ -53,7 +53,7 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
 
     private final Map<Variables.NumberVariable, Value> numberVariableValueMap;
 
-    private final Map<String, Value> listVariableValueMap = new HashMap<>();
+    private final Map<ListVariable, Value> listVariableValueMap = new HashMap<>();
 
     private Value lastResult = Value.of(0);
 
@@ -102,7 +102,7 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
      * Returns the stored value of a certain element in a given list variable. The first index is always one and not
      * zero! If a variable has not yet been written to, an UndefinedVariableException will be thrown.
      *
-     * @param variable
+     * @param listVariable
      *         The list variable name from which value should be returned. Must be written uppercase and between one
      *         and
      *         five characters without the leading list token "∟". Digits are allowed except for the first character.
@@ -114,24 +114,24 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
      */
     @NotNull
     @Override
-    public Value getListVariableElementValue(@NotNull String variable, int index) {
-        if (!listVariableValueMap.containsKey(variable))
-            throw new UndefinedVariableException(variable);
-        Value listVariable = listVariableValueMap.get(variable);
-        if (index <= 0 || index > listVariable.list().size())
+    public Value getListVariableElementValue(@NotNull ListVariable listVariable, int index) {
+        if (!listVariableValueMap.containsKey(listVariable))
+            throw new UndefinedVariableException(listVariable);
+        Value value = listVariableValueMap.get(listVariable);
+        if (index <= 0 || index > value.list().size())
             throw new InvalidDimensionException("Invalid index: " + index, index);
 
-        LOGGER.debug("Accessing element at index {} of list variable {}", index, variable);
+        LOGGER.debug("Accessing element at index {} of list variable {}", index, listVariable);
 
-        return Value.of(listVariable.list().get(index - 1));
+        return Value.of(value.list().get(index - 1));
     }
 
     @NotNull
     @Override
-    public Value getListVariableValue(@NotNull String variable) throws UndefinedVariableException {
-        if (!listVariableValueMap.containsKey(variable))
-            throw new UndefinedVariableException(variable);
-        return listVariableValueMap.get(variable);
+    public Value getListVariableValue(@NotNull ListVariable listVariable) throws UndefinedVariableException {
+        if (!listVariableValueMap.containsKey(listVariable))
+            throw new UndefinedVariableException(listVariable);
+        return listVariableValueMap.get(listVariable);
     }
 
     @NotNull
@@ -174,9 +174,8 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
      * index
      * is one - then a new list will be created.
      *
-     * @param listName
-     *         The variable to which the value should be written. Must be written uppercase and between one and five
-     *         characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @param listVariable
+     *         The variable to which the value should be written.
      * @param index
      *         Index of the element inside the list. First index is always one. If the dimension is either to big or
      *         too
@@ -185,11 +184,11 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
      *         The new value for the element at the given index.
      */
     @Override
-    public void setListVariableElementValue(@NotNull String listName, int index, @NotNull Value value) {
-        if (!listVariableValueMap.containsKey(listName) && index != 1)
-            throw new UndefinedVariableException(listName);
+    public void setListVariableElementValue(@NotNull ListVariable listVariable, int index, @NotNull Value value) {
+        if (!listVariableValueMap.containsKey(listVariable) && index != 1)
+            throw new UndefinedVariableException(listVariable);
 
-        Value listValue = listVariableValueMap.get(listName);
+        Value listValue = listVariableValueMap.get(listVariable);
         if (listValue == null)
             listValue = Value.EMPTY_LIST;
 
@@ -201,12 +200,12 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
 
         if (index == modifiableList.size() + 1) {
             modifiableList.add(complex);
-            listVariableValueMap.put(listName, Value.of(modifiableList));
-            LOGGER.debug("Appended element {} to list {} at index {}", complex, listName, index);
+            listVariableValueMap.put(listVariable, Value.of(modifiableList));
+            LOGGER.debug("Appended element {} to list {} at index {}", complex, listVariable, index);
         } else {
             modifiableList.set(index - 1, complex);
-            listVariableValueMap.put(listName, Value.of(modifiableList));
-            LOGGER.debug("Set element {} at index {} of list {}", complex, index, listName);
+            listVariableValueMap.put(listVariable, Value.of(modifiableList));
+            LOGGER.debug("Set element {} at index {} of list {}", complex, index, listVariable);
         }
     }
 
@@ -215,17 +214,16 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
      * list; if this decreases the size, elements will be removed starting from the end. The variable does not need to
      * exist for this command to work.
      *
-     * @param listName
-     *         The variable to which the value should be written. Must be written uppercase and between one and five
-     *         characters without the leading list token "∟". Digits are allowed except for the first character.
+     * @param listVariable
+     *         The variable to which the value should be written.
      * @param newSize
      *         New size of the list. Must not be decimal and less than zero.
      */
     @Override
-    public void setListVariableSize(@NotNull String listName, int newSize) {
-        checkNotNull(listName);
+    public void setListVariableSize(@NotNull ListVariable listVariable, int newSize) {
+        checkNotNull(listVariable);
 
-        Value listValue = listVariableValueMap.get(listName);
+        Value listValue = listVariableValueMap.get(listVariable);
         if (listValue == null)
             listValue = Value.EMPTY_LIST;
 
@@ -245,19 +243,19 @@ public class DefaultCalculatorMemory implements CalculatorMemory {
             }
         }
 
-        listVariableValueMap.put(listName, Value.of(resizedList));
+        listVariableValueMap.put(listVariable, Value.of(resizedList));
 
-        LOGGER.debug("Resized list {} to {} elements", listName, newSize);
+        LOGGER.debug("Resized list {} to {} elements", listVariable, newSize);
     }
 
     @Override
-    public void setListVariableValue(@NotNull String listName, @NotNull Value value) {
-        checkNotNull(listName);
+    public void setListVariableValue(@NotNull ListVariable listVariable, @NotNull Value value) {
+        checkNotNull(listVariable);
         checkNotNull(value);
         checkValueType(value, Variables.VariableType.LIST);
 
-        listVariableValueMap.put(listName, value);
-        LOGGER.debug("Changed value in list variable {} to {}", listName, value);
+        listVariableValueMap.put(listVariable, value);
+        LOGGER.debug("Changed value in list variable {} to {}", listVariable, value);
     }
 
     @Override

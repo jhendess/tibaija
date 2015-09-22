@@ -55,9 +55,7 @@ public interface ReadOnlyCalculatorMemory {
      * zero! If a variable has not yet been written to, an UndefinedVariableException will be thrown.
      *
      * @param variable
-     *         The list variable name from which value should be returned. Must be written uppercase and between one
-     *         and
-     *         five characters without the leading list token "∟". Digits are allowed except for the first character.
+     *         The list variable name from which value should be returned.
      * @param index
      *         Index of the element inside the list. First index is always one. If the dimension is either to big or
      *         too
@@ -65,20 +63,18 @@ public interface ReadOnlyCalculatorMemory {
      * @return Value of the selected variable.
      */
     @NotNull
-    Value getListVariableElementValue(@NotNull String variable, int index);
+    Value getListVariableElementValue(@NotNull ListVariable variable, int index);
 
     /**
      * Returns the stored value of a given list variable. If a variable has not yet been written to, an
      * UndefinedVariableException will be thrown.
      *
      * @param variable
-     *         The list variable name from which value should be returned. Must be written uppercase and between one
-     *         and
-     *         five characters without the leading list token "∟". Digits are allowed except for the first character.
+     *         The list variable name from which value should be returned.
      * @return Value of the selected variable.
      */
     @NotNull
-    Value getListVariableValue(@NotNull String variable);
+    Value getListVariableValue(@NotNull ListVariable variable);
 
     /**
      * Returns the stored value of a given number variable. If a variable has not yet been written to, the value is

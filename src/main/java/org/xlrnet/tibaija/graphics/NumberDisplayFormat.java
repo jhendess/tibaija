@@ -20,30 +20,32 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.commands;
-
-import com.google.common.collect.ImmutableList;
-import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.processor.Command;
-
-import java.util.Optional;
+package org.xlrnet.tibaija.graphics;
 
 /**
- * Command for displaying content on the home screen.
+ * Format for displaying numbers
  */
-public class DisplayCommand extends Command {
+public enum NumberDisplayFormat {
 
     /**
-     * Main method for invoking a command. Must be overwritten by the specific implementation. When this method gets
-     * called by the framework, both hasValidArgumentValues() and hasValidNumberOfArguments() have already been called.
-     *
-     * @param arguments
-     *         The arguments for the command.
-     * @return An optional return value.
+     * Normal number mode. Scientific notation will be used automatically for large enough numbers (10 000 000 000 or
+     * higher), negative numbers large enough in absolute value (-10 000 000 000 or lower), or numbers close enough to
+     * 0
+     * (less than .001 and greater than -.00
      */
-    @Override
-    protected Optional<Value> execute(ImmutableList<Parameter> arguments) {
-        return null;       // TODO: Implement
-    }
+    NORMAL,
+
+    /**
+     * Scientific notation mode. A (possibly fractional) number between 1 and 10 (not including 10) multiplied by a
+     * power of 10.
+     */
+    SCIENTIFIC,
+
+    /**
+     * Engineering notation mode. This is a variation on scientific notation in
+     * which the exponent is restricted to be a multiple of 3 (and the mantissa can range between 1 and 1000, not
+     * including 1000 itself)
+     */
+    ENGINEERING
+
 }

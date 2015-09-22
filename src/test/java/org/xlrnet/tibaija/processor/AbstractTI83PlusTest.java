@@ -34,10 +34,7 @@ import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.matchers.EqualsTIListMatcher;
 import org.xlrnet.tibaija.matchers.EqualsTIStringMatcher;
 import org.xlrnet.tibaija.matchers.EqualsWithComplexDeltaMatcher;
-import org.xlrnet.tibaija.memory.CalculatorMemory;
-import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.memory.Variables;
+import org.xlrnet.tibaija.memory.*;
 import org.xlrnet.tibaija.test.TestUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -80,7 +77,7 @@ public class AbstractTI83PlusTest {
     }
 
     protected void verifyElementInListVariable(String variable, int element, double realPart, double complexPart) {
-        Complex actual = calculator.getMemory().getListVariableValue(variable).list().get(element);
+        Complex actual = calculator.getMemory().getListVariableValue(ListVariable.fromName(variable)).list().get(element);
         assertThat(Value.of(actual), new EqualsWithComplexDeltaMatcher(realPart, complexPart, TestUtils.DEFAULT_TOLERANCE));
     }
 
@@ -112,12 +109,12 @@ public class AbstractTI83PlusTest {
     }
 
     protected void verifyListVariableSize(String variable, int expected) {
-        int actual = calculator.getMemory().getListVariableValue(variable).list().size();
+        int actual = calculator.getMemory().getListVariableValue(ListVariable.fromName(variable)).list().size();
         assertEquals(expected, actual);
     }
 
     protected void verifyListVariableValue(String variable, Complex... expectedValues) {
-        Value actual = mockedMemory.getListVariableValue(variable);
+        Value actual = mockedMemory.getListVariableValue(ListVariable.fromName(variable));
         Assert.assertThat(actual, new EqualsTIListMatcher(expectedValues, TestUtils.DEFAULT_TOLERANCE));
     }
 

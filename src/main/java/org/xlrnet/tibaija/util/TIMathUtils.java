@@ -22,11 +22,9 @@
 
 package org.xlrnet.tibaija.util;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.math3.complex.Complex;
 import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.exception.TIArgumentException;
-import org.xlrnet.tibaija.memory.Value;
 
 import static org.apache.commons.math3.util.CombinatoricsUtils.factorialDouble;
 
@@ -53,13 +51,13 @@ public class TIMathUtils {
     public static double factorial(double value) throws TIArgumentException {
         // Check if value is dividable by 0.5
         if ((value % 0.5) != 0)
-            throw new TIArgumentException("Value must be dividable by 0.5", ImmutableList.of(Value.of(value)));
+            throw new TIArgumentException("Value must be dividable by 0.5", value);
 
         if (value < -0.5)
-            throw new TIArgumentException("Value must be greater than -0.5", ImmutableList.of(Value.of(value)));
+            throw new TIArgumentException("Value must be greater than -0.5", value);
 
         if (value > 69.5)
-            throw new TIArgumentException("Value must be less or equal to 69.5", ImmutableList.of(Value.of(value)));
+            throw new TIArgumentException("Value must be less or equal to 69.5", value);
 
         if (value == -0.5) {       // See specification in JavaDoc
             return Math.sqrt(Math.PI);

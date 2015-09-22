@@ -36,6 +36,8 @@ import org.xlrnet.tibaija.exception.IllegalControlFlowException;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.InvalidDimensionException;
 import org.xlrnet.tibaija.exception.TIStopException;
+import org.xlrnet.tibaija.memory.ListVariable;
+import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.util.CompareUtils;
@@ -103,7 +105,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Object visitCommandFunction(@NotNull TIBasicParser.CommandFunctionContext ctx) {
         String commandFunctionName = ctx.commandFunctionIdentifier().getText();
-        Value[] parameters = (Value[]) ctx.parameterList().accept(this);
+        Parameter[] parameters = (Parameter[]) ctx.parameterList().accept(this);
 
         environment.runRegisteredCommandFunction(commandFunctionName, parameters);
 
@@ -152,7 +154,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Object visitCommandStatement(@NotNull TIBasicParser.CommandStatementContext ctx) {
         String commandStatementName = ctx.commandStatementIdentifier().getText();
-        Value[] parameters = (Value[]) ctx.parameterList().accept(this);
+        Parameter[] parameters = (Parameter[]) ctx.parameterList().accept(this);
 
         environment.runRegisteredCommandStatement(commandStatementName, parameters);
 
@@ -224,9 +226,23 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Value visitExpressionFunctionCall(@NotNull TIBasicParser.ExpressionFunctionCallContext ctx) {
         String functionName = ctx.expressionFunctionIdentifier().getText();
-        Value[] parameters = (Value[]) ctx.parameterList().accept(this);
+        Parameter[] parameters = (Parameter[]) ctx.parameterList().accept(this);
 
         return environment.runRegisteredExpressionFunction(functionName, parameters).get();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Parameter visitExpressionParameter(@NotNull TIBasicParser.ExpressionParameterContext ctx) {
+        Value value = (Value) ctx.expression().accept(this);
+        return Parameter.value(value);
     }
 
     @Override
@@ -386,7 +402,8 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         boolean isRepeatable;   // Enter EVER (start or end can be reached)
 
         Value incrementValue = Value.ONE;
-        Value variableValue = (Value) ctx.numericalVariable().accept(this);
+        Variables.NumberVariable numberVariable = (Variables.NumberVariable) ctx.numericalVariable().accept(this);
+        Value variableValue = environment.getMemory().getNumberVariableValue(numberVariable);
         Value startValue = (Value) ctx.expression(0).accept(this);
         Value endValue = (Value) ctx.expression(1).accept(this);
         if (ctx.expression().size() == 3) {
@@ -491,7 +508,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         int line = ctx.listVariable().LIST_TOKEN().getSymbol().getLine();
         int startIndex = ctx.listVariable().LIST_TOKEN().getSymbol().getCharPositionInLine();
 
-        String listVariable = ctx.listVariable().listIdentifier().getText();
+        ListVariable listVariable = (ListVariable) ctx.listVariable().accept(this);
         Value index = (Value) ctx.expression().accept(this);
         double indexValue = index.complex().getReal();
 
@@ -518,12 +535,40 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Value visitListValue(@NotNull TIBasicParser.ListValueContext ctx) {
         if (ctx.listVariable() != null) {
-            final String listVariableName = ctx.listVariable().listIdentifier().getText();
-            return environment.getMemory().getListVariableValue(listVariableName);
+            ListVariable listVariable = (ListVariable) ctx.listVariable().accept(this);
+            return environment.getMemory().getListVariableValue(listVariable);
         } else if (ctx.listExpression() != null) {
             return (Value) ctx.listExpression().accept(this);
         }
         throw new UnsupportedOperationException("This shouldn't happen");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public ListVariable visitListVariable(@NotNull TIBasicParser.ListVariableContext ctx) {
+        String variableName = ctx.listIdentifier().getText();
+        return ListVariable.fromName(variableName);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     *
+     * @param ctx
+     */
+    @Override
+    public Parameter visitListVariableParameter(@NotNull TIBasicParser.ListVariableParameterContext ctx) {
+        ListVariable var = (ListVariable) ctx.listVariable().accept(this);
+        return Parameter.variable(var, environment.getMemory());
     }
 
     @Override
@@ -544,10 +589,9 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Value visitNumericalVariable(@NotNull TIBasicParser.NumericalVariableContext ctx) {
+    public Variables.NumberVariable visitNumericalVariable(@NotNull TIBasicParser.NumericalVariableContext ctx) {
         String variableName = ctx.getText();
-        Variables.NumberVariable variable = Variables.resolveNumberVariable(variableName);
-        return environment.getMemory().getNumberVariableValue(variable);
+        return Variables.resolveNumberVariable(variableName);
     }
 
     /**
@@ -559,7 +603,14 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
      */
     @Override
     public Object visitNumericalVariableExpression(@NotNull TIBasicParser.NumericalVariableExpressionContext ctx) {
-        return ctx.numericalVariable().accept(this);
+        Variables.NumberVariable variable = (Variables.NumberVariable) ctx.numericalVariable().accept(this);
+        return environment.getMemory().getNumberVariableValue(variable);
+    }
+
+    @Override
+    public Parameter visitNumericalVariableParameter(@NotNull TIBasicParser.NumericalVariableParameterContext ctx) {
+        Variables.NumberVariable var = (Variables.NumberVariable) ctx.numericalVariable().accept(this);
+        return Parameter.variable(var, environment.getMemory());
     }
 
     /**
@@ -571,13 +622,13 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
      * @param ctx
      */
     @Override
-    public Value[] visitParameterList(@NotNull TIBasicParser.ParameterListContext ctx) {
-        Value[] parameterList = new Value[ctx.expression().size()];
+    public Parameter[] visitParameterList(@NotNull TIBasicParser.ParameterListContext ctx) {
+        Parameter[] parameterList = new Parameter[ctx.parameter().size()];
 
-        List<TIBasicParser.ExpressionContext> expression = ctx.expression();
+        List<TIBasicParser.ParameterContext> expression = ctx.parameter();
         for (int i = 0; i < expression.size(); i++) {
-            TIBasicParser.ExpressionContext expressionContext = expression.get(i);
-            parameterList[i] = (Value) expressionContext.accept(this);
+            TIBasicParser.ParameterContext parameterContext = ctx.parameter().get(i);
+            parameterList[i] = (Parameter) parameterContext.accept(this);
         }
 
         return parameterList;
@@ -612,7 +663,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         int startIndex = ctx.STORE().getSymbol().getCharPositionInLine();
 
         Value newDimension = (Value) ctx.expression().accept(this);
-        String listVariable = ctx.listVariable().listIdentifier().getText();
+        ListVariable listVariable = (ListVariable) ctx.listVariable().accept(this);
 
         double dimensionValue = newDimension.complex().getReal();
 
@@ -635,7 +686,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         int startIndex = ctx.LEFT_PARENTHESIS().getSymbol().getStartIndex();
 
 
-        String variableName = ctx.listVariable().listIdentifier().getText();
+        ListVariable listVariable = (ListVariable) ctx.listVariable().accept(this);
         Value newValue = (Value) ctx.expression(0).accept(this);
         Value index = (Value) ctx.expression(1).accept(this);
         double indexValue = index.complex().getReal();
@@ -648,17 +699,17 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", index);
         }
 
-        environment.getWritableMemory().setListVariableElementValue(variableName, (int) indexValue, newValue);
+        environment.getWritableMemory().setListVariableElementValue(listVariable, (int) indexValue, newValue);
 
         return newValue;
     }
 
     @Override
     public Value visitStoreListStatement(@NotNull TIBasicParser.StoreListStatementContext ctx) {
-        String variableName = ctx.listVariable().listIdentifier().getText();
+        ListVariable variable = (ListVariable) ctx.listVariable().accept(this);
         Value value = (Value) ctx.expression().accept(this);
 
-        environment.getWritableMemory().setListVariableValue(variableName, value);
+        environment.getWritableMemory().setListVariableValue(variable, value);
         return value;
     }
 

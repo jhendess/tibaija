@@ -22,7 +22,6 @@
 
 package org.xlrnet.tibaija.util;
 
-import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.TIArgumentException;
@@ -72,7 +71,7 @@ public class ValueUtils {
     public static void checkIfAnyValueIsImaginary(@NotNull Value... values) throws TIArgumentException {
         for (Value v : values)
             if (v.hasImaginaryValue())
-                throw new TIArgumentException("Cannot operate on imaginary values", ImmutableList.copyOf(values));
+                throw new TIArgumentException("Cannot operate on imaginary values", values);
     }
 
     /**

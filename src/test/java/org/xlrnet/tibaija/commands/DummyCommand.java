@@ -23,6 +23,7 @@
 package org.xlrnet.tibaija.commands;
 
 import com.google.common.collect.ImmutableList;
+import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.processor.Command;
 
@@ -42,8 +43,8 @@ public class DummyCommand extends Command {
      * @return An optional return value.
      */
     @Override
-    protected Optional<Value> execute(ImmutableList<Value> arguments) {
-        return Optional.of(arguments.get(0));
+    protected Optional<Value> execute(ImmutableList<Parameter> arguments) {
+        return Optional.of(arguments.get(0).value());
     }
 
 }

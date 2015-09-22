@@ -23,8 +23,10 @@
 package org.xlrnet.tibaija.exception;
 
 import com.google.common.collect.ImmutableList;
+import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.Value;
 
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,30 +38,35 @@ public class TIArgumentException extends TIRuntimeException {
 
     private static final long serialVersionUID = -9040606410143723978L;
 
-    private ImmutableList<? extends Value> arguments;
+    private List<? extends Parameter> arguments;
 
     public TIArgumentException(String message, Number... arguments) {
         this(message, ImmutableList.copyOf(
                 Stream.of(arguments)
                         .map(Value::of)
+                        .map(Parameter::value)
                         .collect(Collectors.toList())));
     }
 
-    public TIArgumentException(String message, Value... arguments) {
+    public TIArgumentException(String message, Parameter... arguments) {
         this(message, ImmutableList.copyOf(arguments));
     }
 
-    public TIArgumentException(String message, ImmutableList<Value> arguments) {
+    public TIArgumentException(String message, Value... arguments) {
+        this(message, ImmutableList.copyOf(arguments).stream().map(Parameter::value).collect(Collectors.toList()));
+    }
+
+    public TIArgumentException(String message, List<Parameter> arguments) {
         super(message);
         this.arguments = arguments;
     }
 
-    public TIArgumentException(int linenumber, int startIndex, String message, ImmutableList<Value> arguments) {
+    public TIArgumentException(int linenumber, int startIndex, String message, List<Parameter> arguments) {
         super(linenumber, startIndex, message);
-        this.arguments = arguments;
+        this.arguments = ImmutableList.copyOf(arguments);
     }
 
-    public ImmutableList<? extends Value> getArguments() {
+    public List<? extends Parameter> getArguments() {
         return arguments;
     }
 }

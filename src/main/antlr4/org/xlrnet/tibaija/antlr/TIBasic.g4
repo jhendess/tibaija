@@ -253,7 +253,13 @@ commandStatement
        : commandStatementIdentifier (SPACE parameterList)?;
 
 parameterList
-       : (expression (COMMA expression)*)?;
+       : ((parameter) (COMMA parameter)*)?;
+
+parameter
+       : numericalVariable       # NumericalVariableParameter
+       | listVariable            # ListVariableParameter
+       | expression              # ExpressionParameter
+       ;
 
 storeStatement
        : expression STORE numericalVariable                                                  # StoreNumberStatement

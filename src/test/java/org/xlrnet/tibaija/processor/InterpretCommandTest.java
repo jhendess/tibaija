@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.xlrnet.tibaija.commands.DummyCommand;
 import org.xlrnet.tibaija.exception.CommandNotFoundException;
+import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.Value;
 
 import static org.mockito.Matchers.any;
@@ -41,6 +42,8 @@ import static org.mockito.Mockito.*;
 public class InterpretCommandTest extends AbstractTI83PlusTest {
 
     Command dummyCommand;
+
+    ImmutableList<Parameter> expectedArgumentList = ImmutableList.of(Parameter.value(Value.of(123)), Parameter.value(Value.of(456)));
 
     @Before
     public void setup() {
@@ -63,7 +66,7 @@ public class InterpretCommandTest extends AbstractTI83PlusTest {
     public void testCommand_validProgram_registerCommandFunction() {
         getEnvironment().registerCommandFunction("Test", dummyCommand);
         storeAndExecute(":Test(123,456)");
-        verify(dummyCommand).execute(ImmutableList.of(Value.of(123), Value.of(456)));
+        verify(dummyCommand).execute(expectedArgumentList);
         verify(mockedMemory, never()).setLastResult(any());
     }
 
@@ -71,7 +74,7 @@ public class InterpretCommandTest extends AbstractTI83PlusTest {
     public void testCommand_validProgram_registerCommandStatement() {
         getEnvironment().registerCommandStatement("Test", dummyCommand);
         storeAndExecute(":Test 123,456");
-        verify(dummyCommand).execute(ImmutableList.of(Value.of(123), Value.of(456)));
+        verify(dummyCommand).execute(expectedArgumentList);
         verify(mockedMemory, never()).setLastResult(any());
     }
 
@@ -79,7 +82,7 @@ public class InterpretCommandTest extends AbstractTI83PlusTest {
     public void testCommand_validProgram_registerExpressionFunction() {
         getEnvironment().registerExpressionFunction("testi", dummyCommand);
         storeAndExecute(":testi(123, 456)+1");
-        verify(dummyCommand).execute(ImmutableList.of(Value.of(123), Value.of(456)));
+        verify(dummyCommand).execute(expectedArgumentList);
         verifyLastResultValue(124);
     }
 

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.math3.complex.Complex;
 import org.junit.Test;
 import org.xlrnet.tibaija.graphics.DecimalDisplayMode;
+import org.xlrnet.tibaija.graphics.NumberDisplayFormat;
 import org.xlrnet.tibaija.memory.Value;
 
 import static org.junit.Assert.assertEquals;
@@ -38,58 +39,72 @@ public class ValueFormatUtilsTest {
     // TODO: Write more tests
 
     @Test
-    public void testFormatValue_float_complex_1() throws Exception {
+    public void testFormatValue_normal_fix1_complex() throws Exception {
+        Value testValue = Value.of(1.234, 5.678);
+        String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FIX_1);
+        assertEquals("1.2+5.7i", actual);
+    }
+
+    @Test
+    public void testFormatValue_normal_fix2_zero() throws Exception {
+        Value testValue = Value.of(0);
+        String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FIX_2);
+        assertEquals("0.00", actual);
+    }
+
+    @Test
+    public void testFormatValue_normal_float_complex_1() throws Exception {
         Value testValue = Value.of(0, 1);
-        String actual = ValueFormatUtils.formatValue(testValue, DecimalDisplayMode.FLOAT);
+        String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FLOAT);
         assertEquals("1i", actual);     // TODO: Use different "i" for imaginary printing
     }
 
     @Test
-    public void testFormatValue_float_complex_2() throws Exception {
+    public void testFormatValue_normal_float_complex_2() throws Exception {
         Value testValue = Value.of(15, 1);
-        String actual = ValueFormatUtils.formatValue(testValue, DecimalDisplayMode.FLOAT);
+        String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FLOAT);
         assertEquals("15+1i", actual);     // TODO: Use different "i" for imaginary printing
     }
 
     @Test
-    public void testFormatValue_float_list_1() throws Exception {
+    public void testFormatValue_normal_float_list_1() throws Exception {
         Value testValue = Value.of(ImmutableList.of(Complex.valueOf(123)));
-        String actual = ValueFormatUtils.formatValue(testValue, DecimalDisplayMode.FLOAT);
+        String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FLOAT);
         assertEquals("{123}", actual);
     }
 
     @Test
-    public void testFormatValue_float_list_2() throws Exception {
+    public void testFormatValue_normal_float_list_2() throws Exception {
         Value testValue = Value.of(Complex.valueOf(123), Complex.valueOf(456), Complex.valueOf(789));
-        String actual = ValueFormatUtils.formatValue(testValue, DecimalDisplayMode.FLOAT);
+        String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FLOAT);
         assertEquals("{123,456,789}", actual);
     }
 
     @Test
-    public void testFormatValue_float_number_1() throws Exception {
+    public void testFormatValue_normal_float_number_1() throws Exception {
         Value testValue = Value.of(123456);
-        String actual = ValueFormatUtils.formatValue(testValue, DecimalDisplayMode.FLOAT);
+        String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FLOAT);
         assertEquals("123456", actual);
     }
 
     @Test
-    public void testFormatValue_float_number_2() throws Exception {
+    public void testFormatValue_normal_float_number_2() throws Exception {
         Value testValue = Value.of(1234.56789);
-        String actual = ValueFormatUtils.formatValue(testValue, DecimalDisplayMode.FLOAT);
+        String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FLOAT);
         assertEquals("1234.56789", actual);
     }
 
     @Test
-    public void testFormatValue_float_string() throws Exception {
+    public void testFormatValue_normal_float_string() throws Exception {
         Value testValue = Value.of("HelloWorld");
-        String actual = ValueFormatUtils.formatValue(testValue, DecimalDisplayMode.FLOAT);
+        String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FLOAT);
         assertEquals("HelloWorld", actual);
     }
 
     @Test
-    public void testFormatValue_float_zero() throws Exception {
+    public void testFormatValue_normal_float_zero() throws Exception {
         Value testValue = Value.of(0);
-        String actual = ValueFormatUtils.formatValue(testValue, DecimalDisplayMode.FLOAT);
+        String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FLOAT);
         assertEquals("0", actual);
     }
 }

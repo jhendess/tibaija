@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.TIArgumentException;
+import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.processor.Command;
@@ -67,9 +68,9 @@ public class BinaryCommand extends Command {
     }
 
     @Override
-    protected Optional<Value> execute(ImmutableList<Value> arguments) {
-        final Value lhs = arguments.get(0);
-        final Value rhs = arguments.get(1);
+    protected Optional<Value> execute(ImmutableList<Parameter> arguments) {
+        final Value lhs = arguments.get(0).value();
+        final Value rhs = arguments.get(1).value();
         final Value result = applyOperator(lhs, rhs);
 
         LOGGER.debug("({}) {} {} -> {}", operator, lhs.getValue(), rhs.getValue(), result.getValue());
@@ -85,9 +86,9 @@ public class BinaryCommand extends Command {
      * @return True if both arguments are of a numerical type and not null.
      */
     @Override
-    protected boolean hasValidArgumentValues(ImmutableList<Value> parameters) {
-        final Value lhs = parameters.get(0);
-        final Value rhs = parameters.get(1);
+    protected boolean hasValidArgumentValues(ImmutableList<Parameter> parameters) {
+        final Value lhs = parameters.get(0).value();
+        final Value rhs = parameters.get(1).value();
         checkNotNull(lhs);
         checkNotNull(rhs);
 

@@ -27,6 +27,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
+import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.processor.Command;
@@ -65,8 +66,8 @@ public class UnaryCommand extends Command {
     }
 
     @Override
-    protected Optional<Value> execute(ImmutableList<Value> arguments) {
-        final Value operand = arguments.get(0);
+    protected Optional<Value> execute(ImmutableList<Parameter> arguments) {
+        final Value operand = arguments.get(0).value();
         final Value result = applyOperator(operand);
 
         LOGGER.debug("({}) {} -> {}", operator, operand.getValue(), result.getValue());
@@ -82,8 +83,8 @@ public class UnaryCommand extends Command {
      * @return True if both arguments are of a numerical type and not null.
      */
     @Override
-    protected boolean hasValidArgumentValues(ImmutableList<Value> parameters) {
-        final Value operand = parameters.get(0);
+    protected boolean hasValidArgumentValues(ImmutableList<Parameter> parameters) {
+        final Value operand = parameters.get(0).value();
         checkNotNull(operand);
 
         if (!ValueUtils.isNumberOrList(operand))

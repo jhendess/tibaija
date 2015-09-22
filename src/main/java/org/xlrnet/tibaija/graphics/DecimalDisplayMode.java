@@ -23,22 +23,9 @@
 package org.xlrnet.tibaija.graphics;
 
 /**
- * Configuration values of how to display decimals on the screen.
+ * Configuration values of how many decimals to display on the screen.
  */
 public enum DecimalDisplayMode {
-
-    /**
-     * Scientific notation mode. A (possibly fractional) number between 1 and 10 (not including 10) multiplied by a
-     * power of 10.
-     */
-    SCIENTIFIC(-1),
-
-    /**
-     * Engineering notation mode. This is a variation on scientific notation in
-     * which the exponent is restricted to be a multiple of 3 (and the mantissa can range between 1 and 1000, not
-     * including 1000 itself)
-     */
-    ENGINEERING(-1),
 
     /**
      * Float makes the calculator display numbers with a "floating decimal point" — only as many digits

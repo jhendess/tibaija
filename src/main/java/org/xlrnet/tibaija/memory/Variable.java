@@ -20,30 +20,25 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.commands;
-
-import com.google.common.collect.ImmutableList;
-import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.processor.Command;
-
-import java.util.Optional;
+package org.xlrnet.tibaija.memory;
 
 /**
- * Command for displaying content on the home screen.
+ * A variable can be used for storing values on the internal system memory.
  */
-public class DisplayCommand extends Command {
+public interface Variable {
 
     /**
-     * Main method for invoking a command. Must be overwritten by the specific implementation. When this method gets
-     * called by the framework, both hasValidArgumentValues() and hasValidNumberOfArguments() have already been called.
+     * Returns the name of the variable,
      *
-     * @param arguments
-     *         The arguments for the command.
-     * @return An optional return value.
+     * @return the name of the variable,
      */
-    @Override
-    protected Optional<Value> execute(ImmutableList<Parameter> arguments) {
-        return null;       // TODO: Implement
-    }
+    String getVariableName();
+
+    /**
+     * Returns the type of the variable (e.g. number, string, ...).
+     *
+     * @return the type of the variable .
+     */
+    Variables.VariableType getVariableType();
+
 }
