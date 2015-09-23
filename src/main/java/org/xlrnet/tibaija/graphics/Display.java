@@ -46,6 +46,20 @@ public interface Display {
     void flush();
 
     /**
+     * Returns the amount of pixels on the horizontal x-axis.
+     *
+     * @return the amount of pixels on the horizontal x-axis.
+     */
+    int getHorizontalDimension();
+
+    /**
+     * Returns the amount of pixels on the vertical y-axis.
+     *
+     * @return the amount of pixels on the vertical y-axis.
+     */
+    int getVerticalDimension();
+
+    /**
      * Inverts the selected pixel. If the pixel is turned on before, it will be turned off afterwards.
      *
      * @param x
@@ -67,20 +81,21 @@ public interface Display {
     boolean isPixelOn(int x, int y);
 
     /**
-     * Make this screen initially visible to the user.
+     * Make this screen initially visible to the user. This method needs to be called always at least one time before
+     * anything can be displayed on the screen.
      */
     void open();
 
     /**
      * Sets the status of a selected pixel either to on (visible) or off (invisible).
      *
-     * @param pixelOn
+     * @param pixelState
      *         True if the pixel should be visible, false otherwise.
      * @param x
      *         The x coordinate of the pixel to draw.
      * @param y
      *         The y coordinate of the pixel to draw.
      */
-    void setPixel(boolean pixelOn, int x, int y);
+    void setPixel(PixelState pixelState, int x, int y);
 
 }
