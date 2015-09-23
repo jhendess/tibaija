@@ -20,10 +20,11 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.commands;
+package org.xlrnet.tibaija.commands.math;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.math3.complex.Complex;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
@@ -65,8 +66,9 @@ public class UnaryCommand extends Command {
         this.evaluationFunction = evaluationFunction;
     }
 
+    @NotNull
     @Override
-    protected Optional<Value> execute(ImmutableList<Parameter> arguments) {
+    protected Optional<Value> execute(@NotNull ImmutableList<Parameter> arguments) {
         final Value operand = arguments.get(0).value();
         final Value result = applyOperator(operand);
 
@@ -78,13 +80,13 @@ public class UnaryCommand extends Command {
     /**
      * Check if both arguments are of a numerical type and not null.
      *
-     * @param parameters
+     * @param arguments
      *         The arguments for the command.
      * @return True if both arguments are of a numerical type and not null.
      */
     @Override
-    protected boolean hasValidArgumentValues(ImmutableList<Parameter> parameters) {
-        final Value operand = parameters.get(0).value();
+    protected boolean hasValidArgumentValues(@NotNull ImmutableList<Parameter> arguments) {
+        final Value operand = arguments.get(0).value();
         checkNotNull(operand);
 
         if (!ValueUtils.isNumberOrList(operand))

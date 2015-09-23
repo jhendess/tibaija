@@ -154,7 +154,12 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Object visitCommandStatement(@NotNull TIBasicParser.CommandStatementContext ctx) {
         String commandStatementName = ctx.commandStatementIdentifier().getText();
-        Parameter[] parameters = (Parameter[]) ctx.parameterList().accept(this);
+        Parameter[] parameters;
+        if (ctx.parameterList() != null) {
+            parameters = (Parameter[]) ctx.parameterList().accept(this);
+        } else {
+            parameters = new Parameter[0];
+        }
 
         environment.runRegisteredCommandStatement(commandStatementName, parameters);
 

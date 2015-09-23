@@ -38,8 +38,23 @@ public interface HomeScreen {
     void clear();
 
     /**
+     * Return the number of columns which can be displayed on this home screen.
+     *
+     * @return the number of columns which can be displayed on this home screen.
+     */
+    int getMaxColumns();
+
+    /**
+     * Return the number of rows which can be displayed on this home screen.
+     *
+     * @return the number of rows which can be displayed on this home screen.
+     */
+    int getMaxRows();
+
+    /**
      * Displays and formats a given {@link Value} at the given coordinates on the home screen. If the formatted content
-     * exceeds the maximum width of the line, the text must be hard wrapped to the next line.
+     * exceeds the maximum width of the line, the text must be hard wrapped to the next line. If the content goes past
+     * the last column of the row, the text will be truncated.
      *
      * @param text
      *         The text to print.
@@ -52,7 +67,8 @@ public interface HomeScreen {
 
     /**
      * Displays a given string at the given coordinates on the home screen. If the text exceeds the maximum width of
-     * the line, the text must be hard wrapped to the next line.
+     * the line, the text must be hard wrapped to the next line. If the content goes past the last column of the row,
+     * the text will be truncated.
      *
      * @param text
      *         The text to print.
@@ -76,11 +92,13 @@ public interface HomeScreen {
     void printText(String text);
 
     /**
-     * Print the content of a {@link Value} object. The output must always be right-aligned. If the screen does not
-     * support any more lines at the bottom, the first line must be removed and the rest be moved upwards. If the text
-     * to display is larger than the width of the screen, the text must be cut to the maximum width with an
-     * ellipsis (...).
-     * Numerical values must be formatted according to the last set {@link DecimalDisplayMode}.
+     * Print the content of a {@link Value} object. The output must always be right-aligned unless the value is a
+     * string. In this case, printing a string should behave identical to {@link #printText(String)}. If the screen
+     * does  not  support any more lines at the bottom, the first line must be removed and the rest be moved upwards.
+     * If the text to display is larger than the width of the screen, the text must be cut to the maximum width
+     * with an ellipsis (...).
+     * Numerical values must be formatted according to the last set {@link DecimalDisplayMode} and {@link
+     * NumberDisplayFormat}.
      *
      * @param value
      *         The value to display.

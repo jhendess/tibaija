@@ -22,6 +22,7 @@
 
 package org.xlrnet.tibaija.memory;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.math3.complex.Complex;
 import org.jetbrains.annotations.NotNull;
@@ -206,7 +207,7 @@ public class Value implements Comparable<Value> {
 
     /**
      * Retrieves the internal value as a boolean value. If the internal is not a number, this method will throw an
-     * {IllegalTypeException}. Use this method only if you know the underlying object type!
+     * {IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method fail explicitly when being invoked with a wrong value type.
      *
      * @return The internal value as a boolean. If the numerical value is not zero, true will be returned. Otherwise
      * false.
@@ -235,7 +236,7 @@ public class Value implements Comparable<Value> {
 
     /**
      * Retrieves the internal value as a Complex object. If the internal is not a Complex, this method will throw an
-     * {IllegalTypeException}. Use this method only if you know the underlying object type!
+     * {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method fail explicitly when being invoked with a wrong value type.
      *
      * @return The internal value as a Complex object.
      * @throws TIRuntimeException
@@ -250,13 +251,9 @@ public class Value implements Comparable<Value> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Value)) return false;
-
-        Value that = (Value) o;
-
-        if (type != that.type) return false;
-        if (!value.equals(that.value)) return false;
-
-        return true;
+        Value value1 = (Value) o;
+        return com.google.common.base.Objects.equal(value, value1.value) &&
+                com.google.common.base.Objects.equal(type, value1.type);
     }
 
     @NotNull
@@ -284,9 +281,7 @@ public class Value implements Comparable<Value> {
 
     @Override
     public int hashCode() {
-        int result = value.hashCode();
-        result = 31 * result + type.hashCode();
-        return result;
+        return com.google.common.base.Objects.hashCode(value, type);
     }
 
     /**
@@ -318,8 +313,7 @@ public class Value implements Comparable<Value> {
 
     /**
      * Retrieves the internal value as a list of Complex objects. If the internal is not a Complex, this method will
-     * throw an
-     * {IllegalTypeException}. Use this method only if you know the underlying object type!
+     * throw an {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method fail explicitly when being invoked with a wrong value type.
      *
      * @return The internal value as a Complex object.
      * @throws TIRuntimeException
@@ -332,8 +326,19 @@ public class Value implements Comparable<Value> {
     }
 
     /**
+     * Retrieves the real part of the internal complex value. If the internal is not a Complex, this method will throw an
+     * {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method fail explicitly when being invoked with a wrong value type.
+     *
+     * @return The internal value as a Complex object.
+     * @throws TIRuntimeException
+     */
+    public double realPart() throws IllegalTypeException {
+        return complex().getReal();
+    }
+
+    /**
      * Retrieves the internal value as a boolean value. If the internal is not a number, this method will throw an
-     * {IllegalTypeException}. Use this method only if you know the underlying object type!
+     * {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method fail explicitly when being invoked with a wrong value type.
      *
      * @return The internal value as a boolean. If the numerical value is not zero, true will be returned. Otherwise
      * false.
@@ -346,10 +351,10 @@ public class Value implements Comparable<Value> {
 
     @Override
     public String toString() {
-        return "Value{" +
-                "value=" + value +
-                ", type=" + type +
-                '}';
+        return MoreObjects.toStringHelper(this)
+                .add("value", value)
+                .add("type", type)
+                .toString();
     }
 
     /**

@@ -20,7 +20,7 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.commands;
+package org.xlrnet.tibaija.commands.math;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.math3.complex.Complex;
@@ -67,8 +67,9 @@ public class BinaryCommand extends Command {
         this.evaluationFunction = evaluationFunction;
     }
 
+    @NotNull
     @Override
-    protected Optional<Value> execute(ImmutableList<Parameter> arguments) {
+    protected Optional<Value> execute(@NotNull ImmutableList<Parameter> arguments) {
         final Value lhs = arguments.get(0).value();
         final Value rhs = arguments.get(1).value();
         final Value result = applyOperator(lhs, rhs);
@@ -81,14 +82,14 @@ public class BinaryCommand extends Command {
     /**
      * Check if both arguments are of a numerical type and not null.
      *
-     * @param parameters
+     * @param arguments
      *         The arguments for the command.
      * @return True if both arguments are of a numerical type and not null.
      */
     @Override
-    protected boolean hasValidArgumentValues(ImmutableList<Parameter> parameters) {
-        final Value lhs = parameters.get(0).value();
-        final Value rhs = parameters.get(1).value();
+    protected boolean hasValidArgumentValues(@NotNull ImmutableList<Parameter> arguments) {
+        final Value lhs = arguments.get(0).value();
+        final Value rhs = arguments.get(1).value();
         checkNotNull(lhs);
         checkNotNull(rhs);
 

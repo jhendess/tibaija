@@ -60,6 +60,10 @@ public class ExecutionEnvironment {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionEnvironment.class);
 
+    private final HomeScreen homeScreen;
+
+    private final Stack<ExecutableProgram> programStack = new Stack<>();
+
     CalculatorMemory memory;
 
     CalculatorIO calculatorIO;
@@ -71,10 +75,6 @@ public class ExecutionEnvironment {
     Map<String, Command> expressionFunction = new HashMap<>();
 
     Map<String, Command> commandStatementMap = new HashMap<>();
-
-    HomeScreen homeScreen;
-
-    private Stack<ExecutableProgram> programStack = new Stack<>();
 
     private DecimalDisplayMode decimalDisplayMode;
 
@@ -169,6 +169,10 @@ public class ExecutionEnvironment {
         return calculatorIO;
     }
 
+    public CodeProvider getCodeProvider() {
+        return codeProvider;
+    }
+
     public DecimalDisplayMode getDecimalDisplayMode() {
         return decimalDisplayMode;
     }
@@ -185,6 +189,17 @@ public class ExecutionEnvironment {
     }
 
     /**
+     * Returns the currently registered {@link HomeScreen} implementation for this environment. The home screen should
+     * be used for printing out basic texts and data without any graphical components.
+     *
+     * @return the currently registered home screen for this environment.
+     */
+    @NotNull
+    public HomeScreen getHomeScreen() {
+        return homeScreen;
+    }
+
+    /**
      * Get readable access to the calculator memory.
      *
      * @return Reference to the readable memory of the calculator.
@@ -194,6 +209,7 @@ public class ExecutionEnvironment {
         return memory;
     }
 
+    @NotNull
     public NumberDisplayFormat getNumberDisplayFormat() {
         return numberDisplayFormat;
     }
@@ -209,6 +225,7 @@ public class ExecutionEnvironment {
      *
      * @return the stack of current program hierarchy.
      */
+    @NotNull
     public Stack<ExecutableProgram> getProgramStack() {
         return programStack;
     }

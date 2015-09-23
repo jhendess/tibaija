@@ -20,7 +20,7 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.commands;
+package org.xlrnet.tibaija.commands.io;
 
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
@@ -31,9 +31,9 @@ import org.xlrnet.tibaija.processor.Command;
 import java.util.Optional;
 
 /**
- * Dummy command which returns the exact value that it was called with.
+ * Command for displaying content on the home screen.
  */
-public class DummyCommand extends Command {
+public class DisplayCommand extends Command {
 
     /**
      * Main method for invoking a command. Must be overwritten by the specific implementation. When this method gets
@@ -46,7 +46,23 @@ public class DummyCommand extends Command {
     @NotNull
     @Override
     protected Optional<Value> execute(@NotNull ImmutableList<Parameter> arguments) {
-        return Optional.of(arguments.get(0).value());
+        for (Parameter argument : arguments) {
+            getEnvironment().getHomeScreen().printValue(argument.value());
+        }
+
+        return Optional.empty();
     }
 
+    /**
+     * <b>Can be overwritten</b> by the concrete commands if something must be checked.
+     * Checks if the number of parameters is in range.
+     *
+     * @param numberOfParametersEntered
+     *         Number of parameters passed by the caller. Value is never below zero.
+     * @return True if the number of parameters is within the expected range, otherwise false.
+     */
+    @Override
+    protected boolean hasValidNumberOfArguments(int numberOfParametersEntered) {
+        return numberOfParametersEntered > 0;
+    }
 }

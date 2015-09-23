@@ -20,7 +20,7 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.commands;
+package org.xlrnet.tibaija.commands.math;
 
 import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.util.CompareUtils;
@@ -29,7 +29,7 @@ import org.xlrnet.tibaija.util.TIMathUtils;
 
 import java.util.function.BinaryOperator;
 
-import static org.xlrnet.tibaija.util.ValueUtils.checkIfAnyValueIsImaginary;
+import static org.xlrnet.tibaija.util.Preconditions.checkIfAnyValueIsImaginary;
 
 /**
  * Static enum that defines several functions for evaluating arithmetic operations with two operands.

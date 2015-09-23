@@ -23,6 +23,7 @@
 package org.xlrnet.tibaija.processor;
 
 import com.google.common.collect.ImmutableList;
+import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.Value;
@@ -39,14 +40,6 @@ public abstract class Command {
 
     private ExecutionEnvironment environment;
 
-    public ExecutionEnvironment getEnvironment() {
-        return environment;
-    }
-
-    public void setEnvironment(ExecutionEnvironment environment) {
-        this.environment = environment;
-    }
-
     /**
      * Checks the passed arguments for correctness. This method should be called only by the framework.
      *
@@ -57,12 +50,12 @@ public abstract class Command {
      * @throws TIArgumentException
      *         Will be thrown if either the count or the value of any argument is invalid.
      */
-    protected final boolean checkArguments(ImmutableList<Parameter> arguments) throws TIArgumentException {
+    protected final boolean checkArguments(@NotNull ImmutableList<Parameter> arguments) throws TIArgumentException {
         if (!hasValidNumberOfArguments(arguments.size())) {
-            throw new TIArgumentException(-1, -1, "Invalid argument count", arguments);
+            throw new TIArgumentException("Invalid argument count", arguments);
         }
         if (!hasValidArgumentValues(arguments)) {
-            throw new TIArgumentException(-1, -1, "Invalid argument value", arguments);
+            throw new TIArgumentException("Invalid argument value", arguments);
         }
 
         return true;
@@ -76,22 +69,28 @@ public abstract class Command {
      *         The arguments for the command.
      * @return An optional return value.
      */
-    protected abstract Optional<Value> execute(ImmutableList<Parameter> arguments);
+    @NotNull
+    protected abstract Optional<Value> execute(@NotNull ImmutableList<Parameter> arguments);
+
+    protected ExecutionEnvironment getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(ExecutionEnvironment environment) {
+        this.environment = environment;
+    }
 
     /**
      * Can be overwritten by the concrete commands if at least the value of one parameter must be checked.
      * Checks all values of all passed parameters.
      * An explaining error message must be output by the concrete command.<br>
      *
-     * @param parameters
+     * @param arguments
      *         The immutable list of parameters to check.
      * @return True if all values of all passed parameters are correct. False if at least one value of one parameter is
      * incorrect.
      */
-    protected boolean hasValidArgumentValues(ImmutableList<Parameter> parameters) {
-        if (parameters == null) {
-            throw new IllegalArgumentException("parameters are null");
-        }
+    protected boolean hasValidArgumentValues(@NotNull ImmutableList<Parameter> arguments) {
         return true;
     }
 

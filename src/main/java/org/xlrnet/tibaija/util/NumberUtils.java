@@ -22,18 +22,20 @@
 
 package org.xlrnet.tibaija.util;
 
-import org.xlrnet.tibaija.memory.Value;
-
 /**
- * Several helper methods for Value handling. Note: all methods beginning with "check" throw an exception if a required
- * condition is not met!
+ * A set of various static helper methods for common number related tasks.
  */
-public class ValueUtils {
+public class NumberUtils {
 
     /**
-     * Return true if the given Value is either a number or a list.
+     * Checks whether the given number is an integer.
+     *
+     * @param number
+     *         The number to check
+     * @return True if the given number is an integer, false otherwise.
      */
-    public static boolean isNumberOrList(Value operand) {
-        return operand.isNumber() || operand.isList();
+    public static boolean isInteger(double number) {
+        return number % 1 == 0;
     }
+
 }

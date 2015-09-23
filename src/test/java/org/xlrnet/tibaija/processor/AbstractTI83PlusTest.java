@@ -28,14 +28,16 @@ import org.junit.Before;
 import org.junit.rules.Timeout;
 import org.mockito.Mock;
 import org.xlrnet.tibaija.DummyCodeProvider;
-import org.xlrnet.tibaija.TI83Plus;
 import org.xlrnet.tibaija.VirtualCalculator;
+import org.xlrnet.tibaija.graphics.HomeScreen;
+import org.xlrnet.tibaija.graphics.NullHomeScreen;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.matchers.EqualsTIListMatcher;
 import org.xlrnet.tibaija.matchers.EqualsTIStringMatcher;
 import org.xlrnet.tibaija.matchers.EqualsWithComplexDeltaMatcher;
 import org.xlrnet.tibaija.memory.*;
 import org.xlrnet.tibaija.test.TestUtils;
+import org.xlrnet.tibaija.util.ExecutionEnvironmentUtil;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -57,14 +59,24 @@ public class AbstractTI83PlusTest {
 
     VirtualCalculator calculator;
 
+    HomeScreen mockedHomeScreen;
+
+    ExecutionEnvironment environment;
+
+    private DummyCodeProvider codeProvider;
+
     @Before
     public void setUp() {
         mockedMemory = spy(new DefaultCalculatorMemory());
-        calculator = new TI83Plus(mockedMemory, mockedIO, new DummyCodeProvider());
+        mockedHomeScreen = spy(new NullHomeScreen());
+        codeProvider = new DummyCodeProvider();
+        environment = ExecutionEnvironment.newEnvironment(mockedMemory, mockedIO, codeProvider, mockedHomeScreen);
+        ExecutionEnvironmentUtil.registerDefaultCommands(environment);
+        calculator = new TI83Plus(environment);
     }
 
     protected ExecutionEnvironment getEnvironment() {
-        return ((TI83Plus) calculator).getEnvironment();
+        return this.environment;
     }
 
     protected void storeAndExecute(String snippet) {

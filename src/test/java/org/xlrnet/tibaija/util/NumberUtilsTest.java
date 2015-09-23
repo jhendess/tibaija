@@ -20,30 +20,29 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.commands;
+package org.xlrnet.tibaija.util;
 
-import com.google.common.collect.ImmutableList;
-import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.processor.Command;
+import org.junit.Test;
 
-import java.util.Optional;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Command for displaying content on the home screen.
+ * Test methods for {@link NumberUtils} helper methods
  */
-public class DisplayCommand extends Command {
+public class NumberUtilsTest {
 
-    /**
-     * Main method for invoking a command. Must be overwritten by the specific implementation. When this method gets
-     * called by the framework, both hasValidArgumentValues() and hasValidNumberOfArguments() have already been called.
-     *
-     * @param arguments
-     *         The arguments for the command.
-     * @return An optional return value.
-     */
-    @Override
-    protected Optional<Value> execute(ImmutableList<Parameter> arguments) {
-        return null;       // TODO: Implement
+    @Test
+    public void testIsInteger_false() throws Exception {
+        assertFalse(NumberUtils.isInteger(1.5));
+        assertFalse(NumberUtils.isInteger(1.12345));
+        assertFalse(NumberUtils.isInteger(-9.876));
+    }
+
+    @Test
+    public void testIsInteger_true() throws Exception {
+        assertTrue(NumberUtils.isInteger(1));
+        assertTrue(NumberUtils.isInteger(-5));
+        assertTrue(NumberUtils.isInteger(1234));
     }
 }

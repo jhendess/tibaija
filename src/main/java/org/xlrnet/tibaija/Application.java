@@ -32,6 +32,7 @@ import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.io.ConsoleIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
+import org.xlrnet.tibaija.processor.TI83Plus;
 
 import java.io.*;
 import java.nio.file.Path;

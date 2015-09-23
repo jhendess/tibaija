@@ -24,10 +24,13 @@ package org.xlrnet.tibaija.util;
 
 import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.VirtualCalculator;
-import org.xlrnet.tibaija.commands.BinaryCommand;
-import org.xlrnet.tibaija.commands.BinaryCommandOperator;
-import org.xlrnet.tibaija.commands.UnaryCommand;
-import org.xlrnet.tibaija.commands.UnaryCommandOperator;
+import org.xlrnet.tibaija.commands.io.ClearHomeCommand;
+import org.xlrnet.tibaija.commands.io.DisplayCommand;
+import org.xlrnet.tibaija.commands.io.OutputCommand;
+import org.xlrnet.tibaija.commands.math.BinaryCommand;
+import org.xlrnet.tibaija.commands.math.BinaryCommandOperator;
+import org.xlrnet.tibaija.commands.math.UnaryCommand;
+import org.xlrnet.tibaija.commands.math.UnaryCommandOperator;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.processor.ExecutionEnvironment;
@@ -45,11 +48,11 @@ public class ExecutionEnvironmentUtil {
     @NotNull
     private static ExecutionEnvironment newDefaultEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO ioDevice) {
         ExecutionEnvironment env = ExecutionEnvironment.newEnvironment(memory, ioDevice);
-        registerCommands(env);
+        registerDefaultCommands(env);
         return env;
     }
 
-    private static void registerCommands(@NotNull ExecutionEnvironment env) {
+    public static void registerDefaultCommands(@NotNull ExecutionEnvironment env) {
         // Register binary arithmetic operators
         env.registerExpressionFunction("+", new BinaryCommand(BinaryCommandOperator.PLUS));
         env.registerExpressionFunction("-", new BinaryCommand(BinaryCommandOperator.MINUS));
@@ -57,7 +60,7 @@ public class ExecutionEnvironmentUtil {
         env.registerExpressionFunction("/", new BinaryCommand(BinaryCommandOperator.DIVIDE));
         env.registerExpressionFunction("^", new BinaryCommand(BinaryCommandOperator.POWER));
 
-        // Register more advances binary operators
+        // Register advanced binary operators
         env.registerExpressionFunction("×√", new BinaryCommand(BinaryCommandOperator.NTH_ROOT));
         env.registerExpressionFunction("nCr", new BinaryCommand(BinaryCommandOperator.NCR));
         env.registerExpressionFunction("nPr", new BinaryCommand(BinaryCommandOperator.NPR));
@@ -82,6 +85,12 @@ public class ExecutionEnvironmentUtil {
         env.registerExpressionFunction("or", new BinaryCommand(BinaryCommandOperator.OR));
         env.registerExpressionFunction("xor", new BinaryCommand(BinaryCommandOperator.XOR));
         env.registerExpressionFunction("not(", new UnaryCommand(UnaryCommandOperator.NOT));
+
+        // Register I/O commands for home screen
+        env.registerCommandStatement("Disp", new DisplayCommand());
+        env.registerCommandFunction("Output", new OutputCommand());
+        env.registerCommandStatement("ClrHome", new ClearHomeCommand());
+
     }
 
 }

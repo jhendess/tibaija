@@ -34,12 +34,36 @@ public class NullHomeScreen implements HomeScreen {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NullHomeScreen.class);
 
+    private static final int MAX_ROWS = 8;
+
+    private static final int MAX_COLUMNS = 16;
+
     /**
      * Clears the home screen.
      */
     @Override
     public void clear() {
         LOGGER.info("Home screen cleared");
+    }
+
+    /**
+     * Return the number of columns which can be displayed on this home screen.
+     *
+     * @return the number of columns which can be displayed on this home screen.
+     */
+    @Override
+    public int getMaxColumns() {
+        return MAX_COLUMNS;
+    }
+
+    /**
+     * Return the number of rows which can be displayed on this home screen.
+     *
+     * @return the number of rows which can be displayed on this home screen.
+     */
+    @Override
+    public int getMaxRows() {
+        return MAX_ROWS;
     }
 
     /**

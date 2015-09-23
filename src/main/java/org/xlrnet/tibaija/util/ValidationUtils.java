@@ -77,6 +77,7 @@ public class ValidationUtils {
      * @return True if the given string is a valid number variable name. False otherwise.
      */
     public static boolean isValidNumberVariableName(@NotNull String variableName) {
-        return Pattern.matches("[A-Zθ]", variableName);        
+        return Pattern.matches("[A-Zθ]", variableName);
     }
+
 }

@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 
 import static org.apache.commons.math3.util.CombinatoricsUtils.factorialDouble;
+import static org.xlrnet.tibaija.util.NumberUtils.isInteger;
 
 /**
  * Collection of helper methods for mathematical functions in TI-Basic.
@@ -116,7 +117,7 @@ public class TIMathUtils {
     public static double numberOfPermutations(double lhs, double rhs) throws TIArgumentException {
         if (lhs < 0 || rhs < 0)
             throw new TIArgumentException("Arguments may not be less than zero", lhs, rhs);
-        if (lhs % 1 != 0 || rhs % 1 != 0)
+        if (!isInteger(lhs) || !isInteger(rhs))
             throw new TIArgumentException("Arguments must be integers", lhs, rhs);
         if (lhs - rhs < 0)
             return 0;       // Default behaviour of TI-Basic
@@ -139,7 +140,7 @@ public class TIMathUtils {
     public static double numberOfCombinations(double lhs, double rhs) {
         if (lhs < 0 || rhs < 0)
             throw new TIArgumentException("Arguments may not be less than zero", lhs, rhs);
-        if (lhs % 1 != 0 || rhs % 1 != 0)
+        if (!isInteger(lhs) || !isInteger(rhs))
             throw new TIArgumentException("Arguments must be integers", lhs, rhs);
         if (lhs - rhs < 0)
             return 0;       // Default behaviour of TI-Basic

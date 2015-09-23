@@ -20,7 +20,7 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.commands;
+package org.xlrnet.tibaija.commands.io;
 
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
@@ -31,9 +31,12 @@ import org.xlrnet.tibaija.processor.Command;
 import java.util.Optional;
 
 /**
- * Dummy command which returns the exact value that it was called with.
+ * Clears the home screen of any text or numbers. It should be used at the beginning of a program and at the end to
+ * make
+ * sure the user has a clear screen afterwards. When you use the ClrHome, it resets the cursor position to the top left
+ * corner of the home screen.
  */
-public class DummyCommand extends Command {
+public class ClearHomeCommand extends Command {
 
     /**
      * Main method for invoking a command. Must be overwritten by the specific implementation. When this method gets
@@ -46,7 +49,21 @@ public class DummyCommand extends Command {
     @NotNull
     @Override
     protected Optional<Value> execute(@NotNull ImmutableList<Parameter> arguments) {
-        return Optional.of(arguments.get(0).value());
+        getEnvironment().getHomeScreen().clear();
+
+        return Optional.empty();
     }
 
+    /**
+     * <b>Can be overwritten</b> by the concrete commands if something must be checked.
+     * Checks if the number of parameters is in range.
+     *
+     * @param numberOfParametersEntered
+     *         Number of parameters passed by the caller. Value is never below zero.
+     * @return True if the number of parameters is within the expected range, otherwise false.
+     */
+    @Override
+    protected boolean hasValidNumberOfArguments(int numberOfParametersEntered) {
+        return numberOfParametersEntered == 0;
+    }
 }

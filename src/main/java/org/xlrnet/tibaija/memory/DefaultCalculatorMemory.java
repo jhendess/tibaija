@@ -42,7 +42,7 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.xlrnet.tibaija.util.ValueUtils.checkValueType;
+import static org.xlrnet.tibaija.util.Preconditions.checkValueType;
 
 /**
  * Default implementation of the TI-Basic memory model.

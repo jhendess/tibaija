@@ -20,16 +20,17 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija;
+package org.xlrnet.tibaija.processor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xlrnet.tibaija.CodeProvider;
+import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.exception.PreprocessException;
 import org.xlrnet.tibaija.exception.ProgramNotFoundException;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
-import org.xlrnet.tibaija.processor.*;
 import org.xlrnet.tibaija.util.ExecutionEnvironmentUtil;
 import org.xlrnet.tibaija.util.ValidationUtils;
 
@@ -53,6 +54,13 @@ public class TI83Plus implements VirtualCalculator {
     private final CodeProvider codeProvider;
 
     private final ExecutionEnvironment environment;
+
+    public TI83Plus(ExecutionEnvironment environment) {
+        this.calculatorMemory = environment.getWritableMemory();
+        this.calculatorIO = environment.getCalculatorIO();
+        this.codeProvider = environment.getCodeProvider();
+        this.environment = environment;
+    }
 
     public TI83Plus(CalculatorMemory calculatorMemory, CalculatorIO calculatorIO, CodeProvider codeProvider) {
         this.calculatorMemory = calculatorMemory;

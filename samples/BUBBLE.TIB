@@ -1,6 +1,8 @@
+:Disp "Bubblesort Demo
 :{5,4,3,2,1->∟A
 :5->N
 :
+:Disp "Input list:",∟A
 :
 :Lbl BS
 :For(X,N,1,0-1
@@ -12,4 +14,4 @@
   :End
  :End
 :End
-:∟A
+:Disp "Output list:",∟A
