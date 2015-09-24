@@ -384,7 +384,7 @@ RIGHT_BRACE: '}';
 COMMA: ',';
 STORE: '->' | TI_STORE;
 TI_STORE: '→';
-IMAGINARY: 'i';
+IMAGINARY: 'i' | 'ℑ';
 DIGIT: '0' .. '9';
 DOT: '.';
 THETA: 'θ';

@@ -22,13 +22,36 @@
 
 package org.xlrnet.tibaija.graphics;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * Enum for indicating the current state of a pixel on a display.
  */
 public enum PixelState {
 
-    ON,
+    ON(true),
 
-    OFF
+    OFF(false);
+
+    private boolean state;
+
+    PixelState(boolean state) {
+        this.state = state;
+    }
+
+    @JsonCreator
+    public static PixelState forValue(int value) {
+        if (value != 0) {
+            return ON;
+        } else {
+            return OFF;
+        }
+    }
+
+    @JsonValue
+    public int toValue() {
+        return this.state ? 1 : 0;
+    }
 
 }

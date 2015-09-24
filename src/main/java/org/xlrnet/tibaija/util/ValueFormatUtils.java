@@ -38,7 +38,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class ValueFormatUtils {
 
-    private static final char IMAGINARY_SYMBOL = 'i';
+    private static final char IMAGINARY_SYMBOL = 'ℑ';
 
     private static final String LIST_BEGIN = "{";
 

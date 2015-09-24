@@ -42,7 +42,7 @@ public class ValueFormatUtilsTest {
     public void testFormatValue_normal_fix1_complex() throws Exception {
         Value testValue = Value.of(1.234, 5.678);
         String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FIX_1);
-        assertEquals("1.2+5.7i", actual);
+        assertEquals("1.2+5.7ℑ", actual);
     }
 
     @Test
@@ -56,14 +56,14 @@ public class ValueFormatUtilsTest {
     public void testFormatValue_normal_float_complex_1() throws Exception {
         Value testValue = Value.of(0, 1);
         String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FLOAT);
-        assertEquals("1i", actual);     // TODO: Use different "i" for imaginary printing
+        assertEquals("1ℑ", actual);     // TODO: Use different "i" for imaginary printing
     }
 
     @Test
     public void testFormatValue_normal_float_complex_2() throws Exception {
         Value testValue = Value.of(15, 1);
         String actual = ValueFormatUtils.formatValue(testValue, NumberDisplayFormat.NORMAL, DecimalDisplayMode.FLOAT);
-        assertEquals("15+1i", actual);     // TODO: Use different "i" for imaginary printing
+        assertEquals("15+1ℑ", actual);     // TODO: Use different "i" for imaginary printing
     }
 
     @Test
