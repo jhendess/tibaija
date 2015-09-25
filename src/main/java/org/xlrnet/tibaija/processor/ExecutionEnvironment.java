@@ -34,10 +34,7 @@ import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.exception.CommandNotFoundException;
 import org.xlrnet.tibaija.exception.DuplicateCommandException;
 import org.xlrnet.tibaija.exception.TIRuntimeException;
-import org.xlrnet.tibaija.graphics.DecimalDisplayMode;
-import org.xlrnet.tibaija.graphics.HomeScreen;
-import org.xlrnet.tibaija.graphics.NullHomeScreen;
-import org.xlrnet.tibaija.graphics.NumberDisplayFormat;
+import org.xlrnet.tibaija.graphics.*;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.Parameter;
@@ -64,11 +61,13 @@ public class ExecutionEnvironment {
 
     private final Stack<ExecutableProgram> programStack = new Stack<>();
 
-    CalculatorMemory memory;
+    private final CalculatorMemory memory;
 
-    CalculatorIO calculatorIO;
+    private final CalculatorIO calculatorIO;
 
-    CodeProvider codeProvider;
+    private final CodeProvider codeProvider;
+
+    private final FontRegistry fontRegistry;
 
     Map<String, Command> commandFunctionMap = new HashMap<>();
 
@@ -80,15 +79,16 @@ public class ExecutionEnvironment {
 
     private NumberDisplayFormat numberDisplayFormat;
 
-    private ExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen) {
+    private ExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry) {
         this.memory = memory;
         this.calculatorIO = calculatorIO;
         this.codeProvider = codeProvider;
         this.homeScreen = homeScreen;
+        this.fontRegistry = fontRegistry;
     }
 
     /**
-     * Instantiate a new environment without any preconfigured commands and no code provider.
+     * Instantiate a new environment without any preconfigured commands and no font registry.
      *
      * @param memory
      *         The writable memory for the new environment.
@@ -98,11 +98,11 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO) {
-        return new ExecutionEnvironment(memory, calculatorIO, new DummyCodeProvider(), new NullHomeScreen());
+        return new ExecutionEnvironment(memory, calculatorIO, new DummyCodeProvider(), new NullHomeScreen(), new FontRegistry());
     }
 
     /**
-     * Instantiate a new environment without any preconfigured commands and a code provider.
+     * Instantiate a new environment without any preconfigured commands, no code provider and no font registry.
      *
      * @param memory
      *         The writable memory for the new environment.
@@ -114,7 +114,28 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider) {
-        return new ExecutionEnvironment(memory, calculatorIO, codeProvider, new NullHomeScreen());
+        return new ExecutionEnvironment(memory, calculatorIO, codeProvider, new NullHomeScreen(), new FontRegistry());
+    }
+
+    /**
+     * Instantiate a new environment without any preconfigured commands, but with an existing code provider, home screen
+     * and font registry.
+     *
+     * @param memory
+     *         The writable memory for the new environment.
+     * @param calculatorIO
+     *         The I/O device for the new environment.
+     * @param codeProvider
+     *         The code provider for the new environment.
+     * @param homeScreen
+     *         The home screen on which should be printed.
+     * @param fontRegistry
+     *         The registry with already configured fonts.
+     * @return A new environment
+     */
+    @NotNull
+    public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry) {
+        return new ExecutionEnvironment(memory, calculatorIO, codeProvider, homeScreen, fontRegistry);
     }
 
     /**
@@ -132,7 +153,7 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen) {
-        return new ExecutionEnvironment(memory, calculatorIO, codeProvider, homeScreen);
+        return new ExecutionEnvironment(memory, calculatorIO, codeProvider, homeScreen, new FontRegistry());
     }
 
     /**
@@ -186,6 +207,10 @@ public class ExecutionEnvironment {
      */
     public void setDecimalDisplayMode(@NotNull DecimalDisplayMode decimalDisplayMode) {
         this.decimalDisplayMode = decimalDisplayMode;
+    }
+
+    public FontRegistry getFontRegistry() {
+        return fontRegistry;
     }
 
     /**
@@ -261,11 +286,11 @@ public class ExecutionEnvironment {
     }
 
     /**
-     * Register a command as a statement in the execution environment. All programs and other commands can
-     * use the new statement once it has been registered. Every command may only be associated with at most one
-     * execution environment. If a command is registered as a command statement (i.e. through this function) it will
-     * not be available in expressions and should not be called with parentheses. E.g. "DISP 123". Command statements
-     * should be used when the system state must be manipulated (e.g. display output).
+     * Register a command as a statement in the execution environment. All programs and other commands can use the new
+     * statement once it has been registered. Every command may only be associated with at most one execution
+     * environment. If a command is registered as a command statement (i.e. through this function) it will not be
+     * available in expressions and should not be called with parentheses. E.g. "DISP 123". Command statements should be
+     * used when the system state must be manipulated (e.g. display output).
      *
      * @param commandName
      *         Name of the new command under which it can be accessed. Must begin with an uppercase letter.
@@ -293,9 +318,9 @@ public class ExecutionEnvironment {
 
     /**
      * Register a command as an expression function in the execution environment. All programs and other commands can
-     * use the new function once it has been registered. Every command may only be associated with at most one
-     * execution environment. If a command is registered as a function expression (i.e. through this function) it can
-     * be used in or as an expression and must return a value.
+     * use the new function once it has been registered. Every command may only be associated with at most one execution
+     * environment. If a command is registered as a function expression (i.e. through this function) it can be used in
+     * or as an expression and must return a value.
      *
      * @param commandName
      *         Name of the new command under which it can be accessed.
@@ -341,8 +366,8 @@ public class ExecutionEnvironment {
     }
 
     /**
-     * Run a previously registered command function with the given arguments. The command to run must be registered as
-     * a function through {@link #registerCommandFunction(String, Command)}. The return value of the function will be
+     * Run a previously registered command function with the given arguments. The command to run must be registered as a
+     * function through {@link #registerCommandFunction(String, Command)}. The return value of the function will be
      * returned and as an {@link Optional}.
      *
      * @param commandName
@@ -383,9 +408,9 @@ public class ExecutionEnvironment {
     }
 
     /**
-     * Run a previously registered command function with the given arguments. The command to run must be registered as
-     * a function through {@link #registerExpressionFunction(String, Command)}. The return value of the function will
-     * be returned and as an {@link Optional}.
+     * Run a previously registered command function with the given arguments. The command to run must be registered as a
+     * function through {@link #registerExpressionFunction(String, Command)}. The return value of the function will be
+     * returned and as an {@link Optional}.
      *
      * @param commandName
      *         Internal name of the previously registered function to execute.
@@ -405,9 +430,9 @@ public class ExecutionEnvironment {
     }
 
     /**
-     * Run a previously registered command function with the given arguments. The command to run must be registered as
-     * a function through {@link #registerExpressionFunction(String, Command)}. The return value of the function will
-     * be returned and as an {@link Optional}.
+     * Run a previously registered command function with the given arguments. The command to run must be registered as a
+     * function through {@link #registerExpressionFunction(String, Command)}. The return value of the function will be
+     * returned and as an {@link Optional}.
      *
      * @param commandName
      *         Internal name of the previously registered function to execute.

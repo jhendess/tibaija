@@ -63,7 +63,7 @@ public class AbstractTI83PlusTest {
 
     ExecutionEnvironment environment;
 
-    private DummyCodeProvider codeProvider;
+    DummyCodeProvider codeProvider;
 
     @Before
     public void setUp() {

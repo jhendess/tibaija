@@ -28,14 +28,20 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.exception.TIRuntimeException;
+import org.xlrnet.tibaija.graphics.FontConstants;
+import org.xlrnet.tibaija.graphics.FontRegistry;
+import org.xlrnet.tibaija.graphics.HomeScreen;
+import org.xlrnet.tibaija.graphics.NullHomeScreen;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.io.ConsoleIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
+import org.xlrnet.tibaija.processor.ExecutionEnvironment;
 import org.xlrnet.tibaija.processor.TI83Plus;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Main application class for starting the interpreter.
@@ -50,7 +56,7 @@ public class Application {
         new Application().run(args);
     }
 
-    private static VirtualCalculator getDefaultCalculator(CodeProvider codeProvider) {
+    private static VirtualCalculator getDefaultCalculator(CodeProvider codeProvider) throws IOException {
         Reader reader;
         Writer writer;
 
@@ -67,6 +73,12 @@ public class Application {
 
         CalculatorIO io = new ConsoleIO(reader, writer);
         CalculatorMemory memory = new DefaultCalculatorMemory();
+        HomeScreen homeScreen = new NullHomeScreen();
+        FontRegistry fontRegistry = new FontRegistry();
+        fontRegistry.registerFont(Paths.get("largeFont.json"), FontConstants.FONT_LARGE);
+        fontRegistry.registerFont(Paths.get("smallFont.json"), FontConstants.FONT_SMALL);
+
+        ExecutionEnvironment.newEnvironment(memory, io, codeProvider, homeScreen, fontRegistry);
         return new TI83Plus(memory, io, codeProvider);
     }
 
@@ -93,6 +105,8 @@ public class Application {
 
         } catch (CmdLineException e) {
             LOGGER.error("Unable to parse command line parameters", e);
+        } catch (Exception e) {
+            LOGGER.error("Internal error", e);
         }
 
         if (!isConfigured()) {
@@ -130,7 +144,7 @@ public class Application {
 
     }
 
-    private void runInteractiveMode() {
+    private void runInteractiveMode() throws IOException {
         LOGGER.info("Starting interpreter in interactive mode ...");
 
         VirtualCalculator calculator = getDefaultCalculator(new DummyCodeProvider());
@@ -164,7 +178,7 @@ public class Application {
     }
 
     private void showWelcome() {
-        LOGGER.debug("Started tibaija in interactive mode");
+        LOGGER.info("Started tibaija in interactive mode");
         System.out.println("#############################################################################");
         System.out.println("#################### Tibaija started in interactive mode ####################");
         System.out.println("####################   Type 'exit' to stop interpreter   ####################");
