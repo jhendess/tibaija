@@ -28,7 +28,7 @@ import org.kohsuke.args4j.Option;
 import java.io.File;
 
 /**
- * Bean for
+ * Bean for application configuration. Is usually automatically configured by args4j.
  */
 public class ApplicationConfiguration {
 
@@ -41,12 +41,19 @@ public class ApplicationConfiguration {
     @Option(name = "-h", usage = "show this help")
     private boolean showHelp;
 
+    @Option(name = "-d", usage = "enable debug logging")
+    private boolean showDebugLog;
+
     public File getStartFile() {
         return startFile;
     }
 
     public boolean isInteractive() {
         return interactive;
+    }
+
+    public boolean isShowDebugLog() {
+        return showDebugLog;
     }
 
     public boolean isShowHelp() {

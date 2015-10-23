@@ -22,6 +22,7 @@
 
 package org.xlrnet.tibaija;
 
+import ch.qos.logback.classic.Level;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -86,20 +87,32 @@ public class Application {
         return configured;
     }
 
+    private void configureRootLogger(ApplicationConfiguration config) {
+        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        if (config.isShowDebugLog()) {
+            rootLogger.setLevel(Level.DEBUG);
+        } else {
+            rootLogger.setLevel(Level.INFO);
+        }
+    }
+
     private void parseArguments(String[] args) {
         ApplicationConfiguration config = new ApplicationConfiguration();
         CmdLineParser parser = new CmdLineParser(config);
 
         try {
             parser.parseArgument(args);
-            if (config.isShowHelp() || config.isInteractive() || config.getStartFile() != null)
+            if (config.isShowHelp() || config.isInteractive() || config.getStartFile() != null) {
                 configured = true;
+            }
+
+            configureRootLogger(config);
 
             if (config.isInteractive()) {
                 runInteractiveMode();
             } else if (config.getStartFile() != null) {
                 runFileMode(config.getStartFile());
-            } else if (config.isShowHelp()) {
+            } else if (config.isShowHelp() || !isConfigured()) {
                 printUsage(parser);
             }
 
@@ -107,10 +120,6 @@ public class Application {
             LOGGER.error("Unable to parse command line parameters", e);
         } catch (Exception e) {
             LOGGER.error("Internal error", e);
-        }
-
-        if (!isConfigured()) {
-            printUsage(parser);
         }
     }
 
