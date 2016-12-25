@@ -22,7 +22,7 @@
 
 package org.xlrnet.tibaija.exception;
 
-import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.commons.Value;
 
 /**
  * An exception that indicates an access to an element inside a list which doesn't exist. It may e.g. be thrown if a
@@ -44,6 +44,6 @@ public class InvalidDimensionException extends TIRuntimeException {
     }
 
     public Value getInvalidIndex() {
-        return invalidIndex;
+        return this.invalidIndex;
     }
 }

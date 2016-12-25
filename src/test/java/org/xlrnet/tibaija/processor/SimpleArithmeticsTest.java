@@ -25,9 +25,9 @@ package org.xlrnet.tibaija.processor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.TIArgumentException;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.memory.Variables;
+import org.xlrnet.tibaija.memory.NumberVariable;
 
 import static org.mockito.Mockito.when;
 
@@ -39,17 +39,17 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
 
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_factorial_complex() throws Exception {
-        calculator.interpret("4i!");
+        this.calculator.interpret("4i!");
     }
 
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_factorial_minus_1() throws Exception {
-        calculator.interpret("(‾.6)!");
+        this.calculator.interpret("(‾.6)!");
     }
 
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_factorial_minus_2() throws Exception {
-        calculator.interpret("(‾1)!");
+        this.calculator.interpret("(‾1)!");
     }
 
     /**
@@ -57,96 +57,96 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
      */
     @Test(expected = Exception.class)
     public void testInterpret_invalidProgram_faculty_complex() throws Exception {
-        calculator.interpret("4i!");
+        this.calculator.interpret("4i!");
     }
 
     @Test
     public void testInterpret_validProgram_addition_1() throws Exception {
-        calculator.interpret("1+2");
+        this.calculator.interpret("1+2");
         verifyLastResultValue(3.0);
     }
 
     @Test
     public void testInterpret_validProgram_addition_2() throws Exception {
-        calculator.interpret("123+456");
+        this.calculator.interpret("123+456");
         verifyLastResultValue(579);
     }
 
     @Test
     public void testInterpret_validProgram_addition_complex() throws Exception {
-        calculator.interpret("1+2+3i+4i");
+        this.calculator.interpret("1+2+3i+4i");
         verifyLastResultValue(3.0, 7.0);
     }
 
     @Test
     public void testInterpret_validProgram_complex_number() throws Exception {
-        calculator.interpret("456i");
+        this.calculator.interpret("456i");
         verifyLastResultValue(0, 456);
     }
 
     @Test
     public void testInterpret_validProgram_cubicroot() throws Exception {
-        calculator.interpret("3∛(54");
+        this.calculator.interpret("3∛(54");
         verifyLastResultValue(11.339289449053858);
     }
 
     @Test
     public void testInterpret_validProgram_cubicroot_1() throws Exception {
-        calculator.interpret("∛(27");
+        this.calculator.interpret("∛(27");
         verifyLastResultValue(3);
     }
 
     @Test
     public void testInterpret_validProgram_cubicroot_2() throws Exception {
-        calculator.interpret("∛(√(729");
+        this.calculator.interpret("∛(√(729");
         verifyLastResultValue(3);
     }
 
     @Test
     public void testInterpret_validProgram_cubicroot_ambiguity() throws Exception {
-        calculator.interpret("3³√(9");
+        this.calculator.interpret("3³√(9");
         verifyLastResultValue(81);
     }
 
     @Test
     public void testInterpret_validProgram_cubicroot_complex_1() throws Exception {
-        calculator.interpret("∛(27i");
+        this.calculator.interpret("∛(27i");
         verifyLastResultValue(2.598076211, 1.5);
     }
 
     @Test
     public void testInterpret_validProgram_cubicroot_complex_2() throws Exception {
-        calculator.interpret("∛(27)i");
+        this.calculator.interpret("∛(27)i");
         verifyLastResultValue(0, 3);
     }
 
     @Test
     public void testInterpret_validProgram_cubicroot_power() throws Exception {
-        calculator.interpret("∛(81^3");
+        this.calculator.interpret("∛(81^3");
         verifyLastResultValue(81);
     }
 
     @Test
     public void testInterpret_validProgram_factorial_1() throws Exception {
-        calculator.interpret("4!");
+        this.calculator.interpret("4!");
         verifyLastResultValue(24);
     }
 
     @Test
     public void testInterpret_validProgram_factorial_2() throws Exception {
-        calculator.interpret("5.5!");
+        this.calculator.interpret("5.5!");
         verifyLastResultValue(287.8852778);
     }
 
     @Test
     public void testInterpret_validProgram_factorial_minus_1() throws Exception {
-        calculator.interpret("‾.5!");       //  Should be interpreted as -(0.5!)
+        this.calculator.interpret("‾.5!");       //  Should be interpreted as -(0.5!)
         verifyLastResultValue(-0.8862269255);
     }
 
     @Test
     public void testInterpret_validProgram_factorial_minus_2() throws Exception {
-        calculator.interpret("(‾.5)!");
+        this.calculator.interpret("(‾.5)!");
         verifyLastResultValue(1.772453851);
     }
 
@@ -155,7 +155,7 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
      */
     @Test
     public void testInterpret_validProgram_imaginary_precedence_1() throws Exception {
-        calculator.interpret("3i²");
+        this.calculator.interpret("3i²");
         verifyLastResultValue(-3);
     }
 
@@ -164,58 +164,58 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
      */
     @Test
     public void testInterpret_validProgram_imaginary_precedence_2() throws Exception {
-        calculator.interpret("ii²");
+        this.calculator.interpret("ii²");
         verifyLastResultValue(0, -1);
     }
 
     @Test
     public void testInterpret_validProgram_implicitMultiplication_numberVariable() {
-        when(mockedMemory.getNumberVariableValue(Variables.NumberVariable.A)).thenReturn(Value.of(123));
-        when(mockedMemory.getNumberVariableValue(Variables.NumberVariable.B)).thenReturn(Value.of(456));
-        calculator.interpret("ABA");
+        when(this.mockedMemory.getNumberVariableValue(NumberVariable.A)).thenReturn(Value.of(123));
+        when(this.mockedMemory.getNumberVariableValue(NumberVariable.B)).thenReturn(Value.of(456));
+        this.calculator.interpret("ABA");
         verifyLastResultValue(123 * 456 * 123);
     }
 
     @Test
     public void testInterpret_validProgram_memory_read_numberVariable_single() {
-        when(mockedMemory.getNumberVariableValue(Variables.NumberVariable.A)).thenReturn(Value.of(123));
-        calculator.interpret("A");
+        when(this.mockedMemory.getNumberVariableValue(NumberVariable.A)).thenReturn(Value.of(123));
+        this.calculator.interpret("A");
         verifyLastResultValue(123);
     }
 
     @Test
     public void testInterpret_validProgram_multiplication_precedence() throws Exception {
-        calculator.interpret("1+4*5");
+        this.calculator.interpret("1+4*5");
         verifyLastResultValue(21);
     }
 
     @Test
     public void testInterpret_validProgram_multiplication_precedence_complex() throws Exception {
-        calculator.interpret("1+4*5i+2.5");
+        this.calculator.interpret("1+4*5i+2.5");
         verifyLastResultValue(3.5, 20.0);
     }
 
     @Test
     public void testInterpret_validProgram_nCr_1() throws Exception {
-        calculator.interpret("40 nCr 8");
+        this.calculator.interpret("40 nCr 8");
         verifyLastResultValueWithBigTolerance(76904685L);
     }
 
     @Test
     public void testInterpret_validProgram_nCr_2() throws Exception {
-        calculator.interpret("8 nCr 70");
+        this.calculator.interpret("8 nCr 70");
         verifyLastResultValue(0);
     }
 
     @Test
     public void testInterpret_validProgram_nPr_1() throws Exception {
-        calculator.interpret("8 nPr 4");
+        this.calculator.interpret("8 nPr 4");
         verifyLastResultValue(1680);
     }
 
     @Test
     public void testInterpret_validProgram_nPr_2() throws Exception {
-        calculator.interpret("4 nPr 80");
+        this.calculator.interpret("4 nPr 80");
         verifyLastResultValue(0);
     }
 
@@ -224,145 +224,145 @@ public class SimpleArithmeticsTest extends AbstractTI83PlusTest {
      */
     @Test
     public void testInterpret_validProgram_nPr_complex_precedence() throws Exception {
-        calculator.interpret("8 nPr 4i");
+        this.calculator.interpret("8 nPr 4i");
         verifyLastResultValue(0, 1680);
     }
 
     @Test
     public void testInterpret_validProgram_negation() throws Exception {
-        calculator.interpret("4-‾5");
+        this.calculator.interpret("4-‾5");
         verifyLastResultValue(9);
     }
 
     @Test
     public void testInterpret_validProgram_parentheses_1() throws Exception {
-        calculator.interpret("(1)");
+        this.calculator.interpret("(1)");
         verifyLastResultValue(1);
     }
 
     @Test
     public void testInterpret_validProgram_parentheses_2() throws Exception {
-        calculator.interpret("2(1+2)");
+        this.calculator.interpret("2(1+2)");
         verifyLastResultValue(6);
     }
 
     @Test
     public void testInterpret_validProgram_parentheses_3() throws Exception {
-        calculator.interpret("((2(3))");
+        this.calculator.interpret("((2(3))");
         verifyLastResultValue(6);
     }
 
     @Test
     public void testInterpret_validProgram_power() throws Exception {
-        calculator.interpret("5^2*3^4");
+        this.calculator.interpret("5^2*3^4");
         verifyLastResultValue(2025);
     }
 
     @Test
     public void testInterpret_validProgram_power_complex() throws Exception {
-        calculator.interpret("5^3i*9");
+        this.calculator.interpret("5^3i*9");
         verifyLastResultValue(0, 1125);
     }
 
     @Test
     public void testInterpret_validProgram_simple_number() throws Exception {
-        calculator.interpret("123");
+        this.calculator.interpret("123");
         verifyLastResultValue(123);
     }
 
     @Test
     public void testInterpret_validProgram_squared_1() throws Exception {
-        calculator.interpret("4²");
+        this.calculator.interpret("4²");
         verifyLastResultValue(16);
     }
 
     @Test
     public void testInterpret_validProgram_squared_2() throws Exception {
-        calculator.interpret("4²²");
+        this.calculator.interpret("4²²");
         verifyLastResultValue(256);
     }
 
     @Test
     public void testInterpret_validProgram_squared_imaginary_1() throws Exception {
-        calculator.interpret("5i²");
+        this.calculator.interpret("5i²");
         verifyLastResultValue(-5);
     }
 
     @Test
     public void testInterpret_validProgram_squared_imaginary_2() throws Exception {
-        calculator.interpret("5²i");
+        this.calculator.interpret("5²i");
         verifyLastResultValue(0, 25);
     }
 
     @Test
     public void testInterpret_validProgram_squareroot_1() throws Exception {
-        calculator.interpret("√(4");
+        this.calculator.interpret("√(4");
         verifyLastResultValue(2);
     }
 
     @Test
     public void testInterpret_validProgram_squareroot_2() throws Exception {
-        calculator.interpret("√(√(16");
+        this.calculator.interpret("√(√(16");
         verifyLastResultValue(2);
     }
 
     @Test
     public void testInterpret_validProgram_squareroot_3() throws Exception {
-        calculator.interpret("√(√(16)4");
+        this.calculator.interpret("√(√(16)4");
         verifyLastResultValue(4);
     }
 
     @Test
     public void testInterpret_validProgram_squareroot_minus() throws Exception {
-        calculator.interpret("√(‾1");
+        this.calculator.interpret("√(‾1");
         verifyLastResultValue(0, 1);
     }
 
     @Test
     public void testInterpret_validProgram_subtraction() throws Exception {
-        calculator.interpret("1-2");
+        this.calculator.interpret("1-2");
         verifyLastResultValue(-1.0);
     }
 
     @Test
     public void testInterpret_validProgram_subtraction_complex() throws Exception {
-        calculator.interpret("1-2+3i-4i");
+        this.calculator.interpret("1-2+3i-4i");
         verifyLastResultValue(-1.0, -1.0);
     }
 
     @Test
     public void testInterpret_validProgram_xroot() throws Exception {
-        calculator.interpret("3×√27");
+        this.calculator.interpret("3×√27");
         verifyLastResultValue(3);
     }
 
     @Test
     public void testInterpret_validProgram_xroot_complex_lhs_normal() throws Exception {
-        calculator.interpret("3i×√27");
+        this.calculator.interpret("3i×√27");
         verifyLastResultValue(-2.964383781, 0.4608999853);
     }
 
     @Test
     public void testInterpret_validProgram_xroot_complex_lhs_parentheses() throws Exception {
-        calculator.interpret("(3i)×√27");
+        this.calculator.interpret("(3i)×√27");
         verifyLastResultValue(0.4548324228, -0.8905770417);
     }
 
     @Test
     public void testInterpret_validProgram_xroot_complex_rhs_normal() throws Exception {
-        calculator.interpret("3×√27i");
+        this.calculator.interpret("3×√27i");
         verifyLastResultValue(0, 3);
     }
 
     @Test
     public void testInterpret_validProgram_xroot_complex_rhs_parentheses() throws Exception {
-        calculator.interpret("3×√(27i)");
+        this.calculator.interpret("3×√(27i)");
         verifyLastResultValue(2.598076211, 1.5);
     }
 
     @Test
     public void testInterpret_validProgram_xroot_decimal() throws Exception {
-        calculator.interpret("2.5×√5.6568542");
+        this.calculator.interpret("2.5×√5.6568542");
         verifyLastResultValue(2);
     }
 }

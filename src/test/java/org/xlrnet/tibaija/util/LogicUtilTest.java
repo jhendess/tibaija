@@ -23,66 +23,67 @@
 package org.xlrnet.tibaija.util;
 
 import org.junit.Test;
+import org.xlrnet.tibaija.commons.LogicUtil;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class LogicUtilsTest {
+public class LogicUtilTest {
 
     @Test
     public void testAnd_false() throws Exception {
-        assertFalse(LogicUtils.and(0, 0));
-        assertFalse(LogicUtils.and(0, 1));
-        assertFalse(LogicUtils.and(-1, 0));
+        assertFalse(LogicUtil.and(0, 0));
+        assertFalse(LogicUtil.and(0, 1));
+        assertFalse(LogicUtil.and(-1, 0));
     }
 
     @Test
     public void testAnd_true() throws Exception {
-        assertTrue(LogicUtils.and(1, 1));
-        assertTrue(LogicUtils.and(-1, 1));
-        assertTrue(LogicUtils.and(1, 123));
+        assertTrue(LogicUtil.and(1, 1));
+        assertTrue(LogicUtil.and(-1, 1));
+        assertTrue(LogicUtil.and(1, 123));
     }
 
     @Test
     public void testNot_false() throws Exception {
-        assertFalse(LogicUtils.not(1));
-        assertFalse(LogicUtils.not(-1234));
-        assertFalse(LogicUtils.not(56454651651.31241));
-        assertFalse(LogicUtils.not(0.000000001));
+        assertFalse(LogicUtil.not(1));
+        assertFalse(LogicUtil.not(-1234));
+        assertFalse(LogicUtil.not(56454651651.31241));
+        assertFalse(LogicUtil.not(0.000000001));
     }
 
     @Test
     public void testNot_true() throws Exception {
-        assertTrue(LogicUtils.not(0));
+        assertTrue(LogicUtil.not(0));
     }
 
     @Test
     public void testOr_false() throws Exception {
-        assertFalse(LogicUtils.or(0, 0));
+        assertFalse(LogicUtil.or(0, 0));
     }
 
     @Test
     public void testOr_true() throws Exception {
-        assertTrue(LogicUtils.or(1, 0));
-        assertTrue(LogicUtils.or(12, 123));
-        assertTrue(LogicUtils.or(0, 4));
-        assertTrue(LogicUtils.or(-1, 0));
-        assertTrue(LogicUtils.or(-2, -45));
+        assertTrue(LogicUtil.or(1, 0));
+        assertTrue(LogicUtil.or(12, 123));
+        assertTrue(LogicUtil.or(0, 4));
+        assertTrue(LogicUtil.or(-1, 0));
+        assertTrue(LogicUtil.or(-2, -45));
     }
 
     @Test
     public void testXor_false() throws Exception {
-        assertFalse(LogicUtils.xor(12, 12));
-        assertFalse(LogicUtils.xor(0, 0));
-        assertFalse(LogicUtils.xor(-5, -1));
+        assertFalse(LogicUtil.xor(12, 12));
+        assertFalse(LogicUtil.xor(0, 0));
+        assertFalse(LogicUtil.xor(-5, -1));
     }
 
     @Test
     public void testXor_true() throws Exception {
-        assertTrue(LogicUtils.xor(1, 0));
-        assertTrue(LogicUtils.xor(0, 1));
-        assertTrue(LogicUtils.xor(123456, 0));
-        assertTrue(LogicUtils.xor(0, 123456));
-        assertTrue(LogicUtils.xor(-1, 0));
+        assertTrue(LogicUtil.xor(1, 0));
+        assertTrue(LogicUtil.xor(0, 1));
+        assertTrue(LogicUtil.xor(123456, 0));
+        assertTrue(LogicUtil.xor(0, 123456));
+        assertTrue(LogicUtil.xor(-1, 0));
     }
 }

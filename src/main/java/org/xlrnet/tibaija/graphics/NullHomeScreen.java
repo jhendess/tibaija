@@ -24,8 +24,8 @@ package org.xlrnet.tibaija.graphics;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.OutOfScreenBoundsException;
-import org.xlrnet.tibaija.memory.Value;
 
 /**
  * Home screen which prints no output to a graphical display but only to the system log.

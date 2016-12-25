@@ -27,12 +27,12 @@ import org.apache.commons.math3.complex.Complex;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xlrnet.tibaija.commons.Value;
+import org.xlrnet.tibaija.commons.ValueType;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.memory.Variables;
+import org.xlrnet.tibaija.memory.ValueUtils;
 import org.xlrnet.tibaija.processor.Command;
-import org.xlrnet.tibaija.util.ValueUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -72,7 +72,7 @@ public class UnaryCommand extends Command {
         final Value operand = arguments.get(0).value();
         final Value result = applyOperator(operand);
 
-        LOGGER.debug("({}) {} -> {}", operator, operand.getValue(), result.getValue());
+        LOGGER.debug("({}) {} -> {}", this.operator, operand.getValue(), result.getValue());
 
         return Optional.of(result);
     }
@@ -90,7 +90,7 @@ public class UnaryCommand extends Command {
         checkNotNull(operand);
 
         if (!ValueUtils.isNumberOrList(operand))
-            throw new IllegalTypeException("Operand is not a Number: " + operand.getValue(), Variables.VariableType.NUMBER, operand.getType());
+            throw new IllegalTypeException("Operand is not a Number: " + operand.getValue(), ValueType.NUMBER, operand.getType());
 
         return true;
     }
@@ -121,11 +121,11 @@ public class UnaryCommand extends Command {
         if (operand.isList()) {
             List<Complex> valueList = operand.list()
                     .stream()
-                    .map(c -> evaluationFunction.apply(Value.of(c)).complex())
+                    .map(c -> this.evaluationFunction.apply(Value.of(c)).complex())
                     .collect(Collectors.toList());
             result = Value.of(valueList);
         } else {
-            result = evaluationFunction.apply(operand);
+            result = this.evaluationFunction.apply(operand);
         }
         return result;
     }

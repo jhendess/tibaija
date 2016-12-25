@@ -22,17 +22,18 @@
 
 package org.xlrnet.tibaija.exception;
 
-import org.xlrnet.tibaija.memory.Variables;
+import org.xlrnet.tibaija.commons.Value;
+import org.xlrnet.tibaija.commons.ValueType;
 
 /**
  * An exception that indicates an illegal type. This can be thrown on mismatching type arguments and when trying to
- * access an {@link org.xlrnet.tibaija.memory.Value} object directly with the wrong type.
+ * access an {@link Value} object directly with the wrong type.
  */
 public class IllegalTypeException extends TIRuntimeException {
 
-    Variables.VariableType expectedType;
+    ValueType expectedType;
 
-    Variables.VariableType actualType;
+    ValueType actualType;
 
     /**
      * Throws a new illegal type exception.
@@ -42,7 +43,7 @@ public class IllegalTypeException extends TIRuntimeException {
      * @param actualType
      *         The actual type.
      */
-    public IllegalTypeException(Variables.VariableType expectedType, Variables.VariableType actualType) {
+    public IllegalTypeException(ValueType expectedType, ValueType actualType) {
         this(-1, -1, "Type mismatch - ", expectedType, actualType);
     }
 
@@ -56,26 +57,26 @@ public class IllegalTypeException extends TIRuntimeException {
      * @param actualType
      *         The actual type.
      */
-    public IllegalTypeException(String message, Variables.VariableType expectedType, Variables.VariableType actualType) {
+    public IllegalTypeException(String message, ValueType expectedType, ValueType actualType) {
         this(-1, -1, message, expectedType, actualType);
     }
 
-    public IllegalTypeException(int linenumber, int startIndex, String message, Variables.VariableType expectedType, Variables.VariableType actualType) {
+    public IllegalTypeException(int linenumber, int startIndex, String message, ValueType expectedType, ValueType actualType) {
         super(linenumber, startIndex, message);
         this.expectedType = expectedType;
         this.actualType = actualType;
     }
 
-    public Variables.VariableType getActualType() {
-        return actualType;
+    public ValueType getActualType() {
+        return this.actualType;
     }
 
-    public Variables.VariableType getExpectedType() {
-        return expectedType;
+    public ValueType getExpectedType() {
+        return this.expectedType;
     }
 
     @Override
     public String getMessage() {
-        return super.getMessage() + " - expected: " + expectedType + "; actual: " + actualType;
+        return super.getMessage() + " - expected: " + this.expectedType + "; actual: " + this.actualType;
     }
 }

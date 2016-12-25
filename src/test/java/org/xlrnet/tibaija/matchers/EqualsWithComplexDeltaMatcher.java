@@ -26,7 +26,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.util.Precision;
 import org.hamcrest.Description;
 import org.mockito.ArgumentMatcher;
-import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.test.TestUtils;
 
 import java.io.Serializable;
@@ -34,7 +34,7 @@ import java.io.Serializable;
 
 /**
  * Custom matcher for mockito framework. This allows us to match wrapped Complex values inside a {@link
- * org.xlrnet.tibaija.memory.Value} object with a certain precision delta.
+ * Value} object with a certain precision delta.
  */
 public class EqualsWithComplexDeltaMatcher extends ArgumentMatcher<Value> implements Serializable {
 
@@ -54,7 +54,7 @@ public class EqualsWithComplexDeltaMatcher extends ArgumentMatcher<Value> implem
     }
 
     public void describeTo(Description description) {
-        description.appendText("Value: " + wanted + ", delta: " + delta + ")");
+        description.appendText("Value: " + this.wanted + ", delta: " + this.delta + ")");
     }
 
     public boolean matches(Object actual) {
@@ -63,7 +63,7 @@ public class EqualsWithComplexDeltaMatcher extends ArgumentMatcher<Value> implem
         }
 
         Complex actualComplex = ((Value) actual).complex();
-        return Precision.equals(wanted.complex().getReal(), actualComplex.getReal(), TestUtils.DEFAULT_TOLERANCE)
-                && Precision.equals(wanted.complex().getImaginary(), actualComplex.getImaginary(), TestUtils.DEFAULT_TOLERANCE);
+        return Precision.equals(this.wanted.complex().getReal(), actualComplex.getReal(), TestUtils.DEFAULT_TOLERANCE)
+                && Precision.equals(this.wanted.complex().getImaginary(), actualComplex.getImaginary(), TestUtils.DEFAULT_TOLERANCE);
     }
 }

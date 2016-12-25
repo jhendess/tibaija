@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.util;
+package org.xlrnet.tibaija.processor;
 
 import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.VirtualCalculator;
@@ -33,12 +33,11 @@ import org.xlrnet.tibaija.commands.math.UnaryCommand;
 import org.xlrnet.tibaija.commands.math.UnaryCommandOperator;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
-import org.xlrnet.tibaija.processor.ExecutionEnvironment;
 
 /**
  * Static factory for creating ExecutionEnvironments with preconfigured commands.
  */
-public class ExecutionEnvironmentUtil {
+public class ExecutionEnvironmentFactory {
 
     @NotNull
     public static ExecutionEnvironment newDefaultEnvironment(@NotNull VirtualCalculator virtualCalculator) {
@@ -71,7 +70,7 @@ public class ExecutionEnvironmentUtil {
         env.registerExpressionFunction("√(", new UnaryCommand(UnaryCommandOperator.SQUARE_ROOT));
         env.registerExpressionFunction("∛(", new UnaryCommand(UnaryCommandOperator.CUBIC_ROOT));
         env.registerExpressionFunction("!", new UnaryCommand(UnaryCommandOperator.FACTORIAL));
-        
+
         // Register comparison operators
         env.registerExpressionFunction("=", new BinaryCommand(BinaryCommandOperator.EQUALS));
         env.registerExpressionFunction("≠", new BinaryCommand(BinaryCommandOperator.NOT_EQUALS));
@@ -90,7 +89,6 @@ public class ExecutionEnvironmentUtil {
         env.registerCommandStatement("Disp", new DisplayCommand());
         env.registerCommandFunction("Output", new OutputCommand());
         env.registerCommandStatement("ClrHome", new ClearHomeCommand());
-
     }
 
 }

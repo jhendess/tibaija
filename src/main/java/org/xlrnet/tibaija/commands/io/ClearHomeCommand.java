@@ -24,8 +24,8 @@ package org.xlrnet.tibaija.commands.io;
 
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.processor.Command;
 
 import java.util.Optional;

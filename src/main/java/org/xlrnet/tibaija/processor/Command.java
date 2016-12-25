@@ -24,9 +24,9 @@ package org.xlrnet.tibaija.processor;
 
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
 
 import java.util.Optional;
 
@@ -73,7 +73,7 @@ public abstract class Command {
     protected abstract Optional<Value> execute(@NotNull ImmutableList<Parameter> arguments);
 
     protected ExecutionEnvironment getEnvironment() {
-        return environment;
+        return this.environment;
     }
 
     public void setEnvironment(ExecutionEnvironment environment) {

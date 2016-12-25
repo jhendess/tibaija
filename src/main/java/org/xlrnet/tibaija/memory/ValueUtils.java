@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,20 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija;
+package org.xlrnet.tibaija.memory;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
+import org.xlrnet.tibaija.commons.Value;
 
 /**
- * Created by xolor on 14.08.15.
+ * Several helper methods for Value handling. Note: all methods beginning with "check" throw an exception if a required
+ * condition is not met!
  */
-public interface CodeProvider {
+public class ValueUtils {
 
-    @NotNull
-    String getProgramCode(String programName) throws IOException;
+    /**
+     * Return true if the given Value is either a number or a list.
+     */
+    public static boolean isNumberOrList(Value operand) {
+        return operand.isNumber() || operand.isList();
+    }
 }

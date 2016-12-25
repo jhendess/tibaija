@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.util;
+package org.xlrnet.tibaija.commons;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -29,7 +29,11 @@ import java.util.regex.Pattern;
 /**
  * Several helper methods for string validation.
  */
-public class ValidationUtils {
+public class ValidationUtil {
+
+    private ValidationUtil() {
+        // No instances allowed
+    }
 
     /**
      * Checks if the given input string is a valid label identifier for TI-Basic. Label names can be either one or two

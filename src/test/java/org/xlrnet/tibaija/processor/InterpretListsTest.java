@@ -28,13 +28,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.InvalidDimensionException;
 import org.xlrnet.tibaija.exception.PreprocessException;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 import org.xlrnet.tibaija.exception.UndefinedVariableException;
 import org.xlrnet.tibaija.memory.ListVariable;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.memory.Variables;
+import org.xlrnet.tibaija.memory.NumberVariable;
 
 import static org.mockito.Mockito.doReturn;
 
@@ -46,7 +46,7 @@ public class InterpretListsTest extends AbstractTI83PlusTest {
 
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_add_mismatch() {
-        calculator.interpret("{1} + {1,2}");
+        this.calculator.interpret("{1} + {1,2}");
     }
 
     @Test(expected = InvalidDimensionException.class)
@@ -87,28 +87,28 @@ public class InterpretListsTest extends AbstractTI83PlusTest {
 
     @Test(expected = PreprocessException.class)
     public void testInterpret_invalidProgram_listname_digit() {
-        calculator.interpret("∟1");
+        this.calculator.interpret("∟1");
     }
 
     @Test(expected = PreprocessException.class)
     public void testInterpret_invalidProgram_listname_toolong() {
-        calculator.interpret("∟ABCDEF");
+        this.calculator.interpret("∟ABCDEF");
     }
 
     @Test(expected = PreprocessException.class)
     public void testInterpret_invalidProgram_nestedlist() {
-        calculator.interpret("{2, {2}");
+        this.calculator.interpret("{2, {2}");
     }
 
     @Test(expected = PreprocessException.class)
     public void testInterpret_invalidProgram_nestedlist_variable() {
-        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(mockedMemory).getListVariableValue(ListVariable.fromName("A"));
-        calculator.interpret("{2, ∟A");
+        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(this.mockedMemory).getListVariableValue(ListVariable.fromName("A"));
+        this.calculator.interpret("{2, ∟A");
     }
 
     @Test
     public void testInterpret_validProgram_add_two_lists() {
-        calculator.interpret("{2+i, 3+2i} + {1,2");
+        this.calculator.interpret("{2+i, 3+2i} + {1,2");
         verifyLastResultValueList(Complex.valueOf(3, 1), Complex.valueOf(5, 2));
     }
 
@@ -123,7 +123,7 @@ public class InterpretListsTest extends AbstractTI83PlusTest {
 
     @Test
     public void testInterpret_validProgram_list() {
-        calculator.interpret("{1,2,3,456");
+        this.calculator.interpret("{1,2,3,456");
         verifyLastResultValueList(1d, 2d, 3d, 456d);
     }
 
@@ -131,12 +131,12 @@ public class InterpretListsTest extends AbstractTI83PlusTest {
     public void testInterpret_validProgram_listVariable_element_access() {
         storeAndExecute(":{1,2->∟A" +
                 ":∟A(2->A");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 2, 0);
+        verifyNumberVariableValue(NumberVariable.A, 2, 0);
     }
 
     @Test
     public void testInterpret_validProgram_list_complex() {
-        calculator.interpret("{123.456i, ‾12.34");
+        this.calculator.interpret("{123.456i, ‾12.34");
         verifyLastResultValueList(Complex.valueOf(0, 123.456), Complex.valueOf(-12.34));
     }
 
@@ -162,7 +162,7 @@ public class InterpretListsTest extends AbstractTI83PlusTest {
 
     @Test
     public void testInterpret_validProgram_list_single() {
-        calculator.interpret("{1}");
+        this.calculator.interpret("{1}");
         verifyLastResultValueList(Complex.valueOf(1));
     }
 
@@ -171,8 +171,8 @@ public class InterpretListsTest extends AbstractTI83PlusTest {
      */
     @Test
     public void testInterpret_validProgram_list_variable_postfix() {
-        doReturn(Value.of(ImmutableList.of(Complex.valueOf(2), Complex.valueOf(3)))).when(mockedMemory).getListVariableValue(ListVariable.fromName("ABC"));
-        calculator.interpret("∟ABC²");
+        doReturn(Value.of(ImmutableList.of(Complex.valueOf(2), Complex.valueOf(3)))).when(this.mockedMemory).getListVariableValue(ListVariable.fromName("ABC"));
+        this.calculator.interpret("∟ABC²");
         verifyLastResultValueList(4d, 9d);
     }
 
@@ -181,56 +181,56 @@ public class InterpretListsTest extends AbstractTI83PlusTest {
      */
     @Test
     public void testInterpret_validProgram_list_variable_prefix() {
-        doReturn(Value.of(ImmutableList.of(Complex.valueOf(4), Complex.valueOf(9)))).when(mockedMemory).getListVariableValue(ListVariable.fromName("ABC"));
-        calculator.interpret("√(∟ABC");
+        doReturn(Value.of(ImmutableList.of(Complex.valueOf(4), Complex.valueOf(9)))).when(this.mockedMemory).getListVariableValue(ListVariable.fromName("ABC"));
+        this.calculator.interpret("√(∟ABC");
         verifyLastResultValueList(2d, 3d);
     }
 
     @Test
     public void testInterpret_validProgram_listname_default() {
-        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(mockedMemory).getListVariableValue(ListVariable.DEFAULT_2);
-        calculator.interpret("∟₂");
+        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(this.mockedMemory).getListVariableValue(ListVariable.DEFAULT_2);
+        this.calculator.interpret("∟₂");
         verifyLastResultValueList(1d);
     }
 
     @Test
     public void testInterpret_validProgram_listname_digits() {
-        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(mockedMemory).getListVariableValue(ListVariable.fromName("A1234"));
-        calculator.interpret("∟A1234");
+        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(this.mockedMemory).getListVariableValue(ListVariable.fromName("A1234"));
+        this.calculator.interpret("∟A1234");
         verifyLastResultValueList(1d);
     }
 
     @Test
     public void testInterpret_validProgram_listname_theta() {
-        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(mockedMemory).getListVariableValue(ListVariable.fromName("θ1θ2A"));
-        calculator.interpret("∟θ1θ2A");
+        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(this.mockedMemory).getListVariableValue(ListVariable.fromName("θ1θ2A"));
+        this.calculator.interpret("∟θ1θ2A");
         verifyLastResultValueList(1d);
     }
 
     @Test
     public void testInterpret_validProgram_multiply_implicit_numbervariable() {
-        doReturn(Value.of(2)).when(mockedMemory).getNumberVariableValue(Variables.NumberVariable.A);
-        calculator.interpret("{1, 2}A");
+        doReturn(Value.of(2)).when(this.mockedMemory).getNumberVariableValue(NumberVariable.A);
+        this.calculator.interpret("{1, 2}A");
         verifyLastResultValueList(Complex.valueOf(2), Complex.valueOf(4));
     }
 
     @Test
     public void testInterpret_validProgram_multiply_implicit_numbervariable_left() {
-        doReturn(Value.of(ImmutableList.of(Complex.valueOf(2)))).when(mockedMemory).getListVariableValue(ListVariable.fromName("A"));
-        doReturn(Value.of(2)).when(mockedMemory).getNumberVariableValue(Variables.NumberVariable.A);
-        calculator.interpret("A∟A");
+        doReturn(Value.of(ImmutableList.of(Complex.valueOf(2)))).when(this.mockedMemory).getListVariableValue(ListVariable.fromName("A"));
+        doReturn(Value.of(2)).when(this.mockedMemory).getNumberVariableValue(NumberVariable.A);
+        this.calculator.interpret("A∟A");
         verifyLastResultValueList(4d);
     }
 
     @Test
     public void testInterpret_validProgram_multiply_implicit_single_right_list() {
-        calculator.interpret("{1, 2}(2+3.5i)");
+        this.calculator.interpret("{1, 2}(2+3.5i)");
         verifyLastResultValueList(Complex.valueOf(2, 3.5), Complex.valueOf(4, 7));
     }
 
     @Test
     public void testInterpret_validProgram_multiply_single_right_list() {
-        calculator.interpret("(2+3.5i) * {1, 2");
+        this.calculator.interpret("(2+3.5i) * {1, 2");
         verifyLastResultValueList(Complex.valueOf(2, 3.5), Complex.valueOf(4, 7));
     }
 

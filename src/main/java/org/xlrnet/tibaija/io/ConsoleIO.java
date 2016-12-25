@@ -24,7 +24,7 @@ package org.xlrnet.tibaija.io;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.commons.Value;
 
 import java.io.*;
 
@@ -48,8 +48,8 @@ public class ConsoleIO implements CalculatorIO {
     @Override
     public void print(String input) {
         try {
-            writer.write(input);
-            writer.flush();
+            this.writer.write(input);
+            this.writer.flush();
         } catch (IOException e) {
             LOGGER.error("I/O print error: ", e);
         }
@@ -58,9 +58,9 @@ public class ConsoleIO implements CalculatorIO {
     @Override
     public void printLine(String input) {
         try {
-            writer.write(input);
-            writer.newLine();
-            writer.flush();
+            this.writer.write(input);
+            this.writer.newLine();
+            this.writer.flush();
         } catch (IOException e) {
             LOGGER.error("I/O print error: ", e);
         }
@@ -75,6 +75,6 @@ public class ConsoleIO implements CalculatorIO {
 
     @Override
     public String readInput() throws IOException {
-        return reader.readLine();
+        return this.reader.readLine();
     }
 }

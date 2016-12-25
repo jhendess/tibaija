@@ -40,64 +40,10 @@ public class Variables {
 
     private static <E extends Enum<E>> E internalResolveVariableName(final Class<E> clazz, String variableName) {
         E result = EnumUtils.getEnum(clazz, variableName);
-        if (result == null)
+        if (result == null) {
             throw new UndefinedVariableException(-1, -1, "Unknown variable name", variableName);
+        }
         return result;
-    }
-
-    public enum NumberVariable implements Variable {
-        A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z;
-
-        /**
-         * Returns the name of the variable,
-         *
-         * @return the name of the variable,
-         */
-        @Override
-        public String getVariableName() {
-            return this.name();
-        }
-
-        /**
-         * Returns the type of the variable (e.g. number, string, ...).
-         *
-         * @return the type of the variable .
-         */
-        @Override
-        public VariableType getVariableType() {
-            return VariableType.NUMBER;
-        }
-    }
-
-    public enum VariableType {
-        NUMBER,
-        STRING,
-        LIST,
-        MATRIX
-    }
-
-    public enum StringVariable implements Variable {
-        Str0, Str1, Str2, Str3, Str4, Str5, Str6, Str7, Str8, Str9;
-
-        /**
-         * Returns the name of the variable,
-         *
-         * @return the name of the variable,
-         */
-        @Override
-        public String getVariableName() {
-            return this.name();
-        }
-
-        /**
-         * Returns the type of the variable (e.g. number, string, ...).
-         *
-         * @return the type of the variable .
-         */
-        @Override
-        public VariableType getVariableType() {
-            return VariableType.STRING;
-        }
     }
 
 }

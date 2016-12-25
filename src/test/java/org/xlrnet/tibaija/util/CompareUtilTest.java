@@ -23,49 +23,50 @@
 package org.xlrnet.tibaija.util;
 
 import org.junit.Test;
+import org.xlrnet.tibaija.commons.CompareUtil;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class CompareUtilsTest {
+public class CompareUtilTest {
 
     @Test
     public void testIsEqual() throws Exception {
-        assertTrue(CompareUtils.isEqual(1, 1));
-        assertFalse(CompareUtils.isEqual(2, 1));
+        assertTrue(CompareUtil.isEqual(1, 1));
+        assertFalse(CompareUtil.isEqual(2, 1));
     }
 
     @Test
     public void testIsGreaterOrEqual() throws Exception {
-        assertTrue(CompareUtils.isGreaterOrEqual(1, 1));
-        assertTrue(CompareUtils.isGreaterOrEqual(2, 1));
-        assertFalse(CompareUtils.isGreaterOrEqual(1, 2));
+        assertTrue(CompareUtil.isGreaterOrEqual(1, 1));
+        assertTrue(CompareUtil.isGreaterOrEqual(2, 1));
+        assertFalse(CompareUtil.isGreaterOrEqual(1, 2));
     }
 
     @Test
     public void testIsGreaterThan() throws Exception {
-        assertTrue(CompareUtils.isGreaterThan(2, 1));
-        assertFalse(CompareUtils.isGreaterThan(1, 1));
-        assertFalse(CompareUtils.isGreaterThan(1, 2));
+        assertTrue(CompareUtil.isGreaterThan(2, 1));
+        assertFalse(CompareUtil.isGreaterThan(1, 1));
+        assertFalse(CompareUtil.isGreaterThan(1, 2));
     }
 
     @Test
     public void testIsLessOrEqual() throws Exception {
-        assertTrue(CompareUtils.isLessOrEqual(1, 1));
-        assertTrue(CompareUtils.isLessOrEqual(1, 2));
-        assertFalse(CompareUtils.isLessOrEqual(2, 1));
+        assertTrue(CompareUtil.isLessOrEqual(1, 1));
+        assertTrue(CompareUtil.isLessOrEqual(1, 2));
+        assertFalse(CompareUtil.isLessOrEqual(2, 1));
     }
 
     @Test
     public void testIsLessThan() throws Exception {
-        assertTrue(CompareUtils.isLessThan(1, 2));
-        assertFalse(CompareUtils.isLessThan(1, 1));
-        assertFalse(CompareUtils.isLessThan(2, 1));
+        assertTrue(CompareUtil.isLessThan(1, 2));
+        assertFalse(CompareUtil.isLessThan(1, 1));
+        assertFalse(CompareUtil.isLessThan(2, 1));
     }
 
     @Test
     public void testIsNotEqual() throws Exception {
-        assertTrue(CompareUtils.isNotEqual(1, 2));
-        assertFalse(CompareUtils.isNotEqual(1, 1));
+        assertTrue(CompareUtil.isNotEqual(1, 2));
+        assertFalse(CompareUtil.isNotEqual(1, 1));
     }
 }

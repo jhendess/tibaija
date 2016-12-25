@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,13 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.util;
+package org.xlrnet.tibaija.commons;
 
 import org.apache.commons.math3.complex.Complex;
 import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 
 import static org.apache.commons.math3.util.CombinatoricsUtils.factorialDouble;
-import static org.xlrnet.tibaija.util.NumberUtils.isInteger;
 
 /**
  * Collection of helper methods for mathematical functions in TI-Basic.
@@ -93,13 +92,14 @@ public class TIMathUtils {
      */
     @NotNull
     public static Complex imaginaryNthPower(int imaginaryCount) throws TIArgumentException {
-        if (imaginaryCount < 0)
+        if (imaginaryCount < 0) {
             throw new TIArgumentException("Power must be zero or greater", imaginaryCount);
-
-        if (imaginaryCount == 0)
+        }
+        if (imaginaryCount == 0) {
             return Complex.ONE;
-        else
+        } else {
             return Complex.I.multiply(imaginaryNthPower(imaginaryCount - 1));
+        }
     }
 
     /**
@@ -115,13 +115,15 @@ public class TIMathUtils {
      *         Will be thrown if either side is negative or if any is a non-integer.
      */
     public static double numberOfPermutations(double lhs, double rhs) throws TIArgumentException {
-        if (lhs < 0 || rhs < 0)
+        if (lhs < 0 || rhs < 0) {
             throw new TIArgumentException("Arguments may not be less than zero", lhs, rhs);
-        if (!isInteger(lhs) || !isInteger(rhs))
+        }
+        if (!NumberUtil.isInteger(lhs) || !NumberUtil.isInteger(rhs)) {
             throw new TIArgumentException("Arguments must be integers", lhs, rhs);
-        if (lhs - rhs < 0)
+        }
+        if (lhs - rhs < 0) {
             return 0;       // Default behaviour of TI-Basic
-
+        }
         return factorialDouble((int) lhs) / factorialDouble((int) (lhs - rhs));
     }
 
@@ -138,13 +140,15 @@ public class TIMathUtils {
      *         Will be thrown if either side is negative or if any is a non-integer.
      */
     public static double numberOfCombinations(double lhs, double rhs) {
-        if (lhs < 0 || rhs < 0)
+        if (lhs < 0 || rhs < 0) {
             throw new TIArgumentException("Arguments may not be less than zero", lhs, rhs);
-        if (!isInteger(lhs) || !isInteger(rhs))
+        }
+        if (!NumberUtil.isInteger(lhs) || !NumberUtil.isInteger(rhs)) {
             throw new TIArgumentException("Arguments must be integers", lhs, rhs);
-        if (lhs - rhs < 0)
+        }
+        if (lhs - rhs < 0) {
             return 0;       // Default behaviour of TI-Basic
-
+        }
         return factorialDouble((int) lhs) / (factorialDouble((int) rhs) * factorialDouble((int) (lhs - rhs)));
     }
 }

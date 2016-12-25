@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,13 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.util;
+package org.xlrnet.tibaija.memory;
 
 import org.apache.commons.math3.complex.Complex;
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.graphics.DecimalDisplayMode;
 import org.xlrnet.tibaija.graphics.NumberDisplayFormat;
-import org.xlrnet.tibaija.memory.Value;
 
 import java.util.Iterator;
 import java.util.Locale;

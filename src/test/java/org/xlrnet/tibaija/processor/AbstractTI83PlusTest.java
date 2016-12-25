@@ -27,17 +27,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.rules.Timeout;
 import org.mockito.Mock;
-import org.xlrnet.tibaija.DummyCodeProvider;
 import org.xlrnet.tibaija.VirtualCalculator;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.graphics.HomeScreen;
 import org.xlrnet.tibaija.graphics.NullHomeScreen;
 import org.xlrnet.tibaija.io.CalculatorIO;
+import org.xlrnet.tibaija.io.DummyCodeProvider;
 import org.xlrnet.tibaija.matchers.EqualsTIListMatcher;
 import org.xlrnet.tibaija.matchers.EqualsTIStringMatcher;
 import org.xlrnet.tibaija.matchers.EqualsWithComplexDeltaMatcher;
 import org.xlrnet.tibaija.memory.*;
 import org.xlrnet.tibaija.test.TestUtils;
-import org.xlrnet.tibaija.util.ExecutionEnvironmentUtil;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -67,12 +67,12 @@ public class AbstractTI83PlusTest {
 
     @Before
     public void setUp() {
-        mockedMemory = spy(new DefaultCalculatorMemory());
-        mockedHomeScreen = spy(new NullHomeScreen());
-        codeProvider = new DummyCodeProvider();
-        environment = ExecutionEnvironment.newEnvironment(mockedMemory, mockedIO, codeProvider, mockedHomeScreen);
-        ExecutionEnvironmentUtil.registerDefaultCommands(environment);
-        calculator = new TI83Plus(environment);
+        this.mockedMemory = spy(new DefaultCalculatorMemory());
+        this.mockedHomeScreen = spy(new NullHomeScreen());
+        this.codeProvider = new DummyCodeProvider();
+        this.environment = ExecutionEnvironment.newEnvironment(this.mockedMemory, this.mockedIO, this.codeProvider, this.mockedHomeScreen);
+        ExecutionEnvironmentFactory.registerDefaultCommands(this.environment);
+        this.calculator = new TI83Plus(this.environment);
     }
 
     protected ExecutionEnvironment getEnvironment() {
@@ -80,8 +80,8 @@ public class AbstractTI83PlusTest {
     }
 
     protected void storeAndExecute(String snippet) {
-        calculator.loadProgram("TEST", snippet);
-        calculator.executeProgram("TEST");
+        this.calculator.loadProgram("TEST", snippet);
+        this.calculator.executeProgram("TEST");
     }
 
     protected void verifyElementInListVariable(String variable, int element, double realPart) {
@@ -89,24 +89,24 @@ public class AbstractTI83PlusTest {
     }
 
     protected void verifyElementInListVariable(String variable, int element, double realPart, double complexPart) {
-        Complex actual = calculator.getMemory().getListVariableValue(ListVariable.fromName(variable)).list().get(element);
+        Complex actual = this.calculator.getMemory().getListVariableValue(ListVariable.fromName(variable)).list().get(element);
         assertThat(Value.of(actual), new EqualsWithComplexDeltaMatcher(realPart, complexPart, TestUtils.DEFAULT_TOLERANCE));
     }
 
     protected void verifyLastResultValue(double realPart, double imaginaryPart) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, imaginaryPart, TestUtils.DEFAULT_TOLERANCE)));
+        verify(this.mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, imaginaryPart, TestUtils.DEFAULT_TOLERANCE)));
     }
 
     protected void verifyLastResultValue(double realPart) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.DEFAULT_TOLERANCE)));
+        verify(this.mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.DEFAULT_TOLERANCE)));
     }
 
     protected void verifyLastResultValue(String string) {
-        verify(mockedMemory, atLeastOnce()).setLastResult(argThat(new EqualsTIStringMatcher(string)));
+        verify(this.mockedMemory, atLeastOnce()).setLastResult(argThat(new EqualsTIStringMatcher(string)));
     }
 
     protected void verifyLastResultValueList(Complex... values) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsTIListMatcher(values, TestUtils.DEFAULT_TOLERANCE)));
+        verify(this.mockedMemory).setLastResult(argThat(new EqualsTIListMatcher(values, TestUtils.DEFAULT_TOLERANCE)));
     }
 
     protected void verifyLastResultValueList(Double... values) {
@@ -117,27 +117,27 @@ public class AbstractTI83PlusTest {
     }
 
     protected void verifyLastResultValueWithBigTolerance(double realPart) {
-        verify(mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.BIG_TOLERANCE)));
+        verify(this.mockedMemory).setLastResult(argThat(new EqualsWithComplexDeltaMatcher(realPart, TestUtils.BIG_TOLERANCE)));
     }
 
     protected void verifyListVariableSize(String variable, int expected) {
-        int actual = calculator.getMemory().getListVariableValue(ListVariable.fromName(variable)).list().size();
+        int actual = this.calculator.getMemory().getListVariableValue(ListVariable.fromName(variable)).list().size();
         assertEquals(expected, actual);
     }
 
     protected void verifyListVariableValue(String variable, Complex... expectedValues) {
-        Value actual = mockedMemory.getListVariableValue(ListVariable.fromName(variable));
+        Value actual = this.mockedMemory.getListVariableValue(ListVariable.fromName(variable));
         Assert.assertThat(actual, new EqualsTIListMatcher(expectedValues, TestUtils.DEFAULT_TOLERANCE));
     }
 
-    protected void verifyNumberVariableValue(Variables.NumberVariable variable, double real, double imaginary) {
-        final Complex actualComplex = mockedMemory.getNumberVariableValue(variable).complex();
+    protected void verifyNumberVariableValue(NumberVariable variable, double real, double imaginary) {
+        final Complex actualComplex = this.mockedMemory.getNumberVariableValue(variable).complex();
         assertEquals("Actual real value doesn't match expected", real, actualComplex.getReal(), TestUtils.DEFAULT_TOLERANCE);
         assertEquals("Actual imaginary value doesn't match expected", imaginary, actualComplex.getImaginary(), TestUtils.DEFAULT_TOLERANCE);
     }
 
-    protected void verifyStringVariableValue(Variables.StringVariable variable, String expected) {
-        Value variableValue = mockedMemory.getStringVariableValue(variable);
+    protected void verifyStringVariableValue(StringVariable variable, String expected) {
+        Value variableValue = this.mockedMemory.getStringVariableValue(variable);
         assertEquals(expected, variableValue.string());
     }
 

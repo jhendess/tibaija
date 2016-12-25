@@ -32,17 +32,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.antlr.TIBasicBaseVisitor;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
+import org.xlrnet.tibaija.commons.CompareUtil;
+import org.xlrnet.tibaija.commons.TIMathUtils;
+import org.xlrnet.tibaija.commons.Value;
+import org.xlrnet.tibaija.commons.ValueType;
 import org.xlrnet.tibaija.exception.IllegalControlFlowException;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.InvalidDimensionException;
 import org.xlrnet.tibaija.exception.TIStopException;
-import org.xlrnet.tibaija.memory.ListVariable;
-import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.memory.Variables;
-import org.xlrnet.tibaija.util.CompareUtils;
-import org.xlrnet.tibaija.util.ContextUtils;
-import org.xlrnet.tibaija.util.TIMathUtils;
+import org.xlrnet.tibaija.memory.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,7 +79,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             Optional optionalResult = (Optional) result;
             if (optionalResult.isPresent()) {
                 Value lastResult = (Value) (optionalResult).get();
-                environment.getWritableMemory().setLastResult(lastResult);
+                this.environment.getWritableMemory().setLastResult(lastResult);
             }
         } else if (result != null) {
             LOGGER.warn("Command returned unexpected object of type {} with value {}", result.getClass().getSimpleName(), result);
@@ -107,7 +105,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         String commandFunctionName = ctx.commandFunctionIdentifier().getText();
         Parameter[] parameters = (Parameter[]) ctx.parameterList().accept(this);
 
-        environment.runRegisteredCommandFunction(commandFunctionName, parameters);
+        this.environment.runRegisteredCommandFunction(commandFunctionName, parameters);
 
         return null;
     }
@@ -129,7 +127,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     if (nextCommand.isControlFlowStatement) {
                         commandCounter = internalHandleSkipFlowLogic(commandCounter, commandList, skipCommandsStack, nextCommand);
                     } else {
-                        LOGGER.debug("Skipping command {}", commandCounter);
+                        LOGGER.trace("Skipping command {}", commandCounter);
                     }
                 } else if (nextCommand.isControlFlowStatement) {
                     commandCounter = internalHandleControlFlowLogic(commandCounter, commandList, flowElementStack, skipCommandsStack, nextCommand);
@@ -161,7 +159,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             parameters = new Parameter[0];
         }
 
-        environment.runRegisteredCommandStatement(commandStatementName, parameters);
+        this.environment.runRegisteredCommandStatement(commandStatementName, parameters);
 
         return null;
     }
@@ -184,18 +182,18 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         int line = ctx.DECREMENT_SKIP_LESS().getSymbol().getLine();
         int startIndex = ctx.DECREMENT_SKIP_LESS().getSymbol().getCharPositionInLine();
 
-        Variables.NumberVariable numberVariable = Variables.resolveNumberVariable(ctx.numericalVariable().getText());
-        Value oldVariableValue = environment.getMemory().getNumberVariableValue(numberVariable);
+        NumberVariable numberVariable = Variables.resolveNumberVariable(ctx.numericalVariable().getText());
+        Value oldVariableValue = this.environment.getMemory().getNumberVariableValue(numberVariable);
         Value compareValue = (Value) ctx.expression().accept(this);
 
         if (oldVariableValue.hasImaginaryValue())
-            throw new IllegalTypeException(line, startIndex, "Unexpected imaginary value", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
+            throw new IllegalTypeException(line, startIndex, "Unexpected imaginary value", ValueType.NUMBER, ValueType.NUMBER);
 
-        Value newVariableValue = environment.runRegisteredExpressionFunction("-", oldVariableValue, Value.ONE).get();
-        environment.getWritableMemory().setNumberVariableValue(numberVariable, newVariableValue);
+        Value newVariableValue = this.environment.runRegisteredExpressionFunction("-", oldVariableValue, Value.ONE).get();
+        this.environment.getWritableMemory().setNumberVariableValue(numberVariable, newVariableValue);
 
         // If new (decremented) value is greater than the expected, skip the next command
-        boolean skipNext = CompareUtils.isLessThan(newVariableValue, compareValue);
+        boolean skipNext = CompareUtil.isLessThan(newVariableValue, compareValue);
 
         return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.INCREMENT_SKIP_GREATER, !skipNext, true);
     }
@@ -233,7 +231,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         String functionName = ctx.expressionFunctionIdentifier().getText();
         Parameter[] parameters = (Parameter[]) ctx.parameterList().accept(this);
 
-        return environment.runRegisteredExpressionFunction(functionName, parameters).get();
+        return this.environment.runRegisteredExpressionFunction(functionName, parameters).get();
     }
 
     /**
@@ -295,7 +293,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         if (ctx.NEGATIVE_MINUS() == null)
             return lhs;                 // Return left hand side if no negation is wanted
         Value rhs = Value.NEGATIVE_ONE;
-        return environment.runRegisteredExpressionFunction("*", lhs, rhs).get();
+        return this.environment.runRegisteredExpressionFunction("*", lhs, rhs).get();
     }
 
     @Override
@@ -320,20 +318,20 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             // Run regular right-associative postfix logic without imaginary parts
             Value expressionValue = (Value) ctx.expression_preeval().accept(this);
             for (String op : operators)
-                expressionValue = environment.runRegisteredExpressionFunction(op, expressionValue).get();
+                expressionValue = this.environment.runRegisteredExpressionFunction(op, expressionValue).get();
             return expressionValue;
         } else {
             // Run imaginary logic -> e.g. ii²² == i(i²)²
             int imaginaryCount = ctx.IMAGINARY().size() - 1;
             Value lhs = Value.of(Complex.I);
-            LOGGER.debug("(IMAGINARY) -> {}", lhs.complex());
+            LOGGER.trace("(IMAGINARY) -> {}", lhs.complex());
             for (String op : operators) {
                 if (imaginaryCount >= 0) {
-                    lhs = environment.runRegisteredExpressionFunction(op, lhs).get();
+                    lhs = this.environment.runRegisteredExpressionFunction(op, lhs).get();
                     if (imaginaryCount > 0) {
                         Value before = lhs;
                         lhs = Value.of(lhs.complex().multiply(Complex.I));
-                        LOGGER.debug("(MULTIPLY) {} (IMAGINARY) -> {}", before.complex(), lhs.complex());
+                        LOGGER.trace("(MULTIPLY) {} (IMAGINARY) -> {}", before.complex(), lhs.complex());
                         imaginaryCount--;
                     }
                 }
@@ -343,7 +341,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 final Complex factor = TIMathUtils.imaginaryNthPower(imaginaryCount);
                 final Value before = lhs;
                 lhs = Value.of(lhs.complex().multiply(factor));
-                LOGGER.debug("(MULTIPLY) {} {} -> {}", before.complex(), factor, lhs.complex());
+                LOGGER.trace("(MULTIPLY) {} {} -> {}", before.complex(), factor, lhs.complex());
             }
 
             return lhs;
@@ -379,7 +377,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     public Value visitExpression_prefix(@NotNull TIBasicParser.Expression_prefixContext ctx) {
         Value lhs = (Value) ctx.expression_xor().accept(this);
         if (ctx.operator != null)
-            return environment.runRegisteredExpressionFunction(ctx.operator, lhs).get();
+            return this.environment.runRegisteredExpressionFunction(ctx.operator, lhs).get();
         return lhs;
     }
 
@@ -407,8 +405,8 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         boolean isRepeatable;   // Enter EVER (start or end can be reached)
 
         Value incrementValue = Value.ONE;
-        Variables.NumberVariable numberVariable = (Variables.NumberVariable) ctx.numericalVariable().accept(this);
-        Value variableValue = environment.getMemory().getNumberVariableValue(numberVariable);
+        NumberVariable numberVariable = (NumberVariable) ctx.numericalVariable().accept(this);
+        Value variableValue = this.environment.getMemory().getNumberVariableValue(numberVariable);
         Value startValue = (Value) ctx.expression(0).accept(this);
         Value endValue = (Value) ctx.expression(1).accept(this);
         if (ctx.expression().size() == 3) {
@@ -416,18 +414,18 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         }
 
         if (variableValue.hasImaginaryValue() || startValue.hasImaginaryValue() || endValue.hasImaginaryValue()) {
-            throw new IllegalTypeException("Value may not be imaginary", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
+            throw new IllegalTypeException("Value may not be imaginary", ValueType.NUMBER, ValueType.NUMBER);
         }
 
         // Determine if the for loop will be entered
-        if (CompareUtils.isGreaterThan(incrementValue, Value.ZERO)) {   // Increment positive
-            enterLoop = CompareUtils.isLessOrEqual(variableValue, endValue);
-            isRepeatable = CompareUtils.isLessOrEqual(startValue, endValue);
-        } else if (CompareUtils.isLessThan(incrementValue, Value.ZERO)) {  // Increment negative
-            enterLoop = CompareUtils.isGreaterOrEqual(variableValue, endValue);
-            isRepeatable = CompareUtils.isGreaterOrEqual(startValue, endValue);
+        if (CompareUtil.isGreaterThan(incrementValue, Value.ZERO)) {   // Increment positive
+            enterLoop = CompareUtil.isLessOrEqual(variableValue, endValue);
+            isRepeatable = CompareUtil.isLessOrEqual(startValue, endValue);
+        } else if (CompareUtil.isLessThan(incrementValue, Value.ZERO)) {  // Increment negative
+            enterLoop = CompareUtil.isGreaterOrEqual(variableValue, endValue);
+            isRepeatable = CompareUtil.isGreaterOrEqual(startValue, endValue);
         } else {
-            throw new IllegalTypeException("Increment may not be zero", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
+            throw new IllegalTypeException("Increment may not be zero", ValueType.NUMBER, ValueType.NUMBER);
         }
 
         return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.FOR, enterLoop, isRepeatable);
@@ -466,18 +464,18 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         int line = ctx.INCREMENT_SKIP_GREATER().getSymbol().getLine();
         int startIndex = ctx.INCREMENT_SKIP_GREATER().getSymbol().getCharPositionInLine();
 
-        Variables.NumberVariable numberVariable = Variables.resolveNumberVariable(ctx.numericalVariable().getText());
-        Value oldVariableValue = environment.getMemory().getNumberVariableValue(numberVariable);
+        NumberVariable numberVariable = Variables.resolveNumberVariable(ctx.numericalVariable().getText());
+        Value oldVariableValue = this.environment.getMemory().getNumberVariableValue(numberVariable);
         Value compareValue = (Value) ctx.expression().accept(this);
 
         if (oldVariableValue.hasImaginaryValue())
-            throw new IllegalTypeException(line, startIndex, "Unexpected imaginary value", Variables.VariableType.NUMBER, Variables.VariableType.NUMBER);
+            throw new IllegalTypeException(line, startIndex, "Unexpected imaginary value", ValueType.NUMBER, ValueType.NUMBER);
 
-        Value newVariableValue = environment.runRegisteredExpressionFunction("+", oldVariableValue, Value.ONE).get();
-        environment.getWritableMemory().setNumberVariableValue(numberVariable, newVariableValue);
+        Value newVariableValue = this.environment.runRegisteredExpressionFunction("+", oldVariableValue, Value.ONE).get();
+        this.environment.getWritableMemory().setNumberVariableValue(numberVariable, newVariableValue);
 
         // If new (incremented) value is greater than the expected, skip the next command
-        boolean skipNext = CompareUtils.isGreaterThan(newVariableValue, compareValue);
+        boolean skipNext = CompareUtil.isGreaterThan(newVariableValue, compareValue);
 
         return new ControlFlowElement(line, startIndex, ControlFlowElement.ControlFlowToken.INCREMENT_SKIP_GREATER, !skipNext, true);
     }
@@ -498,7 +496,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
 
     @Override
     public Value visitLastResult(@NotNull TIBasicParser.LastResultContext ctx) {
-        return environment.getMemory().getLastResult();
+        return this.environment.getMemory().getLastResult();
     }
 
     /**
@@ -525,7 +523,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", index);
         }
 
-        return environment.getMemory().getListVariableElementValue(listVariable, (int) indexValue);
+        return this.environment.getMemory().getListVariableElementValue(listVariable, (int) indexValue);
     }
 
     @Override
@@ -541,7 +539,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     public Value visitListValue(@NotNull TIBasicParser.ListValueContext ctx) {
         if (ctx.listVariable() != null) {
             ListVariable listVariable = (ListVariable) ctx.listVariable().accept(this);
-            return environment.getMemory().getListVariableValue(listVariable);
+            return this.environment.getMemory().getListVariableValue(listVariable);
         } else if (ctx.listExpression() != null) {
             return (Value) ctx.listExpression().accept(this);
         }
@@ -573,12 +571,12 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Parameter visitListVariableParameter(@NotNull TIBasicParser.ListVariableParameterContext ctx) {
         ListVariable var = (ListVariable) ctx.listVariable().accept(this);
-        return Parameter.variable(var, environment.getMemory());
+        return Parameter.variable(var, this.environment.getMemory());
     }
 
     @Override
     public Value visitNumber(@NotNull TIBasicParser.NumberContext ctx) {
-        return ContextUtils.extractValueFromNumberContext(ctx);
+        return ContextUtil.extractValueFromNumberContext(ctx);
     }
 
     /**
@@ -594,7 +592,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     }
 
     @Override
-    public Variables.NumberVariable visitNumericalVariable(@NotNull TIBasicParser.NumericalVariableContext ctx) {
+    public NumberVariable visitNumericalVariable(@NotNull TIBasicParser.NumericalVariableContext ctx) {
         String variableName = ctx.getText();
         return Variables.resolveNumberVariable(variableName);
     }
@@ -608,14 +606,14 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
      */
     @Override
     public Object visitNumericalVariableExpression(@NotNull TIBasicParser.NumericalVariableExpressionContext ctx) {
-        Variables.NumberVariable variable = (Variables.NumberVariable) ctx.numericalVariable().accept(this);
-        return environment.getMemory().getNumberVariableValue(variable);
+        NumberVariable variable = (NumberVariable) ctx.numericalVariable().accept(this);
+        return this.environment.getMemory().getNumberVariableValue(variable);
     }
 
     @Override
     public Parameter visitNumericalVariableParameter(@NotNull TIBasicParser.NumericalVariableParameterContext ctx) {
-        Variables.NumberVariable var = (Variables.NumberVariable) ctx.numericalVariable().accept(this);
-        return Parameter.variable(var, environment.getMemory());
+        NumberVariable var = (NumberVariable) ctx.numericalVariable().accept(this);
+        return Parameter.variable(var, this.environment.getMemory());
     }
 
     /**
@@ -680,7 +678,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", newDimension);
         }
 
-        environment.getWritableMemory().setListVariableSize(listVariable, (int) dimensionValue);
+        this.environment.getWritableMemory().setListVariableSize(listVariable, (int) dimensionValue);
 
         return newDimension;
     }
@@ -704,7 +702,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
             throw new InvalidDimensionException(line, startIndex, "Index may not be decimal", index);
         }
 
-        environment.getWritableMemory().setListVariableElementValue(listVariable, (int) indexValue, newValue);
+        this.environment.getWritableMemory().setListVariableElementValue(listVariable, (int) indexValue, newValue);
 
         return newValue;
     }
@@ -714,7 +712,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         ListVariable variable = (ListVariable) ctx.listVariable().accept(this);
         Value value = (Value) ctx.expression().accept(this);
 
-        environment.getWritableMemory().setListVariableValue(variable, value);
+        this.environment.getWritableMemory().setListVariableValue(variable, value);
         return value;
     }
 
@@ -723,8 +721,8 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         String variableName = ctx.numericalVariable().getText();
         Value value = (Value) ctx.expression().accept(this);
 
-        Variables.NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
-        environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
+        NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
+        this.environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
 
         return value;
     }
@@ -740,10 +738,10 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Value visitStoreStringStatement(@NotNull TIBasicParser.StoreStringStatementContext ctx) {
         String variableName = ctx.STRING_VARIABLE().getText();
-        Variables.StringVariable stringVariable = Variables.resolveStringVariable(variableName);
+        StringVariable stringVariable = Variables.resolveStringVariable(variableName);
 
         Value value = (Value) ctx.expression().accept(this);
-        environment.getWritableMemory().setStringVariableValue(stringVariable, value);
+        this.environment.getWritableMemory().setStringVariableValue(stringVariable, value);
         return value;
     }
 
@@ -774,8 +772,8 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
     @Override
     public Value visitStringVariableExpression(@NotNull TIBasicParser.StringVariableExpressionContext ctx) {
         String variableName = ctx.STRING_VARIABLE().getText();
-        Variables.StringVariable stringVariable = Variables.resolveStringVariable(variableName);
-        return environment.getMemory().getStringVariableValue(stringVariable);
+        StringVariable stringVariable = Variables.resolveStringVariable(variableName);
+        return this.environment.getMemory().getStringVariableValue(stringVariable);
     }
 
     @Override
@@ -816,15 +814,15 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     throw new IllegalControlFlowException(line, charIndex, "Missing next command");
                 }
                 if (!currentFlowElement.getLastEvaluation()) {
-                    LOGGER.debug("Skipping next command...");
+                    LOGGER.trace("Skipping next command...");
                     commandIndex++;
                 }
                 break;
             case GOTO:
                 JumpingControlFlowElement jumpElement = (JumpingControlFlowElement) currentFlowElement;
                 String targetLabel = jumpElement.getTargetLabel();
-                commandIndex = environment.getProgramStack().peek().getLabelJumpTarget(jumpElement.getTargetLabel());
-                LOGGER.debug("Jumping to label {} at command {}", targetLabel, commandIndex);
+                commandIndex = this.environment.getProgramStack().peek().getLabelJumpTarget(jumpElement.getTargetLabel());
+                LOGGER.trace("Jumping to label {} at command {}", targetLabel, commandIndex);
                 break;
             case LABEL:
                 break;  // Do nothing when encountering Label
@@ -835,16 +833,16 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     TIBasicParser.ForStatementContext forStatementContext = commandList.get(commandIndex).controlFlowStatement().forStatement();
                     String variableName = forStatementContext.numericalVariable().getText();
                     Value value = (Value) forStatementContext.expression(0).accept(this);
-                    Variables.NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
-                    environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
+                    NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
+                    this.environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
                     isFirstIteration = true;
                 }
                 if (currentFlowElement.isRepeatable() && (currentFlowElement.getLastEvaluation() || isFirstIteration)) {
                     if (isFirstIteration) {
                         currentFlowElement.setLastEvaluation(true);     // Hack for making sure, that the first increment is ALWAYS done at the end
-                        LOGGER.debug("Entering FOR loop at command {}", commandIndex);
+                        LOGGER.trace("Entering FOR loop at command {}", commandIndex);
                     } else {
-                        LOGGER.debug("Continuing FOR loop at command {}", commandIndex);
+                        LOGGER.trace("Continuing FOR loop at command {}", commandIndex);
                         flowElementStack.pop();
                     }
                     currentFlowElement.setCommandIndex(commandIndex);
@@ -853,18 +851,18 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     if (topFlowElement != null && topFlowElement.getCommandIndex() == commandIndex) {
                         flowElementStack.pop();
                     }
-                    LOGGER.debug("Skipping commands until next END from FOR command {}", commandIndex);
+                    LOGGER.trace("Skipping commands until next END from FOR command {}", commandIndex);
                     skipCommandsStack.push(ControlFlowElement.ControlFlowToken.FOR);
                 }
                 break;
             case REPEAT:
                 currentFlowElement.setCommandIndex(commandIndex);
-                LOGGER.debug("Entering repeat loop at command {}", commandIndex);
+                LOGGER.trace("Entering repeat loop at command {}", commandIndex);
                 flowElementStack.push(currentFlowElement);
                 break;
             case WHILE:
                 if (!currentFlowElement.getLastEvaluation()) {
-                    LOGGER.debug("Skipping commands until next END from WHILE command {}", commandIndex);
+                    LOGGER.trace("Skipping commands until next END from WHILE command {}", commandIndex);
                     skipCommandsStack.push(ControlFlowElement.ControlFlowToken.WHILE);
                 } else {
                     currentFlowElement.setCommandIndex(commandIndex);
@@ -883,7 +881,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 } else {
                     currentFlowElement.setLastEvaluation(false);
                     skipCommandsStack.push(ControlFlowElement.ControlFlowToken.ELSE);
-                    LOGGER.debug("Skipping commands until next ELSE from THEN command {}", commandIndex);
+                    LOGGER.trace("Skipping commands until next ELSE from THEN command {}", commandIndex);
                 }
                 flowElementStack.push(currentFlowElement);
                 break;
@@ -896,7 +894,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 }
                 if (topFlowElement.getLastEvaluation()) {        // Skip until next "END" if previous if was true
                     skipCommandsStack.push(ControlFlowElement.ControlFlowToken.END);
-                    LOGGER.debug("Skipping commands until next END from ELSE command {}", commandIndex);
+                    LOGGER.trace("Skipping commands until next END from ELSE command {}", commandIndex);
                 }
                 break;
             case END:
@@ -922,9 +920,9 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                             increment = (Value) forStatementContext.expression(2).accept(this);
                         else
                             increment = Value.of(1);
-                        Variables.NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
-                        Value value = environment.runRegisteredExpressionFunction("+", environment.getMemory().getNumberVariableValue(targetVariable), increment).get();
-                        environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
+                        NumberVariable targetVariable = Variables.resolveNumberVariable(variableName);
+                        Value value = this.environment.runRegisteredExpressionFunction("+", this.environment.getMemory().getNumberVariableValue(targetVariable), increment).get();
+                        this.environment.getWritableMemory().setNumberVariableValue(targetVariable, value);
                         flowElementStack.push(topFlowElement);      // Push the flow element again -> workaround
                     } else {
                         topFlowElement.setRepeatable(false);
@@ -932,7 +930,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 }
                 if (topFlowElement.isRepeatable()) {
                     commandIndex = topFlowElement.getCommandIndex() - 1;          // Move counter backwards
-                    LOGGER.debug("Moving command counter to index {}", commandIndex);
+                    LOGGER.trace("Moving command counter to index {}", commandIndex);
                 }
                 flowElementStack.pop();
                 break;
@@ -942,11 +940,11 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     throw new IllegalControlFlowException(line, charIndex, "Illegal 'If' at the end of the program");
                 } else if (commandList.get(commandIndex + 1).isControlFlowStatement) {
                     flowElementStack.push(currentFlowElement);
-                    LOGGER.debug("Predicted multiline IF at command {}", commandIndex);
+                    LOGGER.trace("Predicted multiline IF at command {}", commandIndex);
                 } else if (!currentFlowElement.getLastEvaluation()) {
                     // If the next command is not a flow statement and the If evaluated to false, skip the next command (i.e. no else allowed!)
                     commandIndex++;
-                    LOGGER.debug("Skipped IF statement without ELSE clause at command {}", commandIndex);
+                    LOGGER.trace("Skipped IF statement without ELSE clause at command {}", commandIndex);
                 }
                 break;
             default:
@@ -972,9 +970,9 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                     throw new IllegalControlFlowException(-1, -1, "Illegal 'If' at the end of the program");
                 } else if (commandList.get(currentCommandCounter + 1).isControlFlowStatement) {
                     skipCommandsStack.push(currentFlowToken);
-                    LOGGER.debug("Predicted multiline IF while skipping over command {}", currentCommandCounter);
+                    LOGGER.trace("Predicted multiline IF while skipping over command {}", currentCommandCounter);
                 } else {
-                    LOGGER.debug("Skipping over single line IF at command {}", currentCommandCounter);
+                    LOGGER.trace("Skipping over single line IF at command {}", currentCommandCounter);
                     currentCommandCounter++;
                 }
                 break;
@@ -1006,7 +1004,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
                 throw new IllegalStateException("Illegal flow token: " + currentFlowToken);
         }
         if (skipCommandsStack.empty()) {
-            LOGGER.debug("Skip stack is now empty - continuing execution at command {}", currentCommandCounter + 1);
+            LOGGER.trace("Skip stack is now empty - continuing execution at command {}", currentCommandCounter + 1);
         }
         return currentCommandCounter;
     }
@@ -1020,12 +1018,10 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
      * E.g.: operator = ['+','-'] and operands = [1,2,3] will result in 1 + 2 - 3
      *
      * @param operators
-     *         List of operators to be applied. Note: the first operator will be applied to the first and second
-     *         operand
+     *         List of operators to be applied. Note: the first operator will be applied to the first and second operand
      *         (see above)
      * @param contextRules
-     *         The child contexts that will be invoked by the visitor. Each context must return an object of type
-     *         {@link
+     *         The child contexts that will be invoked by the visitor. Each context must return an object of type {@link
      *         Value}.
      */
     @NotNull
@@ -1033,7 +1029,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
         Value lhs = (Value) contextRules.get(0).accept(this);
         for (int i = 1; i < contextRules.size(); i++) {
             Value rhs = (Value) contextRules.get(i).accept(this);
-            lhs = environment.runRegisteredExpressionFunction(operators.get(i - 1), lhs, rhs).get();
+            lhs = this.environment.runRegisteredExpressionFunction(operators.get(i - 1), lhs, rhs).get();
         }
         return lhs;
     }

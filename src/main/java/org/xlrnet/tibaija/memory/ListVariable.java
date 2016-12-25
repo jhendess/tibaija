@@ -25,6 +25,7 @@ package org.xlrnet.tibaija.memory;
 import com.google.common.base.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.commons.ValueType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,8 +63,8 @@ public class ListVariable implements Variable {
      * variable name) already exists, that one will be returned.
      *
      * @param variableName
-     *         Name of the variable.  Must be written uppercase and between one and five
-     *         characters without the leading list token "∟". Digits are allowed except for the first character.
+     *         Name of the variable.  Must be written uppercase and between one and five characters without the leading
+     *         list token "∟". Digits are allowed except for the first character.
      * @return A ListVariable object with the given variable name.
      */
     public static ListVariable fromName(@NotNull String variableName) {
@@ -81,7 +82,7 @@ public class ListVariable implements Variable {
         if (this == o) return true;
         if (!(o instanceof ListVariable)) return false;
         ListVariable that = (ListVariable) o;
-        return Objects.equal(variableName, that.variableName);
+        return Objects.equal(this.variableName, that.variableName);
     }
 
     /**
@@ -91,7 +92,7 @@ public class ListVariable implements Variable {
      */
     @Override
     public String getVariableName() {
-        return variableName;
+        return this.variableName;
     }
 
     /**
@@ -100,12 +101,12 @@ public class ListVariable implements Variable {
      * @return the type of the variable .
      */
     @Override
-    public Variables.VariableType getVariableType() {
-        return Variables.VariableType.LIST;
+    public ValueType getVariableType() {
+        return ValueType.LIST;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(variableName);
+        return Objects.hashCode(this.variableName);
     }
 }

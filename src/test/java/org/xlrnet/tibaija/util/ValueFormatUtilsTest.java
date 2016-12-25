@@ -25,9 +25,10 @@ package org.xlrnet.tibaija.util;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.math3.complex.Complex;
 import org.junit.Test;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.graphics.DecimalDisplayMode;
 import org.xlrnet.tibaija.graphics.NumberDisplayFormat;
-import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.memory.ValueFormatUtils;
 
 import static org.junit.Assert.assertEquals;
 

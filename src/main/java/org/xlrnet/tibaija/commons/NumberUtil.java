@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,26 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.memory;
-
-import org.xlrnet.tibaija.commons.ValueType;
+package org.xlrnet.tibaija.commons;
 
 /**
- * A variable can be used for storing values on the internal system memory.
+ * A set of various static helper methods for common number related tasks.
  */
-public interface Variable {
+public class NumberUtil {
+
+    private NumberUtil() {
+        // No instances allowed
+    }
 
     /**
-     * Returns the name of the variable,
+     * Checks whether the given number is an integer.
      *
-     * @return the name of the variable,
+     * @param number
+     *         The number to check
+     * @return True if the given number is an integer, false otherwise.
      */
-    String getVariableName();
-
-    /**
-     * Returns the type of the variable (e.g. number, string, ...).
-     *
-     * @return the type of the variable .
-     */
-    ValueType getVariableType();
+    public static boolean isInteger(double number) {
+        return number % 1 == 0;
+    }
 
 }

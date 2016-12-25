@@ -28,9 +28,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.xlrnet.tibaija.commands.DummyCommand;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.CommandNotFoundException;
 import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -52,37 +52,37 @@ public class InterpretCommandTest extends AbstractTI83PlusTest {
 
     @Test(expected = CommandNotFoundException.class)
     public void testCommand_invalidProgram_callFunctionCommandAsExpression() {
-        getEnvironment().registerCommandFunction("Test", dummyCommand);
+        getEnvironment().registerCommandFunction("Test", this.dummyCommand);
         storeAndExecute(":Test(123)+1");
     }
 
     @Test(expected = CommandNotFoundException.class)
     public void testCommand_invalidProgram_callFunctionCommandAsStatement() {
-        getEnvironment().registerCommandStatement("Test", dummyCommand);
+        getEnvironment().registerCommandStatement("Test", this.dummyCommand);
         storeAndExecute(":Test(123)");
     }
 
     @Test
     public void testCommand_validProgram_registerCommandFunction() {
-        getEnvironment().registerCommandFunction("Test", dummyCommand);
+        getEnvironment().registerCommandFunction("Test", this.dummyCommand);
         storeAndExecute(":Test(123,456)");
-        verify(dummyCommand).execute(expectedArgumentList);
-        verify(mockedMemory, never()).setLastResult(any());
+        verify(this.dummyCommand).execute(this.expectedArgumentList);
+        verify(this.mockedMemory, never()).setLastResult(any());
     }
 
     @Test
     public void testCommand_validProgram_registerCommandStatement() {
-        getEnvironment().registerCommandStatement("Test", dummyCommand);
+        getEnvironment().registerCommandStatement("Test", this.dummyCommand);
         storeAndExecute(":Test 123,456");
-        verify(dummyCommand).execute(expectedArgumentList);
-        verify(mockedMemory, never()).setLastResult(any());
+        verify(this.dummyCommand).execute(this.expectedArgumentList);
+        verify(this.mockedMemory, never()).setLastResult(any());
     }
 
     @Test
     public void testCommand_validProgram_registerExpressionFunction() {
-        getEnvironment().registerExpressionFunction("testi", dummyCommand);
+        getEnvironment().registerExpressionFunction("testi", this.dummyCommand);
         storeAndExecute(":testi(123, 456)+1");
-        verify(dummyCommand).execute(expectedArgumentList);
+        verify(this.dummyCommand).execute(this.expectedArgumentList);
         verifyLastResultValue(124);
     }
 

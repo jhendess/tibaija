@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,12 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.util;
+package org.xlrnet.tibaija.processor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
-import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.commons.Value;
 
 import java.math.BigDecimal;
 
@@ -34,7 +34,11 @@ import static java.util.Objects.isNull;
 /**
  * Helper class for extracting values from different grammar contexts.
  */
-public class ContextUtils {
+public class ContextUtil {
+
+    private ContextUtil() {
+        // No instances allowed
+    }
 
     /**
      * Extracts the numerical value from a given NumberContext objects. This will always create a complex value.
@@ -58,7 +62,7 @@ public class ContextUtils {
             else
                 value = NumberUtils.createBigDecimal(preDecimal + decimal);
         }
-        
+
         if (isNegative)
             value = value.multiply(BigDecimal.valueOf(-1));
 

@@ -22,14 +22,14 @@
 
 package org.xlrnet.tibaija.commands.math;
 
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.util.CompareUtils;
-import org.xlrnet.tibaija.util.LogicUtils;
-import org.xlrnet.tibaija.util.TIMathUtils;
+import org.xlrnet.tibaija.commons.CompareUtil;
+import org.xlrnet.tibaija.commons.LogicUtil;
+import org.xlrnet.tibaija.commons.TIMathUtils;
+import org.xlrnet.tibaija.commons.Value;
 
 import java.util.function.BinaryOperator;
 
-import static org.xlrnet.tibaija.util.Preconditions.checkIfAnyValueIsImaginary;
+import static org.xlrnet.tibaija.commons.Preconditions.checkIfAnyValueIsImaginary;
 
 /**
  * Static enum that defines several functions for evaluating arithmetic operations with two operands.
@@ -52,43 +52,43 @@ public enum BinaryCommandOperator {
 
     NTH_ROOT((lhs, rhs) -> Value.of(TIMathUtils.complexNthRoot(lhs.complex(), rhs.complex()))),
 
-    EQUALS((lhs, rhs) -> Value.of(CompareUtils.isEqual(lhs, rhs))),
+    EQUALS((lhs, rhs) -> Value.of(CompareUtil.isEqual(lhs, rhs))),
 
-    NOT_EQUALS((lhs, rhs) -> Value.of(CompareUtils.isNotEqual(lhs, rhs))),
+    NOT_EQUALS((lhs, rhs) -> Value.of(CompareUtil.isNotEqual(lhs, rhs))),
 
     GREATER_THAN((lhs, rhs) -> {
         checkIfAnyValueIsImaginary(lhs, rhs);
-        return Value.of(CompareUtils.isGreaterThan(lhs, rhs));
+        return Value.of(CompareUtil.isGreaterThan(lhs, rhs));
     }),
 
     LESS_THAN((lhs, rhs) -> {
         checkIfAnyValueIsImaginary(lhs, rhs);
-        return Value.of(CompareUtils.isLessThan(lhs, rhs));
+        return Value.of(CompareUtil.isLessThan(lhs, rhs));
     }),
 
     GREATER_EQUALS((lhs, rhs) -> {
         checkIfAnyValueIsImaginary(lhs, rhs);
-        return Value.of(CompareUtils.isGreaterOrEqual(lhs, rhs));
+        return Value.of(CompareUtil.isGreaterOrEqual(lhs, rhs));
     }),
 
     LESS_EQUALS((lhs, rhs) -> {
         checkIfAnyValueIsImaginary(lhs, rhs);
-        return Value.of(CompareUtils.isLessOrEqual(lhs, rhs));
+        return Value.of(CompareUtil.isLessOrEqual(lhs, rhs));
     }),
 
     AND((lhs, rhs) -> {
         checkIfAnyValueIsImaginary(lhs, rhs);
-        return Value.of(LogicUtils.and(lhs.complex().getReal(), rhs.complex().getReal()));
+        return Value.of(LogicUtil.and(lhs.complex().getReal(), rhs.complex().getReal()));
     }),
 
     OR((lhs, rhs) -> {
         checkIfAnyValueIsImaginary(lhs, rhs);
-        return Value.of(LogicUtils.or(lhs.complex().getReal(), rhs.complex().getReal()));
+        return Value.of(LogicUtil.or(lhs.complex().getReal(), rhs.complex().getReal()));
     }),
 
     XOR((lhs, rhs) -> {
         checkIfAnyValueIsImaginary(lhs, rhs);
-        return Value.of(LogicUtils.xor(lhs.complex().getReal(), rhs.complex().getReal()));
+        return Value.of(LogicUtil.xor(lhs.complex().getReal(), rhs.complex().getReal()));
     }),
 
     NPR((lhs, rhs) -> {
@@ -108,6 +108,6 @@ public enum BinaryCommandOperator {
     }
 
     public BinaryOperator<Value> getOperatorFunction() {
-        return operatorFunction;
+        return this.operatorFunction;
     }
 }

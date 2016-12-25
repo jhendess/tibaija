@@ -25,14 +25,13 @@ package org.xlrnet.tibaija.processor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xlrnet.tibaija.CodeProvider;
 import org.xlrnet.tibaija.VirtualCalculator;
+import org.xlrnet.tibaija.commons.ValidationUtil;
 import org.xlrnet.tibaija.exception.PreprocessException;
 import org.xlrnet.tibaija.exception.ProgramNotFoundException;
 import org.xlrnet.tibaija.io.CalculatorIO;
+import org.xlrnet.tibaija.io.CodeProvider;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
-import org.xlrnet.tibaija.util.ExecutionEnvironmentUtil;
-import org.xlrnet.tibaija.util.ValidationUtils;
 
 import java.io.IOException;
 
@@ -66,39 +65,39 @@ public class TI83Plus implements VirtualCalculator {
         this.calculatorMemory = calculatorMemory;
         this.calculatorIO = calculatorIO;
         this.codeProvider = codeProvider;
-        this.environment = ExecutionEnvironmentUtil.newDefaultEnvironment(this);
+        this.environment = ExecutionEnvironmentFactory.newDefaultEnvironment(this);
     }
 
     @Override
     public void executeProgram(String programName) throws ProgramNotFoundException {
         programName = programName.toUpperCase();
-        if (!calculatorMemory.containsProgram(programName)) {
+        if (!this.calculatorMemory.containsProgram(programName)) {
             try {
-                loadProgram(programName, codeProvider.getProgramCode(programName));
+                loadProgram(programName, this.codeProvider.getProgramCode(programName));
             } catch (IOException e) {
                 LOGGER.error("Loading external code failed", e);
             }
         }
 
-        ExecutableProgram executableProgram = calculatorMemory.getStoredProgram(programName);
+        ExecutableProgram executableProgram = this.calculatorMemory.getStoredProgram(programName);
 
         LOGGER.info("Starting program '{}'", programName);
 
-        environment.run(executableProgram, new FullTIBasicVisitor());
+        this.environment.run(executableProgram, new FullTIBasicVisitor());
     }
 
     public ExecutionEnvironment getEnvironment() {
-        return environment;
+        return this.environment;
     }
 
     @Override
     public CalculatorIO getIODevice() {
-        return calculatorIO;
+        return this.calculatorIO;
     }
 
     @Override
     public CalculatorMemory getMemory() {
-        return calculatorMemory;
+        return this.calculatorMemory;
     }
 
     @Override
@@ -108,7 +107,7 @@ public class TI83Plus implements VirtualCalculator {
 
         try {
             ExecutableProgram executableProgram = internalPreprocessCode("TMP", input);
-            environment.run(executableProgram, new ControlflowLessTIBasicVisitor());
+            this.environment.run(executableProgram, new ControlflowLessTIBasicVisitor());
         } catch (PreprocessException e) {
             LOGGER.error("Preprocessing commands failed: {}", e.getMessage());
             throw e;
@@ -117,7 +116,7 @@ public class TI83Plus implements VirtualCalculator {
 
     @Override
     public void loadProgram(String programName, CharSequence programCode) {
-        checkArgument(ValidationUtils.isValidProgramName(programName), "Invalid program name: %s", programName);
+        checkArgument(ValidationUtil.isValidProgramName(programName), "Invalid program name: %s", programName);
 
         try {
             ExecutableProgram executableProgram = internalPreprocessCode(programName, programCode);
@@ -133,7 +132,7 @@ public class TI83Plus implements VirtualCalculator {
      */
     private ExecutableProgram internalPreprocessCode(String programName, CharSequence programCode) {
         ExecutableProgram executableProgram;
-        executableProgram = preprocessor.preprocessProgramCode(programName, programCode);
+        executableProgram = this.preprocessor.preprocessProgramCode(programName, programCode);
         return executableProgram;
     }
 }

@@ -24,7 +24,7 @@ package org.xlrnet.tibaija.matchers;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mockito.ArgumentMatcher;
-import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.commons.Value;
 
 /**
  * Matcher for verifying string values in TI-Basic.
@@ -61,6 +61,6 @@ public class EqualsTIStringMatcher extends ArgumentMatcher<Value> {
 
         String actualString = value.string();
 
-        return StringUtils.equals(expectedString, actualString);
+        return StringUtils.equals(this.expectedString, actualString);
     }
 }

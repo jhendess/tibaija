@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,22 +25,18 @@ package org.xlrnet.tibaija.memory;
 import org.xlrnet.tibaija.commons.ValueType;
 
 /**
- * A variable can be used for storing values on the internal system memory.
+ * String variable used for storing character sequences.
  */
-public interface Variable {
+public enum StringVariable implements Variable {
+    Str0, Str1, Str2, Str3, Str4, Str5, Str6, Str7, Str8, Str9;
 
-    /**
-     * Returns the name of the variable,
-     *
-     * @return the name of the variable,
-     */
-    String getVariableName();
+    @Override
+    public String getVariableName() {
+        return this.name();
+    }
 
-    /**
-     * Returns the type of the variable (e.g. number, string, ...).
-     *
-     * @return the type of the variable .
-     */
-    ValueType getVariableType();
-
+    @Override
+    public ValueType getVariableType() {
+        return ValueType.STRING;
+    }
 }

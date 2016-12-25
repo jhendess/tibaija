@@ -29,7 +29,7 @@ import org.xlrnet.tibaija.exception.IllegalControlFlowException;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.LabelNotFoundException;
 import org.xlrnet.tibaija.exception.PreprocessException;
-import org.xlrnet.tibaija.memory.Variables;
+import org.xlrnet.tibaija.memory.NumberVariable;
 
 /**
  * Tests for control flow logic.
@@ -124,7 +124,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":3" +
                 ":End");
         verifyLastResultValue(3);
-        verifyNumberVariableValue(Variables.NumberVariable.X, 11, 0);
+        verifyNumberVariableValue(NumberVariable.X, 11, 0);
     }
 
     @Test
@@ -134,9 +134,9 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":For(X,N,1,0-1)" +
                 ":A+1→A" +
                 ":End");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+        verifyNumberVariableValue(NumberVariable.A, 5, 0);
         // Iteration variable must be *zero* at the end!
-        verifyNumberVariableValue(Variables.NumberVariable.X, 0, 0);
+        verifyNumberVariableValue(NumberVariable.X, 0, 0);
     }
 
     @Test
@@ -146,7 +146,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":For(X,0,5)" +
                 ":A+1→A");
         verifyLastResultValue(1);
-        verifyNumberVariableValue(Variables.NumberVariable.X, 0, 0);
+        verifyNumberVariableValue(NumberVariable.X, 0, 0);
     }
 
     @Test
@@ -156,7 +156,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":End");
         verifyLastResultValue(0);
-        verifyNumberVariableValue(Variables.NumberVariable.X, -1, 0);
+        verifyNumberVariableValue(NumberVariable.X, -1, 0);
     }
 
     @Test
@@ -166,7 +166,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":End");
         verifyLastResultValue(0);
-        verifyNumberVariableValue(Variables.NumberVariable.X, 1, 0);
+        verifyNumberVariableValue(NumberVariable.X, 1, 0);
     }
 
     @Test
@@ -176,7 +176,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":End");
         verifyLastResultValue(5);
-        verifyNumberVariableValue(Variables.NumberVariable.X, 6, 0);
+        verifyNumberVariableValue(NumberVariable.X, 6, 0);
     }
 
     @Test
@@ -186,7 +186,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":End");
         verifyLastResultValue(3);
-        verifyNumberVariableValue(Variables.NumberVariable.X, -1, 0);
+        verifyNumberVariableValue(NumberVariable.X, -1, 0);
     }
 
     @Test
@@ -196,7 +196,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":End");
         verifyLastResultValue(3);
-        verifyNumberVariableValue(Variables.NumberVariable.X, 6, 0);
+        verifyNumberVariableValue(NumberVariable.X, 6, 0);
     }
 
     @Test
@@ -205,8 +205,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":For(X,2,2" +
                 ":A+1→A" +
                 ":End");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.X, 3, 0);
+        verifyNumberVariableValue(NumberVariable.A, 1, 0);
+        verifyNumberVariableValue(NumberVariable.X, 3, 0);
     }
 
     @Test
@@ -275,8 +275,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                         ":End" +
                         ":End");
         verifyLastResultValue(3 * 4);
-        verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 4, 0);
+        verifyNumberVariableValue(NumberVariable.A, 5, 0);
+        verifyNumberVariableValue(NumberVariable.B, 4, 0);
     }
 
     @Test
@@ -314,8 +314,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":If A=5:Stop" +
                 ":End");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 5, 0);
+        verifyNumberVariableValue(NumberVariable.A, 5, 0);
+        verifyNumberVariableValue(NumberVariable.B, 5, 0);
     }
 
     @Test(timeout = 500L)
@@ -326,7 +326,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":If A=5:Stop" +
                 ":End");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+        verifyNumberVariableValue(NumberVariable.A, 5, 0);
     }
 
     @Test
@@ -336,7 +336,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":End");
         verifyLastResultValue(6);
-        verifyNumberVariableValue(Variables.NumberVariable.A, 6, 0);
+        verifyNumberVariableValue(NumberVariable.A, 6, 0);
     }
 
     @Test
@@ -358,7 +358,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":If A=5:Stop" +
                 ":End");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
+        verifyNumberVariableValue(NumberVariable.A, 1, 0);
     }
 
     @Test
@@ -373,7 +373,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":3" +
                 ":End");
         verifyLastResultValue(2);
-        verifyNumberVariableValue(Variables.NumberVariable.X, 0, 0);
+        verifyNumberVariableValue(NumberVariable.X, 0, 0);
     }
 
     @Test
@@ -394,8 +394,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":2→B" +
                 ":End" +
                 ":End");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 1, 0);
+        verifyNumberVariableValue(NumberVariable.A, 1, 0);
+        verifyNumberVariableValue(NumberVariable.B, 1, 0);
     }
 
     @Test
@@ -405,7 +405,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":End");
         verifyLastResultValue(5);
-        verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+        verifyNumberVariableValue(NumberVariable.A, 5, 0);
     }
 
     @Test
@@ -418,8 +418,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":B+1→B" +
                 ":End" +
                 ":End");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 5, 0);
+        verifyNumberVariableValue(NumberVariable.A, 5, 0);
+        verifyNumberVariableValue(NumberVariable.B, 5, 0);
     }
 
     @Test
@@ -427,8 +427,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
         storeAndExecute(":3->A" +
                 ":DS<(A,0" +
                 ":2->B");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 2, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 2, 0);
+        verifyNumberVariableValue(NumberVariable.A, 2, 0);
+        verifyNumberVariableValue(NumberVariable.B, 2, 0);
     }
 
     @Test
@@ -436,8 +436,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
         storeAndExecute(":2.5->A" +
                 ":DS<(A,1" +
                 ":2->B");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 1.5, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 2, 0);
+        verifyNumberVariableValue(NumberVariable.A, 1.5, 0);
+        verifyNumberVariableValue(NumberVariable.B, 2, 0);
     }
 
     @Test(expected = IllegalControlFlowException.class)
@@ -458,9 +458,9 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":DS<(A,2" +
                 ":2->B" +
                 ":3->C");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.C, 3, 0);
+        verifyNumberVariableValue(NumberVariable.A, 1, 0);
+        verifyNumberVariableValue(NumberVariable.B, 0, 0);
+        verifyNumberVariableValue(NumberVariable.C, 3, 0);
     }
 
     @Test
@@ -468,8 +468,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
         storeAndExecute(":0->A" +
                 ":DS<(A,2" +
                 ":2->B");
-        verifyNumberVariableValue(Variables.NumberVariable.A, -1, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
+        verifyNumberVariableValue(NumberVariable.A, -1, 0);
+        verifyNumberVariableValue(NumberVariable.B, 0, 0);
     }
 
     @Test
@@ -477,8 +477,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
         storeAndExecute(":2->A" +
                 ":DS<(A,2" +
                 ":2->B");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
+        verifyNumberVariableValue(NumberVariable.A, 1, 0);
+        verifyNumberVariableValue(NumberVariable.B, 0, 0);
     }
 
     @Test
@@ -487,7 +487,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":Goto A" +
                 ":2→A" +
                 ":Lbl A");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
+        verifyNumberVariableValue(NumberVariable.A, 1, 0);
     }
 
     @Test(timeout = 50)
@@ -509,7 +509,7 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":A+1→A" +
                 ":Goto A" +
                 ":End");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 5, 0);
+        verifyNumberVariableValue(NumberVariable.A, 5, 0);
     }
 
     @Test
@@ -517,8 +517,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
         storeAndExecute(":0->A" +
                 ":IS>(A,2" +
                 ":2->B");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 1, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 2, 0);
+        verifyNumberVariableValue(NumberVariable.A, 1, 0);
+        verifyNumberVariableValue(NumberVariable.B, 2, 0);
     }
 
     @Test
@@ -526,8 +526,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
         storeAndExecute(":.5->A" +
                 ":IS>(A,2" +
                 ":2->B");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 1.5, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 2, 0);
+        verifyNumberVariableValue(NumberVariable.A, 1.5, 0);
+        verifyNumberVariableValue(NumberVariable.B, 2, 0);
     }
 
     @Test(expected = IllegalControlFlowException.class)
@@ -548,9 +548,9 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
                 ":IS>(A,2" +
                 ":2->B" +
                 ":3->C");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 3, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.C, 3, 0);
+        verifyNumberVariableValue(NumberVariable.A, 3, 0);
+        verifyNumberVariableValue(NumberVariable.B, 0, 0);
+        verifyNumberVariableValue(NumberVariable.C, 3, 0);
     }
 
     @Test
@@ -558,8 +558,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
         storeAndExecute(":3->A" +
                 ":IS>(A,2" +
                 ":2->B");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 4, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
+        verifyNumberVariableValue(NumberVariable.A, 4, 0);
+        verifyNumberVariableValue(NumberVariable.B, 0, 0);
     }
 
     @Test
@@ -567,8 +567,8 @@ public class ExecuteControlFlowTest extends AbstractTI83PlusTest {
         storeAndExecute(":2->A" +
                 ":IS>(A,2" +
                 ":2->B");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 3, 0);
-        verifyNumberVariableValue(Variables.NumberVariable.B, 0, 0);
+        verifyNumberVariableValue(NumberVariable.A, 3, 0);
+        verifyNumberVariableValue(NumberVariable.B, 0, 0);
     }
 
 }

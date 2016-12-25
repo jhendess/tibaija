@@ -27,12 +27,12 @@ import org.apache.commons.math3.complex.Complex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.InvalidDimensionException;
 import org.xlrnet.tibaija.exception.UndefinedVariableException;
 import org.xlrnet.tibaija.memory.ListVariable;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.memory.Variables;
+import org.xlrnet.tibaija.memory.NumberVariable;
 
 import static org.mockito.Mockito.doReturn;
 
@@ -106,13 +106,13 @@ public class StoreStatementTest extends AbstractTI83PlusTest {
 
     @Test(expected = IllegalTypeException.class)
     public void testInterpret_invalidProgram_store_listvalue_numbervariable() {
-        calculator.interpret(":{A->A");
+        this.calculator.interpret(":{A->A");
     }
 
     @Test(expected = IllegalTypeException.class)
     public void testInterpret_invalidProgram_store_numberValue_listvariable() {
-        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(mockedMemory).getListVariableValue(ListVariable.fromName("A"));
-        calculator.interpret(":∟A->A");
+        doReturn(Value.of(ImmutableList.of(Complex.ONE))).when(this.mockedMemory).getListVariableValue(ListVariable.fromName("A"));
+        this.calculator.interpret(":∟A->A");
     }
 
     @Test
@@ -173,22 +173,22 @@ public class StoreStatementTest extends AbstractTI83PlusTest {
 
     @Test
     public void testInterpret_validProgram_store_listvalue_listvariable() {
-        calculator.interpret(":{1,2->∟A");
+        this.calculator.interpret(":{1,2->∟A");
         verifyListVariableValue("A", Complex.valueOf(1), Complex.valueOf(2));
         verifyLastResultValueList(1d, 2d);
     }
 
     @Test
     public void testInterpret_validProgram_store_numbervalue_numbervariable_1() {
-        calculator.interpret("123->A");
-        verifyNumberVariableValue(Variables.NumberVariable.A, 123, 0);
+        this.calculator.interpret("123->A");
+        verifyNumberVariableValue(NumberVariable.A, 123, 0);
         verifyLastResultValue(123);
     }
 
     @Test
     public void testInterpret_validProgram_store_numbervalue_numbervariable_complex() {
-        calculator.interpret("123i+512.1024->B");
-        verifyNumberVariableValue(Variables.NumberVariable.B, 512.1024, 123);
+        this.calculator.interpret("123i+512.1024->B");
+        verifyNumberVariableValue(NumberVariable.B, 512.1024, 123);
         verifyLastResultValue(512.1024, 123);
     }
 

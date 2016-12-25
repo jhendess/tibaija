@@ -35,23 +35,23 @@ import java.util.Map;
  */
 public class ExecutableProgram {
 
-    String programName;
+    private String programName;
 
-    CharSequence originalSource;
+    private CharSequence originalSource;
 
-    TIBasicParser.ProgramContext mainProgramContext;
+    private TIBasicParser.ProgramContext mainProgramContext;
 
-    Map<String, Integer> internalLabelMap;
+    private Map<String, Integer> internalLabelMap;
 
     public Integer getLabelJumpTarget(String labelName) throws LabelNotFoundException {
-        Integer targetCommand = internalLabelMap.get(labelName);
+        Integer targetCommand = this.internalLabelMap.get(labelName);
         if (targetCommand == null)
-            throw new LabelNotFoundException(-1, -1, programName, labelName);
+            throw new LabelNotFoundException(-1, -1, this.programName, labelName);
         return targetCommand;
     }
 
     public TIBasicParser.ProgramContext getMainProgramContext() {
-        return mainProgramContext;
+        return this.mainProgramContext;
     }
 
     protected void setMainProgramContext(TIBasicParser.ProgramContext mainProgramContext) {
@@ -59,7 +59,7 @@ public class ExecutableProgram {
     }
 
     public CharSequence getOriginalSource() {
-        return originalSource;
+        return this.originalSource;
     }
 
     protected void setOriginalSource(CharSequence originalSource) {
@@ -67,7 +67,7 @@ public class ExecutableProgram {
     }
 
     public CharSequence getProgramName() {
-        return programName;
+        return this.programName;
     }
 
     protected void setProgramName(String programName) {

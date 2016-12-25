@@ -33,8 +33,7 @@ import org.xlrnet.tibaija.graphics.FontConstants;
 import org.xlrnet.tibaija.graphics.FontRegistry;
 import org.xlrnet.tibaija.graphics.HomeScreen;
 import org.xlrnet.tibaija.graphics.NullHomeScreen;
-import org.xlrnet.tibaija.io.CalculatorIO;
-import org.xlrnet.tibaija.io.ConsoleIO;
+import org.xlrnet.tibaija.io.*;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
 import org.xlrnet.tibaija.processor.ExecutionEnvironment;
@@ -51,7 +50,7 @@ public class Application {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
-    boolean configured = false;
+    private boolean configured = false;
 
     public static void main(String[] args) {
         new Application().run(args);
@@ -84,16 +83,18 @@ public class Application {
     }
 
     public boolean isConfigured() {
-        return configured;
+        return this.configured;
     }
 
     private void configureRootLogger(ApplicationConfiguration config) {
         ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        Level level = Level.INFO;
         if (config.isShowDebugLog()) {
-            rootLogger.setLevel(Level.DEBUG);
-        } else {
-            rootLogger.setLevel(Level.INFO);
+            level = Level.DEBUG;
+        } else if (config.isShowVerboseLog()) {
+            level = Level.TRACE;
         }
+        rootLogger.setLevel(level);
     }
 
     private void parseArguments(String[] args) {
@@ -103,7 +104,7 @@ public class Application {
         try {
             parser.parseArgument(args);
             if (config.isShowHelp() || config.isInteractive() || config.getStartFile() != null) {
-                configured = true;
+                this.configured = true;
             }
 
             configureRootLogger(config);
@@ -135,7 +136,7 @@ public class Application {
     }
 
     private void runFileMode(File startFile) {
-        LOGGER.info("Starting interpreter from file ...");
+        LOGGER.info("Starting interpreter from file {} ...", startFile.getAbsolutePath());
 
         try {
             Path filePath = startFile.toPath();

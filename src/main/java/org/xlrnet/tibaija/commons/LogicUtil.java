@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,16 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.util;
+package org.xlrnet.tibaija.commons;
 
 /**
  * Helper class that provides methods for the TI-Basic logical operators. This includes and, or, xor and not.
  */
-public class LogicUtils {
+public class LogicUtil {
+
+    private LogicUtil() {
+        // No instances allowed
+    }
 
     /**
      * Check if both of the two given values is not zero. This confirms to the implementation of AND in TI-Basic.

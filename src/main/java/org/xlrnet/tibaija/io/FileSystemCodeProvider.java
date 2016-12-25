@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija;
+package org.xlrnet.tibaija.io;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -74,14 +74,14 @@ public class FileSystemCodeProvider implements CodeProvider {
     @NotNull
     public String getProgramCode(String programName) throws IOException {
         String strippedName = stripFilename(programName);
-        if (registeredFiles.containsKey(programName)) {
+        if (this.registeredFiles.containsKey(programName)) {
             LOGGER.debug("Found loaded program {}", programName);
-            return registeredFiles.get(programName);
+            return this.registeredFiles.get(programName);
         }
 
         String fileName = strippedName + DEFAULT_FILE_EXTENSION;
 
-        Path path = Paths.get(defaultPath.toString(), fileName);
+        Path path = Paths.get(this.defaultPath.toString(), fileName);
         LOGGER.debug("Trying to load file '{}'", path.toString());
 
         if (Files.exists(path)) {
@@ -103,9 +103,9 @@ public class FileSystemCodeProvider implements CodeProvider {
         checkArgument(!Files.isDirectory(filepath), "File may not be a directory");
 
         String internalFilename = stripFilename(filepath);
-        checkArgument(!registeredFiles.containsKey(internalFilename), "File with name %s is already loaded and cannot be registered", internalFilename);
+        checkArgument(!this.registeredFiles.containsKey(internalFilename), "File with name %s is already loaded and cannot be registered", internalFilename);
 
-        registeredFiles.put(internalFilename, loadFileContent(filepath));
+        this.registeredFiles.put(internalFilename, loadFileContent(filepath));
         LOGGER.info("Registered path '{}' as internal file '{}'", filepath, internalFilename);
 
         return internalFilename;

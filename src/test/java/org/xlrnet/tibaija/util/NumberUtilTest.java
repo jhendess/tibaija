@@ -22,18 +22,28 @@
 
 package org.xlrnet.tibaija.util;
 
-import org.xlrnet.tibaija.memory.Value;
+import org.junit.Test;
+import org.xlrnet.tibaija.commons.NumberUtil;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Several helper methods for Value handling. Note: all methods beginning with "check" throw an exception if a required
- * condition is not met!
+ * Test methods for {@link NumberUtil} helper methods
  */
-public class ValueUtils {
+public class NumberUtilTest {
 
-    /**
-     * Return true if the given Value is either a number or a list.
-     */
-    public static boolean isNumberOrList(Value operand) {
-        return operand.isNumber() || operand.isList();
+    @Test
+    public void testIsInteger_false() throws Exception {
+        assertFalse(NumberUtil.isInteger(1.5));
+        assertFalse(NumberUtil.isInteger(1.12345));
+        assertFalse(NumberUtil.isInteger(-9.876));
+    }
+
+    @Test
+    public void testIsInteger_true() throws Exception {
+        assertTrue(NumberUtil.isInteger(1));
+        assertTrue(NumberUtil.isInteger(-5));
+        assertTrue(NumberUtil.isInteger(1234));
     }
 }

@@ -27,7 +27,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.util.Precision;
 import org.hamcrest.Description;
 import org.mockito.ArgumentMatcher;
-import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.test.TestUtils;
 
 import java.util.Arrays;
@@ -42,23 +42,23 @@ public class EqualsTIListMatcher extends ArgumentMatcher<Value> {
     private final Number delta;
 
     public EqualsTIListMatcher(Complex[] values, double defaultTolerance) {
-        wantedValues = values;
-        delta = defaultTolerance;
+        this.wantedValues = values;
+        this.delta = defaultTolerance;
     }
 
     public void describeTo(Description description) {
-        description.appendText("Value: " + Arrays.toString(wantedValues) + ", delta: " + delta + ")");
+        description.appendText("Value: " + Arrays.toString(this.wantedValues) + ", delta: " + this.delta + ")");
     }
 
     public boolean matches(Object actualRaw) {
         ImmutableList<Complex> actualValues = ((Value) actualRaw).list();
 
-        if (actualValues.size() != wantedValues.length)
+        if (actualValues.size() != this.wantedValues.length)
             return false;
 
-        for (int i = 0; i < wantedValues.length; i++) {
+        for (int i = 0; i < this.wantedValues.length; i++) {
             Complex actual = actualValues.get(i);
-            Complex wanted = wantedValues[i];
+            Complex wanted = this.wantedValues[i];
             if (!internalMatchesSingleComplex(actual, wanted))
                 return false;
         }

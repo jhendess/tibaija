@@ -34,6 +34,16 @@ import org.xlrnet.tibaija.memory.CalculatorMemory;
  */
 public interface VirtualCalculator {
 
+    /**
+     * Executes a program with the given name from memory. If the program does not exist in memory, the default {@link
+     * org.xlrnet.tibaija.io.CodeProvider} will be used for loading the file into memory.
+     *
+     * @param programName
+     *         name of the program to execute.
+     * @throws ProgramNotFoundException
+     *         thrown if the program exists not in memory and can't be found using the default {@link
+     *         org.xlrnet.tibaija.io.CodeProvider}.
+     */
     void executeProgram(String programName) throws ProgramNotFoundException;
 
     /**

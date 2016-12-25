@@ -24,16 +24,16 @@ package org.xlrnet.tibaija.commands.io;
 
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.commons.NumberUtil;
+import org.xlrnet.tibaija.commons.Preconditions;
+import org.xlrnet.tibaija.commons.Value;
+import org.xlrnet.tibaija.commons.ValueType;
 import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.memory.Variables;
 import org.xlrnet.tibaija.processor.Command;
-import org.xlrnet.tibaija.util.NumberUtils;
-import org.xlrnet.tibaija.util.Preconditions;
 
 import java.util.Optional;
 
-import static org.xlrnet.tibaija.util.Preconditions.checkArgument;
+import static org.xlrnet.tibaija.commons.Preconditions.checkArgument;
 
 /**
  * Command for outputting content at specific coordinates on the home screen.
@@ -78,26 +78,27 @@ public class OutputCommand extends Command {
      */
     @Override
     protected boolean hasValidArgumentValues(@NotNull ImmutableList<Parameter> arguments) {
+        boolean valid = true;
         Value rowIndex = arguments.get(0).value();
         Value columnIndex = arguments.get(1).value();
 
-        Preconditions.checkValueType(rowIndex, Variables.VariableType.NUMBER);
-        Preconditions.checkValueType(columnIndex, Variables.VariableType.NUMBER);
+        Preconditions.checkValueType(rowIndex, ValueType.NUMBER);
+        Preconditions.checkValueType(columnIndex, ValueType.NUMBER);
 
         checkArgument(!rowIndex.hasImaginaryValue(), "Row index may not be imaginary");
         checkArgument(!columnIndex.hasImaginaryValue(), "Column index may not be imaginary");
 
         // Check for value bounds on row index
-        if (!NumberUtils.isInteger(rowIndex.realPart()) || rowIndex.realPart() < 0 || rowIndex.realPart() > getEnvironment().getHomeScreen().getMaxRows()) {
-            return false;
+        if (!NumberUtil.isInteger(rowIndex.realPart()) || rowIndex.realPart() < 0 || rowIndex.realPart() > getEnvironment().getHomeScreen().getMaxRows()) {
+            valid = false;
         }
 
         // Check for value bounds on column index
-        if (!NumberUtils.isInteger(columnIndex.realPart()) || columnIndex.realPart() < 0 || columnIndex.realPart() > getEnvironment().getHomeScreen().getMaxColumns()) {
-            return false;
+        if (!NumberUtil.isInteger(columnIndex.realPart()) || columnIndex.realPart() < 0 || columnIndex.realPart() > getEnvironment().getHomeScreen().getMaxColumns()) {
+            valid = false;
         }
 
-        return true;
+        return valid;
     }
 
     /**

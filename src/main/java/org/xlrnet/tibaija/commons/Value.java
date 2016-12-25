@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.memory;
+package org.xlrnet.tibaija.commons;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -29,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 import org.xlrnet.tibaija.exception.TIRuntimeException;
-import org.xlrnet.tibaija.util.ComplexComparator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -59,7 +58,7 @@ public class Value implements Comparable<Value> {
 
     private final Object value;
 
-    private final Variables.VariableType type;
+    private final ValueType type;
 
     /**
      * Create a new Value object from a complex number and set the according type. Note: Numbers are always represented
@@ -69,8 +68,8 @@ public class Value implements Comparable<Value> {
      *         The complex number.
      */
     private Value(@NotNull Complex number) {
-        value = number;
-        type = Variables.VariableType.NUMBER;
+        this.value = number;
+        this.type = ValueType.NUMBER;
     }
 
     /**
@@ -80,8 +79,8 @@ public class Value implements Comparable<Value> {
      *         The string value.
      */
     private Value(@NotNull String string) {
-        value = string;
-        type = Variables.VariableType.STRING;
+        this.value = string;
+        this.type = ValueType.STRING;
     }
 
     /**
@@ -92,8 +91,8 @@ public class Value implements Comparable<Value> {
      *         The immutable list of complex numbers.
      */
     private Value(@NotNull ImmutableList<Complex> complexImmutableList) {
-        value = complexImmutableList;
-        type = Variables.VariableType.LIST;
+        this.value = complexImmutableList;
+        this.type = ValueType.LIST;
     }
 
     /**
@@ -207,7 +206,8 @@ public class Value implements Comparable<Value> {
 
     /**
      * Retrieves the internal value as a boolean value. If the internal is not a number, this method will throw an
-     * {IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method fail explicitly when being invoked with a wrong value type.
+     * {IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method
+     * fail explicitly when being invoked with a wrong value type.
      *
      * @return The internal value as a boolean. If the numerical value is not zero, true will be returned. Otherwise
      * false.
@@ -222,12 +222,14 @@ public class Value implements Comparable<Value> {
     public int compareTo(@NotNull Value o) {
         checkNotNull(o);
 
-        if (Objects.equals(this, o))
+        if (Objects.equals(this, o)) {
             return 0;
+        }
 
         try {
-            if (!(this.isNumber() || o.isNumber()))
-                throw new IllegalTypeException("Comparison not supported for right type", Variables.VariableType.NUMBER, type);
+            if (!(this.isNumber() || o.isNumber())) {
+                throw new IllegalTypeException("Comparison not supported for right type", ValueType.NUMBER, this.type);
+            }
             return complexComparator.compare(this.complex(), o.complex());
         } catch (UnsupportedOperationException u) {
             throw new TIArgumentException("Illegal operation: " + u.getMessage(), this, o);
@@ -236,15 +238,17 @@ public class Value implements Comparable<Value> {
 
     /**
      * Retrieves the internal value as a Complex object. If the internal is not a Complex, this method will throw an
-     * {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method fail explicitly when being invoked with a wrong value type.
+     * {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this
+     * method fail explicitly when being invoked with a wrong value type.
      *
      * @return The internal value as a Complex object.
-     * @throws TIRuntimeException
+     * @throws IllegalTypeException
+     *         thrown when the value is not of type {@link ValueType#NUMBER}
      */
     @NotNull
     public Complex complex() throws IllegalTypeException {
-        internalTypeCheck(Variables.VariableType.NUMBER);
-        return (Complex) value;
+        internalTypeCheck(ValueType.NUMBER);
+        return (Complex) this.value;
     }
 
     @Override
@@ -252,14 +256,14 @@ public class Value implements Comparable<Value> {
         if (this == o) return true;
         if (!(o instanceof Value)) return false;
         Value value1 = (Value) o;
-        return com.google.common.base.Objects.equal(value, value1.value) &&
-                com.google.common.base.Objects.equal(type, value1.type);
+        return com.google.common.base.Objects.equal(this.value, value1.value) &&
+                com.google.common.base.Objects.equal(this.type, value1.type);
     }
 
     @NotNull
 
-    public Variables.VariableType getType() {
-        return type;
+    public ValueType getType() {
+        return this.type;
     }
 
     /**
@@ -267,7 +271,7 @@ public class Value implements Comparable<Value> {
      */
     @NotNull
     public Object getValue() {
-        return value;
+        return this.value;
     }
 
     /**
@@ -276,12 +280,12 @@ public class Value implements Comparable<Value> {
      * @return True if the value is complex and has an imaginary value. False otherwise.
      */
     public boolean hasImaginaryValue() {
-        return isType(Variables.VariableType.NUMBER) && complex().getImaginary() != 0;
+        return isType(ValueType.NUMBER) && complex().getImaginary() != 0;
     }
 
     @Override
     public int hashCode() {
-        return com.google.common.base.Objects.hashCode(value, type);
+        return com.google.common.base.Objects.hashCode(this.value, this.type);
     }
 
     /**
@@ -290,7 +294,7 @@ public class Value implements Comparable<Value> {
      * @return True if this object contains a list; false otherwise.
      */
     public boolean isList() {
-        return isType(Variables.VariableType.LIST);
+        return isType(ValueType.LIST);
     }
 
     /**
@@ -299,7 +303,7 @@ public class Value implements Comparable<Value> {
      * @return True if this object contains a complex or numerical value; false otherwise.
      */
     public boolean isNumber() {
-        return isType(Variables.VariableType.NUMBER);
+        return isType(ValueType.NUMBER);
     }
 
     /**
@@ -308,12 +312,13 @@ public class Value implements Comparable<Value> {
      * @return True if this object contains a string value; false otherwise.
      */
     public boolean isString() {
-        return isType(Variables.VariableType.STRING);
+        return isType(ValueType.STRING);
     }
 
     /**
      * Retrieves the internal value as a list of Complex objects. If the internal is not a Complex, this method will
-     * throw an {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method fail explicitly when being invoked with a wrong value type.
+     * throw an {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let
+     * this method fail explicitly when being invoked with a wrong value type.
      *
      * @return The internal value as a Complex object.
      * @throws TIRuntimeException
@@ -321,13 +326,14 @@ public class Value implements Comparable<Value> {
     @NotNull
     @SuppressWarnings("unchecked")
     public ImmutableList<Complex> list() throws IllegalTypeException {
-        internalTypeCheck(Variables.VariableType.LIST);
-        return (ImmutableList<Complex>) value;
+        internalTypeCheck(ValueType.LIST);
+        return (ImmutableList<Complex>) this.value;
     }
 
     /**
-     * Retrieves the real part of the internal complex value. If the internal is not a Complex, this method will throw an
-     * {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method fail explicitly when being invoked with a wrong value type.
+     * Retrieves the real part of the internal complex value. If the internal is not a Complex, this method will throw
+     * an {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this
+     * method fail explicitly when being invoked with a wrong value type.
      *
      * @return The internal value as a Complex object.
      * @throws TIRuntimeException
@@ -338,22 +344,23 @@ public class Value implements Comparable<Value> {
 
     /**
      * Retrieves the internal value as a boolean value. If the internal is not a number, this method will throw an
-     * {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this method fail explicitly when being invoked with a wrong value type.
+     * {@link IllegalTypeException}. Use this method only if you know the underlying object type or want to let this
+     * method fail explicitly when being invoked with a wrong value type.
      *
      * @return The internal value as a boolean. If the numerical value is not zero, true will be returned. Otherwise
      * false.
      * @throws TIRuntimeException
      */
     public String string() throws IllegalTypeException {
-        internalTypeCheck(Variables.VariableType.STRING);
-        return (String) value;
+        internalTypeCheck(ValueType.STRING);
+        return (String) this.value;
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("value", value)
-                .add("type", type)
+                .add("value", this.value)
+                .add("type", this.type)
                 .toString();
     }
 
@@ -363,9 +370,9 @@ public class Value implements Comparable<Value> {
      * @param checkType
      *         The type to match.
      */
-    private void internalTypeCheck(Variables.VariableType checkType) throws IllegalTypeException {
+    private void internalTypeCheck(ValueType checkType) throws IllegalTypeException {
         if (!isType(checkType))
-            throw new IllegalTypeException(-1, -1, "Illegal type cast", checkType, type);
+            throw new IllegalTypeException(-1, -1, "Illegal type cast", checkType, this.type);
     }
 
     /**
@@ -375,7 +382,7 @@ public class Value implements Comparable<Value> {
      *         The expected type.
      * @return True if the internal type is equal to the expected type. False otherwise.
      */
-    private boolean isType(Variables.VariableType checkedType) {
+    private boolean isType(ValueType checkedType) {
         return Objects.equals(this.getType(), checkedType);
     }
 }

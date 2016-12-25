@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,20 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.util;
+package org.xlrnet.tibaija.io;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
 
 /**
- * A set of various static helper methods for common number related tasks.
+ * Dummy implementation that always throws an {@link UnsupportedOperationException} when trying to get program code.
  */
-public class NumberUtils {
+public class DummyCodeProvider implements CodeProvider {
 
-    /**
-     * Checks whether the given number is an integer.
-     *
-     * @param number
-     *         The number to check
-     * @return True if the given number is an integer, false otherwise.
-     */
-    public static boolean isInteger(double number) {
-        return number % 1 == 0;
+    @NotNull
+    @Override
+    public String getProgramCode(String programName) throws IOException {
+        throw new UnsupportedOperationException("Dummy provider cannot load");
     }
-
 }

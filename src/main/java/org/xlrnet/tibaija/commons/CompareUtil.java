@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.util;
+package org.xlrnet.tibaija.commons;
 
 import java.util.Comparator;
 import java.util.Objects;
@@ -28,7 +28,7 @@ import java.util.Objects;
 /**
  * Utility class that provides comparison methods with boolean results like e.g. isGreaterThan().
  */
-public class CompareUtils {
+public class CompareUtil {
 
     /**
      * Compares two given objects and returns true if the first object is <u>greater than</u> the second one i.e. the

@@ -22,13 +22,13 @@
 
 package org.xlrnet.tibaija.commands.math;
 
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.util.TIMathUtils;
+import org.xlrnet.tibaija.commons.TIMathUtils;
+import org.xlrnet.tibaija.commons.Value;
 
 import java.util.function.UnaryOperator;
 
-import static org.xlrnet.tibaija.util.LogicUtils.not;
-import static org.xlrnet.tibaija.util.Preconditions.checkIfAnyValueIsImaginary;
+import static org.xlrnet.tibaija.commons.LogicUtil.not;
+import static org.xlrnet.tibaija.commons.Preconditions.checkIfAnyValueIsImaginary;
 
 /**
  * Static enum that defines several functions for evaluating arithmetic operations with one operand.
@@ -60,7 +60,7 @@ public enum UnaryCommandOperator {
     }
 
     public UnaryOperator<Value> getOperatorFunction() {
-        return operatorFunction;
+        return this.operatorFunction;
     }
 
 }

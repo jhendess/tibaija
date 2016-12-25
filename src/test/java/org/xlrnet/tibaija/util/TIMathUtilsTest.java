@@ -23,6 +23,7 @@
 package org.xlrnet.tibaija.util;
 
 import org.junit.Test;
+import org.xlrnet.tibaija.commons.TIMathUtils;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 import org.xlrnet.tibaija.test.Assertions;
 import org.xlrnet.tibaija.test.TestUtils;

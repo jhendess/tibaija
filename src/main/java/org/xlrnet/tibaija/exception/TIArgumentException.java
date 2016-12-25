@@ -23,8 +23,8 @@
 package org.xlrnet.tibaija.exception;
 
 import com.google.common.collect.ImmutableList;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,6 +67,6 @@ public class TIArgumentException extends TIRuntimeException {
     }
 
     public List<? extends Parameter> getArguments() {
-        return arguments;
+        return this.arguments;
     }
 }

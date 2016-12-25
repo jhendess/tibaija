@@ -25,6 +25,7 @@ package org.xlrnet.tibaija.memory;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.UndefinedVariableException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -94,51 +95,51 @@ public class Parameter {
         if (this == o) return true;
         if (!(o instanceof Parameter)) return false;
         Parameter parameter = (Parameter) o;
-        return Objects.equal(value, parameter.value) &&
-                Objects.equal(variable, parameter.variable);
+        return Objects.equal(this.value, parameter.value) &&
+                Objects.equal(this.variable, parameter.variable);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(value, variable);
+        return Objects.hashCode(this.value, this.variable);
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("value", value)
-                .add("variable", variable)
-                .add("memory", memory.toString())
+                .add("value", this.value)
+                .add("variable", this.variable)
+                .add("memory", this.memory.toString())
                 .toString();
     }
 
     @NotNull
     public Value value() {
-        if (value != null) {
-            return value;
+        if (this.value != null) {
+            return this.value;
         } else {
-            return getVariableValue(variable);
+            return getVariableValue(this.variable);
         }
     }
 
     @NotNull
     public Variable variable() {
-        if (variable == null) {
+        if (this.variable == null) {
             throw new UndefinedVariableException("null");
         }
 
-        return variable;
+        return this.variable;
     }
 
     @NotNull
     private Value getVariableValue(@NotNull Variable variable) {
         switch (variable.getVariableType()) {
             case NUMBER:
-                return memory.getNumberVariableValue((Variables.NumberVariable) variable);
+                return this.memory.getNumberVariableValue((NumberVariable) variable);
             case STRING:
-                return memory.getStringVariableValue((Variables.StringVariable) variable);
+                return this.memory.getStringVariableValue((StringVariable) variable);
             case LIST:
-                return memory.getListVariableValue((ListVariable) variable);
+                return this.memory.getListVariableValue((ListVariable) variable);
             default:
                 throw new UnsupportedOperationException("Unsupported variable type: " + variable.getVariableType());
         }

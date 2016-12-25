@@ -22,8 +22,8 @@
 
 package org.xlrnet.tibaija.graphics;
 
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.OutOfScreenBoundsException;
-import org.xlrnet.tibaija.memory.Value;
 
 /**
  * Home screen for a calculator. A home screen supports only outputting texts and inputting values. Drawing functions

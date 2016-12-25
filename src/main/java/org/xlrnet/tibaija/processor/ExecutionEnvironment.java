@@ -28,19 +28,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xlrnet.tibaija.CodeProvider;
-import org.xlrnet.tibaija.DummyCodeProvider;
 import org.xlrnet.tibaija.VirtualCalculator;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.CommandNotFoundException;
 import org.xlrnet.tibaija.exception.DuplicateCommandException;
 import org.xlrnet.tibaija.exception.TIRuntimeException;
 import org.xlrnet.tibaija.graphics.*;
 import org.xlrnet.tibaija.io.CalculatorIO;
+import org.xlrnet.tibaija.io.CodeProvider;
+import org.xlrnet.tibaija.io.DummyCodeProvider;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.ReadOnlyCalculatorMemory;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.util.ValueFormatUtils;
+import org.xlrnet.tibaija.memory.ValueFormatUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,11 +69,11 @@ public class ExecutionEnvironment {
 
     private final FontRegistry fontRegistry;
 
-    Map<String, Command> commandFunctionMap = new HashMap<>();
+    private final Map<String, Command> commandFunctionMap = new HashMap<>();
 
-    Map<String, Command> expressionFunction = new HashMap<>();
+    private final Map<String, Command> expressionFunction = new HashMap<>();
 
-    Map<String, Command> commandStatementMap = new HashMap<>();
+    private final Map<String, Command> commandStatementMap = new HashMap<>();
 
     private DecimalDisplayMode decimalDisplayMode;
 
@@ -177,7 +177,7 @@ public class ExecutionEnvironment {
      * @return The formatted value.
      */
     public String formatValue(Value value) {
-        return ValueFormatUtils.formatValue(value, numberDisplayFormat, decimalDisplayMode);
+        return ValueFormatUtils.formatValue(value, this.numberDisplayFormat, this.decimalDisplayMode);
     }
 
     /**
@@ -187,15 +187,15 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public CalculatorIO getCalculatorIO() {
-        return calculatorIO;
+        return this.calculatorIO;
     }
 
     public CodeProvider getCodeProvider() {
-        return codeProvider;
+        return this.codeProvider;
     }
 
     public DecimalDisplayMode getDecimalDisplayMode() {
-        return decimalDisplayMode;
+        return this.decimalDisplayMode;
     }
 
     /**
@@ -210,7 +210,7 @@ public class ExecutionEnvironment {
     }
 
     public FontRegistry getFontRegistry() {
-        return fontRegistry;
+        return this.fontRegistry;
     }
 
     /**
@@ -221,7 +221,7 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public HomeScreen getHomeScreen() {
-        return homeScreen;
+        return this.homeScreen;
     }
 
     /**
@@ -231,12 +231,12 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public ReadOnlyCalculatorMemory getMemory() {
-        return memory;
+        return this.memory;
     }
 
     @NotNull
     public NumberDisplayFormat getNumberDisplayFormat() {
-        return numberDisplayFormat;
+        return this.numberDisplayFormat;
     }
 
     public void setNumberDisplayFormat(NumberDisplayFormat numberDisplayFormat) {
@@ -252,7 +252,7 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public Stack<ExecutableProgram> getProgramStack() {
-        return programStack;
+        return this.programStack;
     }
 
     /**
@@ -273,16 +273,18 @@ public class ExecutionEnvironment {
         checkArgument(StringUtils.isNotBlank(commandName), "Function command name may not be blank");
         checkArgument(StringUtils.isAllUpperCase(commandName.substring(0, 1)), "Function command name must begin with a uppercase letter");
 
-        if (commandFunctionMap.get(commandName) != null)
+        if (this.commandFunctionMap.get(commandName) != null) {
             throw new DuplicateCommandException("Command function is already registered: " + commandName);
+        }
 
-        if (command.getEnvironment() != null)
+        if (command.getEnvironment() != null) {
             throw new DuplicateCommandException("New command instance is already registered in another environment");
+        }
 
         command.setEnvironment(this);
-        commandFunctionMap.put(commandName, command);
+        this.commandFunctionMap.put(commandName, command);
 
-        LOGGER.debug("Registered new command function '{}'", commandName);
+        LOGGER.trace("Registered new command function '{}'", commandName);
     }
 
     /**
@@ -304,16 +306,18 @@ public class ExecutionEnvironment {
         checkArgument(StringUtils.isNotBlank(commandName), "Command statement name may not be blank");
         checkArgument(StringUtils.isAllUpperCase(commandName.substring(0, 1)), "Command statement name must begin with a uppercase letter");
 
-        if (commandStatementMap.get(commandName) != null)
+        if (this.commandStatementMap.get(commandName) != null) {
             throw new DuplicateCommandException("Command statement is already registered: " + commandName);
+        }
 
-        if (command.getEnvironment() != null)
+        if (command.getEnvironment() != null) {
             throw new DuplicateCommandException("New command instance is already registered in another environment");
+        }
 
         command.setEnvironment(this);
-        commandStatementMap.put(commandName, command);
+        this.commandStatementMap.put(commandName, command);
 
-        LOGGER.debug("Registered new command statement '{}'", commandName);
+        LOGGER.trace("Registered new command statement '{}'", commandName);
     }
 
     /**
@@ -335,16 +339,18 @@ public class ExecutionEnvironment {
         Character firstChar = commandName.charAt(0);
         checkArgument(CharUtils.isAsciiAlphaLower(firstChar) || !CharUtils.isAsciiAlphanumeric(firstChar), "Expression function name must begin with a lowercase letter or be non-alphanumeric");
 
-        if (expressionFunction.get(commandName) != null)
+        if (this.expressionFunction.get(commandName) != null) {
             throw new DuplicateCommandException("Function expression name is already registered: " + commandName);
+        }
 
-        if (command.getEnvironment() != null)
+        if (command.getEnvironment() != null) {
             throw new DuplicateCommandException("New command instance is already registered in another environment");
+        }
 
         command.setEnvironment(this);
-        expressionFunction.put(commandName, command);
+        this.expressionFunction.put(commandName, command);
 
-        LOGGER.debug("Registered new expression function '{}'", commandName);
+        LOGGER.trace("Registered new expression function '{}'", commandName);
     }
 
     /**
@@ -360,9 +366,9 @@ public class ExecutionEnvironment {
      */
     public void run(@NotNull ExecutableProgram program, @NotNull FullTIBasicVisitor visitor) throws TIRuntimeException {
         visitor.setEnvironment(this);
-        programStack.push(program);
+        this.programStack.push(program);
         visitor.visit(program.getMainProgramContext());
-        programStack.pop();
+        this.programStack.pop();
     }
 
     /**
@@ -380,9 +386,10 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public Optional<Value> runRegisteredCommandFunction(@NotNull String commandName, @NotNull Parameter... arguments) throws TIRuntimeException {
-        Command command = commandFunctionMap.get(commandName);
-        if (command == null)
+        Command command = this.commandFunctionMap.get(commandName);
+        if (command == null) {
             throw new CommandNotFoundException(-1, -1, commandName);
+        }
 
         return internalExecuteCommand(command, arguments);
     }
@@ -400,9 +407,10 @@ public class ExecutionEnvironment {
      *         Can be thrown on type errors, internal problems or illegal parameters.
      */
     public void runRegisteredCommandStatement(@NotNull String commandName, @NotNull Parameter... arguments) throws TIRuntimeException {
-        Command command = commandStatementMap.get(commandName);
-        if (command == null)
+        Command command = this.commandStatementMap.get(commandName);
+        if (command == null) {
             throw new CommandNotFoundException(-1, -1, commandName);
+        }
 
         internalExecuteCommand(command, arguments);
     }
@@ -422,9 +430,10 @@ public class ExecutionEnvironment {
      */
     @NotNull
     public Optional<Value> runRegisteredExpressionFunction(@NotNull String commandName, @NotNull Parameter... arguments) throws TIRuntimeException {
-        Command command = expressionFunction.get(commandName);
-        if (command == null)
+        Command command = this.expressionFunction.get(commandName);
+        if (command == null) {
             throw new CommandNotFoundException(-1, -1, commandName);
+        }
 
         return internalExecuteCommand(command, arguments);
     }
@@ -461,7 +470,7 @@ public class ExecutionEnvironment {
      */
     @NotNull
     protected CalculatorMemory getWritableMemory() {
-        return memory;
+        return this.memory;
     }
 
     @NotNull

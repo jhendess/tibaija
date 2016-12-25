@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,11 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.util;
+package org.xlrnet.tibaija.commons;
 
 import org.jetbrains.annotations.NotNull;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.TIArgumentException;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.memory.Variables;
 
 import java.util.Objects;
 
@@ -50,12 +48,13 @@ public class Preconditions {
      * @throws NullPointerException
      *         Will be thrown if either the value or the expected type are null.
      */
-    public static void checkValueType(@NotNull Value value, @NotNull Variables.VariableType expectedType) throws IllegalTypeException, NullPointerException {
+    public static void checkValueType(@NotNull Value value, @NotNull ValueType expectedType) throws IllegalTypeException, NullPointerException {
         checkNotNull(value);
         checkNotNull(expectedType);
 
-        if (!Objects.equals(value.getType(), expectedType))
+        if (!Objects.equals(value.getType(), expectedType)) {
             throw new IllegalTypeException(expectedType, value.getType());
+        }
     }
 
     /**
@@ -68,9 +67,11 @@ public class Preconditions {
      *         Will be thrown if any of the arguments has an imaginary part.
      */
     public static void checkIfAnyValueIsImaginary(@NotNull Value... values) throws TIArgumentException {
-        for (Value v : values)
-            if (v.hasImaginaryValue())
+        for (Value v : values) {
+            if (v.hasImaginaryValue()) {
                 throw new TIArgumentException("Cannot operate on imaginary values", values);
+            }
+        }
     }
 
     /**
@@ -79,8 +80,8 @@ public class Preconditions {
      * @param expression
      *         a boolean expression
      * @param errorMessage
-     *         the exception message to use if the check fails; will be converted to a
-     *         string using {@link String#valueOf(Object)}
+     *         the exception message to use if the check fails; will be converted to a string using {@link
+     *         String#valueOf(Object)}
      * @param values
      *         An array of values that will be added to the thrown exception.
      * @throws IllegalArgumentException

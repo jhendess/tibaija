@@ -22,12 +22,12 @@
 
 package org.xlrnet.tibaija.io;
 
-import org.xlrnet.tibaija.memory.Value;
+import org.xlrnet.tibaija.commons.Value;
 
 import java.io.IOException;
 
 /**
- * Interface for all kinds of calculator I/O.
+ * Interface for direct user I/O.
  */
 public interface CalculatorIO {
 

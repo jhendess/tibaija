@@ -23,6 +23,7 @@
 package org.xlrnet.tibaija.memory;
 
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.ProgramNotFoundException;
 import org.xlrnet.tibaija.processor.ExecutableProgram;
 
@@ -57,8 +58,7 @@ public interface ReadOnlyCalculatorMemory {
      * @param variable
      *         The list variable name from which value should be returned.
      * @param index
-     *         Index of the element inside the list. First index is always one. If the dimension is either to big or
-     *         too
+     *         Index of the element inside the list. First index is always one. If the dimension is either to big or too
      *         low, an {@link org.xlrnet.tibaija.exception.InvalidDimensionException} will be thrown.
      * @return Value of the selected variable.
      */
@@ -85,7 +85,7 @@ public interface ReadOnlyCalculatorMemory {
      * @return Value of the selected variable.
      */
     @NotNull
-    Value getNumberVariableValue(@NotNull Variables.NumberVariable variable);
+    Value getNumberVariableValue(@NotNull NumberVariable variable);
 
     /**
      * Get a reference to a read-only executable program that was stored in the virtual calculator's memory.
@@ -108,6 +108,6 @@ public interface ReadOnlyCalculatorMemory {
      * @return Value of the selected variable.
      */
     @NotNull
-    Value getStringVariableValue(@NotNull Variables.StringVariable variable);
+    Value getStringVariableValue(@NotNull StringVariable variable);
 
 }

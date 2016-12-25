@@ -27,8 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.antlr.TIBasicBaseVisitor;
 import org.xlrnet.tibaija.antlr.TIBasicParser;
+import org.xlrnet.tibaija.commons.ValidationUtil;
 import org.xlrnet.tibaija.exception.PreprocessException;
-import org.xlrnet.tibaija.util.ValidationUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -67,9 +67,9 @@ public class PreprocessVisitor extends TIBasicBaseVisitor {
                 String labelIdentifier = label.getIdentifier();
                 if (!labelMap.containsKey(labelIdentifier)) {
                     labelMap.put(labelIdentifier, i);
-                    LOGGER.info("Registered label {} as command {}", labelIdentifier, i);
+                    LOGGER.trace("Registered label {} as command {}", labelIdentifier, i);
                 } else {
-                    LOGGER.warn("Label {} is already defined - ignoring new definition", labelIdentifier);
+                    LOGGER.debug("Label {} is already defined - ignoring new definition", labelIdentifier);
                 }
             }
         }
@@ -87,8 +87,9 @@ public class PreprocessVisitor extends TIBasicBaseVisitor {
     @Override
     public Object visitLabelStatement(@NotNull TIBasicParser.LabelStatementContext ctx) throws PreprocessException {
         TIBasicParser.LabelIdentifierContext labelIdentifier = ctx.labelIdentifier();
-        if (!ValidationUtils.isValidLabelIdentifier(labelIdentifier.getText()))
+        if (!ValidationUtil.isValidLabelIdentifier(labelIdentifier.getText())) {
             throw new PreprocessException(-1, -1, "Invalid label identifier: " + labelIdentifier.getText());
+        }
         return new Label(labelIdentifier.getText());
     }
 
@@ -101,7 +102,7 @@ public class PreprocessVisitor extends TIBasicBaseVisitor {
         }
 
         public String getIdentifier() {
-            return identifier;
+            return this.identifier;
         }
     }
 
@@ -117,7 +118,7 @@ public class PreprocessVisitor extends TIBasicBaseVisitor {
         }
 
         public Map<String, Integer> getMap() {
-            return content;
+            return this.content;
         }
     }
 }

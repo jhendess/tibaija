@@ -25,9 +25,9 @@ package org.xlrnet.tibaija.commands.io;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.TIArgumentException;
-import org.xlrnet.tibaija.memory.Value;
 import org.xlrnet.tibaija.processor.AbstractTI83PlusTest;
 
 import static org.mockito.Mockito.verify;

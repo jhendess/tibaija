@@ -44,19 +44,26 @@ public class ApplicationConfiguration {
     @Option(name = "-d", usage = "enable debug logging")
     private boolean showDebugLog;
 
+    @Option(name = "-v", usage = "enable verbose logging")
+    private boolean showVerboseLog;
+
     public File getStartFile() {
-        return startFile;
+        return this.startFile;
     }
 
     public boolean isInteractive() {
-        return interactive;
+        return this.interactive;
     }
 
     public boolean isShowDebugLog() {
-        return showDebugLog;
+        return this.showDebugLog;
+    }
+
+    public boolean isShowVerboseLog() {
+        return this.showVerboseLog;
     }
 
     public boolean isShowHelp() {
-        return showHelp;
+        return this.showHelp;
     }
 }

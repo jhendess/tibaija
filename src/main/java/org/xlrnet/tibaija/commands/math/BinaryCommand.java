@@ -27,13 +27,13 @@ import org.apache.commons.math3.complex.Complex;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xlrnet.tibaija.commons.Value;
+import org.xlrnet.tibaija.commons.ValueType;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 import org.xlrnet.tibaija.memory.Parameter;
-import org.xlrnet.tibaija.memory.Value;
-import org.xlrnet.tibaija.memory.Variables;
+import org.xlrnet.tibaija.memory.ValueUtils;
 import org.xlrnet.tibaija.processor.Command;
-import org.xlrnet.tibaija.util.ValueUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +74,7 @@ public class BinaryCommand extends Command {
         final Value rhs = arguments.get(1).value();
         final Value result = applyOperator(lhs, rhs);
 
-        LOGGER.debug("({}) {} {} -> {}", operator, lhs.getValue(), rhs.getValue(), result.getValue());
+        LOGGER.trace("({}) {} {} -> {}", this.operator, lhs.getValue(), rhs.getValue(), result.getValue());
 
         return Optional.of(result);
     }
@@ -93,15 +93,15 @@ public class BinaryCommand extends Command {
         checkNotNull(lhs);
         checkNotNull(rhs);
 
-        if (operator == BinaryCommandOperator.PLUS && lhs.isString()) {
+        if (this.operator == BinaryCommandOperator.PLUS && lhs.isString()) {
             // Type check for string concatenation
             if (!rhs.isString())
-                throw new IllegalTypeException("Right hand side of concatenation expression is not a string: " + rhs.getValue(), Variables.VariableType.STRING, rhs.getType());
+                throw new IllegalTypeException("Right hand side of concatenation expression is not a string: " + rhs.getValue(), ValueType.STRING, rhs.getType());
         } else {
             if (!ValueUtils.isNumberOrList(lhs))
-                throw new IllegalTypeException("Left hand side of expression is not a list or number: " + lhs.getValue(), Variables.VariableType.NUMBER, lhs.getType());
+                throw new IllegalTypeException("Left hand side of expression is not a list or number: " + lhs.getValue(), ValueType.NUMBER, lhs.getType());
             if (!ValueUtils.isNumberOrList(rhs))
-                throw new IllegalTypeException("Right hand side of expression is not a list or number: " + rhs.getValue(), Variables.VariableType.NUMBER, rhs.getType());
+                throw new IllegalTypeException("Right hand side of expression is not a list or number: " + rhs.getValue(), ValueType.NUMBER, rhs.getType());
         }
 
         return true;
@@ -139,7 +139,7 @@ public class BinaryCommand extends Command {
 
         List<Complex> resultList = new ArrayList<>(leftList.size());
         for (int i = 0; i < leftList.size(); i++)
-            resultList.add(evaluationFunction.apply(Value.of(leftList.get(i)), Value.of(rightList.get(i))).complex());
+            resultList.add(this.evaluationFunction.apply(Value.of(leftList.get(i)), Value.of(rightList.get(i))).complex());
         return Value.of(resultList);
     }
 
@@ -157,7 +157,7 @@ public class BinaryCommand extends Command {
     private Value applyOnLeftList(@NotNull Value lhs, @NotNull Value rhs) {
         List<Complex> valueList = lhs.list()
                 .stream()
-                .map(c -> evaluationFunction.apply(Value.of(c), rhs).complex())
+                .map(c -> this.evaluationFunction.apply(Value.of(c), rhs).complex())
                 .collect(Collectors.toList());
         return Value.of(valueList);
     }
@@ -176,7 +176,7 @@ public class BinaryCommand extends Command {
     private Value applyOnRightList(@NotNull Value lhs, @NotNull Value rhs) {
         List<Complex> valueList = rhs.list()
                 .stream()
-                .map(c -> evaluationFunction.apply(lhs, Value.of(c)).complex())
+                .map(c -> this.evaluationFunction.apply(lhs, Value.of(c)).complex())
                 .collect(Collectors.toList());
         return Value.of(valueList);
     }
@@ -206,7 +206,7 @@ public class BinaryCommand extends Command {
                 result = applyOnRightList(lhs, rhs);
             }
         } else {
-            result = evaluationFunction.apply(lhs, rhs);
+            result = this.evaluationFunction.apply(lhs, rhs);
         }
         return result;
     }

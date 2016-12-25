@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,33 @@
  * THE SOFTWARE
  */
 
-package org.xlrnet.tibaija.util;
+package org.xlrnet.tibaija.memory;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.xlrnet.tibaija.commons.ValueType;
 
 /**
- * Test methods for {@link NumberUtils} helper methods
+ * Variable which can be used for storing either a complex or a real number.
  */
-public class NumberUtilsTest {
+public enum NumberVariable implements Variable {
+    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z;
 
-    @Test
-    public void testIsInteger_false() throws Exception {
-        assertFalse(NumberUtils.isInteger(1.5));
-        assertFalse(NumberUtils.isInteger(1.12345));
-        assertFalse(NumberUtils.isInteger(-9.876));
+    /**
+     * Returns the name of the variable,
+     *
+     * @return the name of the variable,
+     */
+    @Override
+    public String getVariableName() {
+        return this.name();
     }
 
-    @Test
-    public void testIsInteger_true() throws Exception {
-        assertTrue(NumberUtils.isInteger(1));
-        assertTrue(NumberUtils.isInteger(-5));
-        assertTrue(NumberUtils.isInteger(1234));
+    /**
+     * Returns the type of the variable (e.g. number, string, ...).
+     *
+     * @return the type of the variable .
+     */
+    @Override
+    public ValueType getVariableType() {
+        return ValueType.NUMBER;
     }
 }

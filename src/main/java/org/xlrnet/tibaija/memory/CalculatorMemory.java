@@ -23,6 +23,7 @@
 package org.xlrnet.tibaija.memory;
 
 import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.DuplicateProgramException;
 import org.xlrnet.tibaija.processor.ExecutableProgram;
 
@@ -51,8 +52,7 @@ public interface CalculatorMemory extends ReadOnlyCalculatorMemory {
      * @param listVariable
      *         The variable to which the value should be written.
      * @param index
-     *         Index of the element inside the list. First index is always one. If the dimension is either to big or
-     *         too
+     *         Index of the element inside the list. First index is always one. If the dimension is either to big or too
      *         low, an {@link org.xlrnet.tibaija.exception.InvalidDimensionException} will be thrown.
      * @param value
      *         The new value for the element at the given index.
@@ -89,7 +89,7 @@ public interface CalculatorMemory extends ReadOnlyCalculatorMemory {
      * @param value
      *         The new value of the selected variable.
      */
-    void setNumberVariableValue(@NotNull Variables.NumberVariable variable, @NotNull Value value);
+    void setNumberVariableValue(@NotNull NumberVariable variable, @NotNull Value value);
 
     /**
      * Sets the internal value of the given string variable.
@@ -99,7 +99,7 @@ public interface CalculatorMemory extends ReadOnlyCalculatorMemory {
      * @param value
      *         The new value of the selected variable.
      */
-    void setStringVariableValue(@NotNull Variables.StringVariable variable, @NotNull Value value);
+    void setStringVariableValue(@NotNull StringVariable variable, @NotNull Value value);
 
     /**
      * Stores the raw code of a program in internal memory.
