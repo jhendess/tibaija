@@ -35,7 +35,7 @@ grammar TIBasic;
 /* Additional java imports */
 
 @header {
-import org.xlrnet.tibaija.util.ValidationUtils;
+import org.xlrnet.tibaija.commons.ValidationUtil;
 }
 
 /* Global attributes */
@@ -124,8 +124,8 @@ expression_mul_div returns [
          // if the last expression was a list variable and the next expression begins with a number variable
          // I.e.: Prevent that  ∟ABCDEF will be interpreted as ∟ABCDE*F
          expression_infix { !($isImplicit
-                            && ValidationUtils.isValidListName($lastExpr)
-                            && ValidationUtils.isValidNumberVariableName($expression_infix.text)) }?
+                            && ValidationUtil.isValidListName($lastExpr)
+                            && ValidationUtil.isValidNumberVariableName($expression_infix.text)) }?
            { $lastExpr = $expression_infix.text; }
        )*;
 
