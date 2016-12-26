@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xlrnet.tibaija.exception.TIRuntimeException;
 import org.xlrnet.tibaija.tools.fontgen.Font;
 import org.xlrnet.tibaija.tools.fontgen.FontImportException;
 import org.xlrnet.tibaija.tools.fontgen.Symbol;
@@ -36,7 +37,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,12 +55,34 @@ public class FontRegistry {
 
     @Nullable
     public PixelSprite getSpriteByHexValue(@NotNull String fontIdentifier, int hexValue) {
+        if (!fontMap.containsKey(fontIdentifier)) {
+            throw new TIRuntimeException("No font " + fontIdentifier + " could be found");
+        }
         return this.fontMap.get(fontIdentifier).hexMap.get(hexValue);
     }
 
     @Nullable
     public PixelSprite getSpriteByRepresentation(@NotNull String fontIdentifier, String representation) {
         return this.fontMap.get(fontIdentifier).characterMap.get(representation);
+    }
+
+    /**
+     * Returns a list of {@link PixelSprite} objects which resemble the given text. Each character will be resolved to a
+     * single sprite
+     *
+     * @param fontIdentifier
+     *         Name of the font which should be used for resolving the sprites.
+     * @param text
+     *         The text to represent as sprites.
+     * @return List of sprites representing the input text.
+     */
+    @NotNull
+    public List<PixelSprite> getSpritesForText(@NotNull String fontIdentifier, @NotNull String text) {
+        List<PixelSprite> pixelSprites = new ArrayList<>(text.length());
+        for (int i = 0; i < text.length(); i++) {
+            pixelSprites.add(getSpriteByRepresentation(fontIdentifier, String.valueOf(text.charAt(i))));
+        }
+        return pixelSprites;
     }
 
     public void registerFont(@NotNull Path filePath, @NotNull String identifier) throws IOException {
@@ -71,25 +96,6 @@ public class FontRegistry {
         InputStream in = Files.newInputStream(filePath);
         Font font = objectMapper.readValue(in, Font.class);
         registerFont(font, identifier);
-    }
-
-    public void registerFont(@NotNull Font font, @NotNull String identifier) {
-        if (fontMap.containsKey(identifier)) {
-            throw new FontImportException("Font with identifier " + identifier + " already exists");
-        }
-
-        LOGGER.info("Importing font \"{}\" ...", font.getFontName());
-
-        int imports = 0;
-        IndexedFont indexedFont = new IndexedFont();
-
-        for (Symbol symbol : font.getSymbols()) {
-            boolean success = importSymbol(symbol, indexedFont);
-            if (success) imports++;
-        }
-
-        fontMap.put(identifier, indexedFont);
-        LOGGER.debug("Imported {} symbols.", imports);
     }
 
     private boolean importSymbol(@NotNull Symbol symbol, @NotNull IndexedFont indexedFont) {
@@ -118,12 +124,30 @@ public class FontRegistry {
         return true;
     }
 
+    private void registerFont(@NotNull Font font, @NotNull String identifier) {
+        if (fontMap.containsKey(identifier)) {
+            throw new FontImportException("Font with identifier " + identifier + " already exists");
+        }
+
+        LOGGER.info("Importing font \"{}\" ...", font.getFontName());
+
+        int imports = 0;
+        IndexedFont indexedFont = new IndexedFont();
+
+        for (Symbol symbol : font.getSymbols()) {
+            boolean success = importSymbol(symbol, indexedFont);
+            imports += (success) ? 1 : 0;
+        }
+
+        fontMap.put(identifier, indexedFont);
+        LOGGER.debug("Imported {} symbols.", imports);
+    }
+
     static class IndexedFont {
 
         final Map<Integer, PixelSprite> hexMap = new HashMap<>();
 
         final Map<String, PixelSprite> characterMap = new HashMap<>();
-
     }
 
 }

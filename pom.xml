@@ -68,13 +68,13 @@
         <dependency>
             <groupId>com.googlecode.lanterna</groupId>
             <artifactId>lanterna</artifactId>
-            <version>3.0.0-beta1</version>
+            <version>3.0.0-beta3</version>
         </dependency>
         <!-- Logging -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.1.2</version>
+            <version>1.1.7</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

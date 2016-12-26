@@ -31,4 +31,10 @@ public class FontConstants {
 
     public static final String FONT_SMALL = "TI83+_S";
 
+    public static final Character ELLIPSIS = '…';
+
+    public static final Character BLANK = ' ';
+
+    public static final Character FILLED = '█';
+
 }

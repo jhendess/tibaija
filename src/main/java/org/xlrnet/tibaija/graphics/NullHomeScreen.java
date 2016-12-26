@@ -24,6 +24,7 @@ package org.xlrnet.tibaija.graphics;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xlrnet.tibaija.ExecutionEnvironment;
 import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.OutOfScreenBoundsException;
 
@@ -44,6 +45,11 @@ public class NullHomeScreen implements HomeScreen {
     @Override
     public void clear() {
         LOGGER.info("Home screen cleared");
+    }
+
+    @Override
+    public void configure(ExecutionEnvironment environment, Display display) {
+
     }
 
     /**
@@ -67,22 +73,6 @@ public class NullHomeScreen implements HomeScreen {
     }
 
     /**
-     * Displays and formats a given {@link Value} at the given coordinates on the home screen. If the formatted content
-     * exceeds the maximum width of the line, the text must be hard wrapped to the next line.
-     *
-     * @param value
-     *         The text to print.
-     * @param x
-     *         The X coordinate where the text print should begin. First valid coordinate is always one (1).
-     * @param y
-     *         The Y coordinate where the text print should begin. First valid coordinate is always one (1).
-     */
-    @Override
-    public void printAt(Value value, int x, int y) throws OutOfScreenBoundsException {
-        LOGGER.info("Printing {} to coordinates {},{} on home screen", value, x, y);
-    }
-
-    /**
      * Displays a given string at the given coordinates on the home screen. If the text exceeds the maximum width of
      * the line, the text must be hard wrapped to the next line.
      *
@@ -96,6 +86,22 @@ public class NullHomeScreen implements HomeScreen {
     @Override
     public void printAt(String text, int x, int y) throws OutOfScreenBoundsException {
         LOGGER.info("Printing text \"{}\" to coordinates {},{} on home screen", text, x, y);
+    }
+
+    /**
+     * Displays and formats a given {@link Value} at the given coordinates on the home screen. If the formatted content
+     * exceeds the maximum width of the line, the text must be hard wrapped to the next line.
+     *
+     * @param value
+     *         The text to print.
+     * @param x
+     *         The X coordinate where the text print should begin. First valid coordinate is always one (1).
+     * @param y
+     *         The Y coordinate where the text print should begin. First valid coordinate is always one (1).
+     */
+    @Override
+    public void printAt(Value value, int x, int y) throws OutOfScreenBoundsException {
+        LOGGER.info("Printing {} to coordinates {},{} on home screen", value, x, y);
     }
 
     /**
@@ -127,4 +133,5 @@ public class NullHomeScreen implements HomeScreen {
     public void printValue(Value value) {
         LOGGER.info("Printing value \"{}\" on home screen", value);
     }
+
 }

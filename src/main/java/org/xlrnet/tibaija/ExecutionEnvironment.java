@@ -39,6 +39,11 @@ import org.xlrnet.tibaija.memory.ReadOnlyCalculatorMemory;
 public interface ExecutionEnvironment {
 
     /**
+     * Starts the environment and all its components.
+     */
+    void boot();
+
+    /**
      * Executes a program with the given name from memory. If the program does not exist in memory, the default {@link
      * CodeProvider} will be used for loading the file into memory.
      *
@@ -127,4 +132,9 @@ public interface ExecutionEnvironment {
      *         Valid TI-Basic code
      */
     void loadProgram(String programName, CharSequence programCode);
+
+    /**
+     * Shuts down the execution environment and all components.
+     */
+    void shutdown();
 }

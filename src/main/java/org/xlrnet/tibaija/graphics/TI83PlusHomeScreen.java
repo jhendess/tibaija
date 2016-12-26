@@ -22,23 +22,37 @@
 
 package org.xlrnet.tibaija.graphics;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xlrnet.tibaija.ExecutionEnvironment;
 import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.OutOfScreenBoundsException;
-import org.xlrnet.tibaija.processor.InternalExecutionEnvironment;
+
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Implementation of a TI-83 HomeScreen using any {@link Display}.
  */
 public class TI83PlusHomeScreen implements HomeScreen {
 
-    private final Display display;
+    private static final Logger LOGGER = LoggerFactory.getLogger(TI83PlusHomeScreen.class);
 
-    private final InternalExecutionEnvironment environment;
+    private static final int COLUMN_WIDTH = 5;
 
-    public TI83PlusHomeScreen(Display display, InternalExecutionEnvironment internalExecutionEnvironment) {
-        this.display = display;
-        this.environment = internalExecutionEnvironment;
-    }
+    private static final int ROW_HEIGHT = 7;
+
+    private static final int SEPARATION = 1;
+
+    private final SpritePrinter spritePrinter = new SpritePrinter();
+
+    private final Deque<List<PixelSprite>> spriteBuffer = new LinkedList<>();
+
+    private ExecutionEnvironment environment;
+
+    private Display display;
 
     /**
      * Clears the home screen.
@@ -46,6 +60,13 @@ public class TI83PlusHomeScreen implements HomeScreen {
     @Override
     public void clear() {
         display.clearScreen();
+        display.flush();
+    }
+
+    @Override
+    public void configure(ExecutionEnvironment environment, Display display) {
+        this.environment = environment;
+        this.display = display;
     }
 
     /**
@@ -69,6 +90,36 @@ public class TI83PlusHomeScreen implements HomeScreen {
     }
 
     /**
+     * Displays a given string at the given coordinates on the home screen. If the text exceeds the maximum width of the
+     * line, the text must be hard wrapped to the next line. If the content goes past the last column of the row, the
+     * text will be truncated.
+     *
+     * @param text
+     *         The text to print.
+     * @param x
+     *         The X coordinate where the text print should begin. First valid coordinate is always one (1).
+     * @param y
+     *         The Y coordinate where the text print should begin. First valid coordinate is always one (1).
+     */
+    @Override
+    public void printAt(String text, int x, int y) throws OutOfScreenBoundsException {
+        checkScreenBounds(x, y);
+        LOGGER.trace("Printing text {} at {},{}", text, x, y);
+
+        int printBegin = 0;
+        while (printBegin < text.length()) {
+            int printableCharsOnCurrentLine = getMaxRows() - x - 1;
+            String textOnCurrentLine = StringUtils.substring(text, printBegin, printableCharsOnCurrentLine);
+            printBegin += textOnCurrentLine.length();
+            List<PixelSprite> spritesForText = environment.getFontRegistry().getSpritesForText(FontConstants.FONT_LARGE, text);
+            int effectiveOffsetX = (x - 1) * getColumnWidth();
+            int effectiveOffsetY = (y - 1) * getRowHeight();
+            spritePrinter.printSpritesHorizontally(spritesForText, display, effectiveOffsetX, effectiveOffsetY, SEPARATION);
+            y++;
+        }
+    }
+
+    /**
      * Displays and formats a given {@link Value} at the given coordinates on the home screen. If the formatted content
      * exceeds the maximum width of the line, the text must be hard wrapped to the next line. If the content goes past
      * the last column of the row, the text will be truncated.
@@ -82,23 +133,9 @@ public class TI83PlusHomeScreen implements HomeScreen {
      */
     @Override
     public void printAt(Value text, int x, int y) throws OutOfScreenBoundsException {
-
-    }
-
-    /**
-     * Displays a given string at the given coordinates on the home screen. If the text exceeds the maximum width of the
-     * line, the text must be hard wrapped to the next line. If the content goes past the last column of the row, the
-     * text will be truncated.
-     *
-     * @param text
-     *         The text to print.
-     * @param x
-     *         The X coordinate where the text print should begin. First valid coordinate is always one (1).
-     * @param y
-     */
-    @Override
-    public void printAt(String text, int x, int y) throws OutOfScreenBoundsException {
-
+        checkScreenBounds(x, y);
+        String formatted = environment.formatValue(text);
+        printAt(formatted, x, y);
     }
 
     /**
@@ -112,7 +149,29 @@ public class TI83PlusHomeScreen implements HomeScreen {
      */
     @Override
     public void printText(String text) {
+        boolean forceRedraw = false;
+        // Remove first line from buffer if size is exceeded
+        if (spriteBuffer.size() >= getMaxRows()) {
+            spriteBuffer.pop();
+            forceRedraw = true;
+        }
 
+        LOGGER.trace("Printing {} on home screen", text);
+
+        String textToPrint = text;
+
+        while (StringUtils.isNotEmpty(textToPrint)) {
+            String currentLine = StringUtils.substring(textToPrint, 0, getMaxColumns());
+            textToPrint = StringUtils.substring(textToPrint, getMaxColumns());
+            List<PixelSprite> spritesForText = environment.getFontRegistry().getSpritesForText(FontConstants.FONT_LARGE, currentLine);
+            spriteBuffer.offer(spritesForText);
+            if (forceRedraw) {
+                redrawFullScreen();
+            } else {
+                redrawLastLine();
+            }
+            //printText(textToPrint);
+        }
     }
 
     /**
@@ -128,6 +187,51 @@ public class TI83PlusHomeScreen implements HomeScreen {
      */
     @Override
     public void printValue(Value value) {
+        String formatted = environment.formatValue(value);
 
+        LOGGER.trace("Printing value {} formatted as {}", value, formatted);
+
+        if (formatted.length() > getMaxColumns()) {
+            formatted = formatted.substring(0, getMaxColumns() - 1) + FontConstants.ELLIPSIS;
+        } else if (!value.isString()) {
+            formatted = StringUtils.repeat(FontConstants.BLANK, getMaxColumns() - formatted.length()) + formatted;
+        }
+
+        printText(formatted);
+    }
+
+    protected int getColumnWidth() {
+        return COLUMN_WIDTH;
+    }
+
+    protected int getRowHeight() {
+        return ROW_HEIGHT;
+    }
+
+    private void checkScreenBounds(int x, int y) {
+        if (x > getMaxColumns() || y > getMaxRows() || x < 1 || y < 1) {
+            throw new OutOfScreenBoundsException("Illegal home screen coordinates", x, y, getMaxRows(), getMaxColumns());
+        }
+    }
+
+    private void redrawFullScreen() {
+        LOGGER.trace("Begin redrawing full home screen");
+        display.clearScreen();
+        int y = 0;
+        for (List<PixelSprite> pixelSprites : spriteBuffer) {
+            int effectiveOffsetY = y * getRowHeight() + y;
+            spritePrinter.printSpritesHorizontally(pixelSprites, display, 0, effectiveOffsetY, SEPARATION);
+            y++;
+        }
+        display.flush();
+        LOGGER.trace("Finished redrawing full home screen");
+    }
+
+    private void redrawLastLine() {
+        int bufferedLines = spriteBuffer.size() - 1;
+        int effectiveOffsetY = bufferedLines * getRowHeight() + bufferedLines;
+        LOGGER.trace("Drawing buffer line {}", bufferedLines);
+        spritePrinter.printSpritesHorizontally(spriteBuffer.getLast(), display, 0, effectiveOffsetY, SEPARATION);
+        display.flush();
     }
 }

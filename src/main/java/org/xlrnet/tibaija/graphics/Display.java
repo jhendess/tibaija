@@ -22,6 +22,8 @@
 
 package org.xlrnet.tibaija.graphics;
 
+import java.io.IOException;
+
 /**
  * A low-level output device which supports enabling and disabling single pixels and various other low-level
  * operations. A pixel is always represented as a single dot on the screen and smallest visible unit.
@@ -31,14 +33,14 @@ package org.xlrnet.tibaija.graphics;
 public interface Display {
 
     /**
-     * Resets the screen and turns all pixels off. Flushing is done automatically afterwards.
+     * Resets the screen and turns all pixels off. Flushing is not done automatically afterwards.
      */
     void clearScreen();
 
     /**
      * Close this screen and don't display it to the user anymore.
      */
-    void close();
+    void close() throws IOException;
 
     /**
      * Flushes all output from the internal buffer and draws it onto the screen.
@@ -83,8 +85,9 @@ public interface Display {
     /**
      * Make this screen initially visible to the user. This method needs to be called always at least one time before
      * anything can be displayed on the screen.
+     * @throws IOException Thrown if an error occurred during initialization of the screen.
      */
-    void open();
+    void open() throws IOException;
 
     /**
      * Sets the status of a selected pixel either to on (visible) or off (invisible).

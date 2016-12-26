@@ -105,18 +105,22 @@ public class Application {
     private void runFileMode(File startFile) {
         LOGGER.info("Starting interpreter from file {} ...", startFile.getAbsolutePath());
 
+        InternalExecutionEnvironment environment = null;
         try {
             Path filePath = startFile.toPath();
             Path parentDirectory = filePath.toAbsolutePath().getParent();
             FileSystemCodeProvider codeProvider = new FileSystemCodeProvider(parentDirectory);
-            InternalExecutionEnvironment environment = ExecutionEnvironmentFactory.newDefaultEnvironment(codeProvider);
+            environment = ExecutionEnvironmentFactory.newDefaultEnvironment(codeProvider);
+            environment.boot();
             String bootFile = codeProvider.registerFile(filePath);
-
-            LOGGER.info("System booted");
 
             environment.executeProgram(bootFile);
         } catch (IOException e) {
             LOGGER.error("Program load error", e);
+        }
+
+        if (environment != null) {
+            environment.shutdown();
         }
     }
 
@@ -127,6 +131,7 @@ public class Application {
         InternalExecutionEnvironment environment = ExecutionEnvironmentFactory.newDefaultEnvironment(codeProvider);
         CalculatorIO io = environment.getCalculatorIO();
         ReadOnlyCalculatorMemory memory = environment.getMemory();
+        environment.boot();
 
         showWelcome(io);
         String input;
@@ -152,6 +157,7 @@ public class Application {
         }
 
         LOGGER.info("Exiting interpreter ...");
+        environment.shutdown();
     }
 
     private void showWelcome(CalculatorIO io) {

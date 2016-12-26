@@ -32,10 +32,7 @@ import org.xlrnet.tibaija.ExecutionEnvironment;
 import org.xlrnet.tibaija.commons.ValidationUtil;
 import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.*;
-import org.xlrnet.tibaija.graphics.DecimalDisplayMode;
-import org.xlrnet.tibaija.graphics.FontRegistry;
-import org.xlrnet.tibaija.graphics.HomeScreen;
-import org.xlrnet.tibaija.graphics.NumberDisplayFormat;
+import org.xlrnet.tibaija.graphics.*;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.io.CodeProvider;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
@@ -79,16 +76,32 @@ public class InternalExecutionEnvironment implements ExecutionEnvironment {
 
     private final Preprocessor preprocessor = new Preprocessor();
 
-    private DecimalDisplayMode decimalDisplayMode;
+    private final Display display;
 
-    private NumberDisplayFormat numberDisplayFormat;
+    private DecimalDisplayMode decimalDisplayMode = DecimalDisplayMode.FLOAT;
 
-    protected InternalExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry) {
+    private NumberDisplayFormat numberDisplayFormat = NumberDisplayFormat.NORMAL;
+
+    protected InternalExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry, Display display) {
         this.memory = memory;
         this.calculatorIO = calculatorIO;
         this.codeProvider = codeProvider;
         this.homeScreen = homeScreen;
         this.fontRegistry = fontRegistry;
+        this.display = display;
+    }
+
+    @Override
+    public void boot() {
+        LOGGER.debug("Booting environment");
+        try {
+            display.open();
+        } catch (IOException e) {
+            LOGGER.error("Opening display failed", e);
+            throw new TIGraphicsException("Opening display failed", e);
+        }
+        homeScreen.configure(this, display);
+        LOGGER.info("Environment booted");
     }
 
     @Override
@@ -411,6 +424,18 @@ public class InternalExecutionEnvironment implements ExecutionEnvironment {
         }
 
         return runRegisteredExpressionFunction(commandName, parameters);
+    }
+
+    @Override
+    public void shutdown() {
+        LOGGER.debug("Shutting down environment");
+        try {
+            display.close();
+        } catch (IOException e) {
+            LOGGER.error("Shutting down display failed", e);
+            throw new TIGraphicsException("Shutting down display failed", e);
+        }
+        LOGGER.info("Environment shut down");
     }
 
     /**

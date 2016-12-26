@@ -32,4 +32,8 @@ public class TIGraphicsException extends TIRuntimeException {
     public TIGraphicsException(String message) {
         super(message);
     }
+
+    public TIGraphicsException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

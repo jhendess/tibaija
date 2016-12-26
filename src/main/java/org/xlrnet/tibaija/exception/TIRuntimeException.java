@@ -23,9 +23,9 @@
 package org.xlrnet.tibaija.exception;
 
 /**
- * Abstract base class for all runtime exceptions of the TI-Basic interpreter.
+ * Base class for all runtime exceptions of the TI-Basic interpreter.
  */
-public abstract class TIRuntimeException extends RuntimeException {
+public class TIRuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = 130566776018220551L;
 
@@ -35,6 +35,10 @@ public abstract class TIRuntimeException extends RuntimeException {
 
     public TIRuntimeException(String message) {
         this(-1, -1, message);
+    }
+
+    public TIRuntimeException(String message, Throwable cause) {
+        super(message, cause);
     }
 
     public TIRuntimeException(int linenumber, int charInLine, String message) {

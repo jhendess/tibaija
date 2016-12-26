@@ -22,6 +22,7 @@
 
 package org.xlrnet.tibaija.graphics;
 
+import org.xlrnet.tibaija.ExecutionEnvironment;
 import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.OutOfScreenBoundsException;
 
@@ -38,6 +39,15 @@ public interface HomeScreen {
     void clear();
 
     /**
+     * Binds this HomeScreen to a given {@link ExecutionEnvironment} and {@link Display}. This method will be called by
+     * the environment after the execution environment has started.
+     *
+     * @param environment
+     *         The environment that bound this screen.
+     */
+    void configure(ExecutionEnvironment environment, Display display);
+
+    /**
      * Return the number of columns which can be displayed on this home screen.
      *
      * @return the number of columns which can be displayed on this home screen.
@@ -52,20 +62,6 @@ public interface HomeScreen {
     int getMaxRows();
 
     /**
-     * Displays and formats a given {@link Value} at the given coordinates on the home screen. If the formatted content
-     * exceeds the maximum width of the line, the text must be hard wrapped to the next line. If the content goes past
-     * the last column of the row, the text will be truncated.
-     *
-     * @param text
-     *         The text to print.
-     * @param x
-     *         The X coordinate where the text print should begin. First valid coordinate is always one (1).
-     * @param y
-     *         The Y coordinate where the text print should begin. First valid coordinate is always one (1).
-     */
-    void printAt(Value text, int x, int y) throws OutOfScreenBoundsException;
-
-    /**
      * Displays a given string at the given coordinates on the home screen. If the text exceeds the maximum width of
      * the line, the text must be hard wrapped to the next line. If the content goes past the last column of the row,
      * the text will be truncated.
@@ -78,6 +74,20 @@ public interface HomeScreen {
      *         The Y coordinate where the text print should begin. First valid coordinate is always one (1).
      */
     void printAt(String text, int x, int y) throws OutOfScreenBoundsException;
+
+    /**
+     * Displays and formats a given {@link Value} at the given coordinates on the home screen. If the formatted content
+     * exceeds the maximum width of the line, the text must be hard wrapped to the next line. If the content goes past
+     * the last column of the row, the text will be truncated.
+     *
+     * @param text
+     *         The text to print.
+     * @param x
+     *         The X coordinate where the text print should begin. First valid coordinate is always one (1).
+     * @param y
+     *         The Y coordinate where the text print should begin. First valid coordinate is always one (1).
+     */
+    void printAt(Value text, int x, int y) throws OutOfScreenBoundsException;
 
     /**
      * Prints a text string to the homescreen. This appends the content to print at the bottom of the screen. If the

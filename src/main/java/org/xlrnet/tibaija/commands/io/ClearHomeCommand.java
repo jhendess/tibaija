@@ -50,7 +50,6 @@ public class ClearHomeCommand extends Command {
     @Override
     protected Optional<Value> execute(@NotNull ImmutableList<Parameter> arguments) {
         getEnvironment().getHomeScreen().clear();
-
         return Optional.empty();
     }
 
