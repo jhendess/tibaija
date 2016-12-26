@@ -23,48 +23,45 @@
 package org.xlrnet.tibaija.processor;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 /**
  * Tests for structural issues.
  */
-@RunWith(MockitoJUnitRunner.class)
 public class InterpretStructuralTest extends AbstractTI83PlusTest {
 
     @Test(expected = Exception.class)
     public void testInterpret_invalidProgram_parentheses_1() throws Exception {
-        calculator.interpret("()");
+        getEnvironment().interpret("()");
     }
 
     @Test(expected = Exception.class)
     public void testInterpret_invalidProgram_parentheses_2() throws Exception {
-        calculator.interpret("()()");
+        getEnvironment().interpret("()()");
     }
 
     @Test
     public void testInterpret_validProgram_emptyProgram() throws Exception {
-        calculator.interpret(":");
+        getEnvironment().interpret(":");
         verifyZeroInteractions(mockedMemory);
     }
 
     @Test
     public void testInterpret_validProgram_emptyProgram_noColon() throws Exception {
-        calculator.interpret("");
+        getEnvironment().interpret("");
         verifyZeroInteractions(mockedMemory);
     }
 
     @Test
     public void testInterpret_validProgram_one() throws Exception {
-        calculator.interpret(":1");
+        getEnvironment().interpret(":1");
         verifyLastResultValue(1.0);
     }
 
     @Test
     public void testInterpret_validProgram_one_noColon() throws Exception {
-        calculator.interpret("1");
+        getEnvironment().interpret("1");
         verifyLastResultValue(1.0);
     }
 

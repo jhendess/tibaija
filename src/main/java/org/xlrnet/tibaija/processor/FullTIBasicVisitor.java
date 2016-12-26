@@ -54,7 +54,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FullTIBasicVisitor.class);
 
-    ExecutionEnvironment environment;
+    InternalExecutionEnvironment environment;
 
     /**
      * Sets the internal execution environment.
@@ -62,7 +62,7 @@ public class FullTIBasicVisitor extends TIBasicBaseVisitor {
      * @param environment
      *         The new execution environment.
      */
-    final public void setEnvironment(ExecutionEnvironment environment) {
+    final public void setEnvironment(InternalExecutionEnvironment environment) {
         this.environment = environment;
     }
 

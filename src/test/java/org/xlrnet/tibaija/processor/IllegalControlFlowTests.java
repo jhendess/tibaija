@@ -35,42 +35,42 @@ public class IllegalControlFlowTests extends AbstractTI83PlusTest {
 
     @Test(expected = IllegalControlFlowException.class)
     public void testInterpret_invalidProgram_Else() throws Exception {
-        calculator.interpret("Else");
+        getEnvironment().interpret("Else");
     }
 
     @Test(expected = IllegalControlFlowException.class)
     public void testInterpret_invalidProgram_End() throws Exception {
-        calculator.interpret("End");
+        getEnvironment().interpret("End");
     }
 
     @Test(expected = IllegalControlFlowException.class)
     public void testInterpret_invalidProgram_Repeat() throws Exception {
-        calculator.interpret("Repeat 1");
+        getEnvironment().interpret("Repeat 1");
     }
 
     @Test(expected = IllegalControlFlowException.class)
     public void testInterpret_invalidProgram_Then() throws Exception {
-        calculator.interpret("Then");
+        getEnvironment().interpret("Then");
     }
 
     @Test(expected = IllegalControlFlowException.class)
     public void testInterpret_invalidProgram_While() throws Exception {
-        calculator.interpret("While 1");
+        getEnvironment().interpret("While 1");
     }
 
     @Test(expected = IllegalControlFlowException.class)
     public void testInterpret_invalidProgram_decrementSkip() throws Exception {
-        calculator.interpret("DS<(X,1");
+        getEnvironment().interpret("DS<(X,1");
     }
 
     @Test(expected = IllegalControlFlowException.class)
     public void testInterpret_invalidProgram_if() throws Exception {
-        calculator.interpret("If 1");
+        getEnvironment().interpret("If 1");
     }
 
     @Test(expected = IllegalControlFlowException.class)
     public void testInterpret_invalidProgram_incrementSkip() throws Exception {
-        calculator.interpret("IS>(X,1");
+        getEnvironment().interpret("IS>(X,1");
     }
 
 }

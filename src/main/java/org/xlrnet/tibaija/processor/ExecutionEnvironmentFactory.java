@@ -23,7 +23,8 @@
 package org.xlrnet.tibaija.processor;
 
 import org.jetbrains.annotations.NotNull;
-import org.xlrnet.tibaija.VirtualCalculator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.commands.io.ClearHomeCommand;
 import org.xlrnet.tibaija.commands.io.DisplayCommand;
 import org.xlrnet.tibaija.commands.io.OutputCommand;
@@ -31,27 +32,62 @@ import org.xlrnet.tibaija.commands.math.BinaryCommand;
 import org.xlrnet.tibaija.commands.math.BinaryCommandOperator;
 import org.xlrnet.tibaija.commands.math.UnaryCommand;
 import org.xlrnet.tibaija.commands.math.UnaryCommandOperator;
+import org.xlrnet.tibaija.graphics.FontConstants;
+import org.xlrnet.tibaija.graphics.FontRegistry;
+import org.xlrnet.tibaija.graphics.HomeScreen;
+import org.xlrnet.tibaija.graphics.NullHomeScreen;
 import org.xlrnet.tibaija.io.CalculatorIO;
+import org.xlrnet.tibaija.io.CodeProvider;
+import org.xlrnet.tibaija.io.ConsoleIO;
+import org.xlrnet.tibaija.io.DummyCodeProvider;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
+import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
+
+import java.io.*;
+import java.nio.file.Paths;
 
 /**
  * Static factory for creating ExecutionEnvironments with preconfigured commands.
  */
 public class ExecutionEnvironmentFactory {
 
-    @NotNull
-    public static ExecutionEnvironment newDefaultEnvironment(@NotNull VirtualCalculator virtualCalculator) {
-        return newDefaultEnvironment(virtualCalculator.getMemory(), virtualCalculator.getIODevice());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionEnvironmentFactory.class);
+
+    /**
+     * Creates a new {@link InternalExecutionEnvironment} using the given {@link CodeProvider} and configures it. All
+     * components will be initialized with the default settings.
+     *
+     * @param codeProvider
+     *         The code provider to use for looking up new programs.
+     * @return A
+     * @throws IOException
+     */
+    public static InternalExecutionEnvironment newDefaultEnvironment(CodeProvider codeProvider) throws IOException {
+        Reader reader;
+        Writer writer;
+
+        if (System.console() != null) {
+            Console console = System.console();
+            reader = console.reader();
+            writer = console.writer();
+            LOGGER.debug("Initialised native system console");
+        } else {
+            reader = new InputStreamReader(System.in);
+            writer = new OutputStreamWriter(System.out);
+            LOGGER.debug("Initialised system I/O streams");
+        }
+
+        CalculatorIO io = new ConsoleIO(reader, writer);
+        CalculatorMemory memory = new DefaultCalculatorMemory();
+        HomeScreen homeScreen = new NullHomeScreen();
+        FontRegistry fontRegistry = new FontRegistry();
+        fontRegistry.registerFont(Paths.get("largeFont.json"), FontConstants.FONT_LARGE);
+        fontRegistry.registerFont(Paths.get("smallFont.json"), FontConstants.FONT_SMALL);
+
+        return ExecutionEnvironmentFactory.newEnvironment(memory, io, codeProvider, homeScreen, fontRegistry);
     }
 
-    @NotNull
-    private static ExecutionEnvironment newDefaultEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO ioDevice) {
-        ExecutionEnvironment env = ExecutionEnvironment.newEnvironment(memory, ioDevice);
-        registerDefaultCommands(env);
-        return env;
-    }
-
-    public static void registerDefaultCommands(@NotNull ExecutionEnvironment env) {
+    static void registerDefaultCommands(@NotNull InternalExecutionEnvironment env) {
         // Register binary arithmetic operators
         env.registerExpressionFunction("+", new BinaryCommand(BinaryCommandOperator.PLUS));
         env.registerExpressionFunction("-", new BinaryCommand(BinaryCommandOperator.MINUS));
@@ -91,4 +127,72 @@ public class ExecutionEnvironmentFactory {
         env.registerCommandStatement("ClrHome", new ClearHomeCommand());
     }
 
+    /**
+     * Instantiate a new environment without any preconfigured commands and no font registry.
+     *
+     * @param memory
+     *         The writable memory for the new environment.
+     * @param calculatorIO
+     *         The I/O device for the new environment.
+     * @return A new environment
+     */
+    @NotNull
+    public static InternalExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO) {
+        return new InternalExecutionEnvironment(memory, calculatorIO, new DummyCodeProvider(), new NullHomeScreen(), new FontRegistry());
+    }
+
+    /**
+     * Instantiate a new environment without any preconfigured commands, no code provider and no font registry.
+     *
+     * @param memory
+     *         The writable memory for the new environment.
+     * @param calculatorIO
+     *         The I/O device for the new environment.
+     * @param codeProvider
+     *         The code provider for the new environment.
+     * @return A new environment
+     */
+    @NotNull
+    public static InternalExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider) {
+        return new InternalExecutionEnvironment(memory, calculatorIO, codeProvider, new NullHomeScreen(), new FontRegistry());
+    }
+
+    /**
+     * Instantiate a new environment without any preconfigured commands, but with an existing code provider, home screen
+     * and font registry.
+     *
+     * @param memory
+     *         The writable memory for the new environment.
+     * @param calculatorIO
+     *         The I/O device for the new environment.
+     * @param codeProvider
+     *         The code provider for the new environment.
+     * @param homeScreen
+     *         The home screen on which should be printed.
+     * @param fontRegistry
+     *         The registry with already configured fonts.
+     * @return A new environment
+     */
+    @NotNull
+    public static InternalExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry) {
+        return new InternalExecutionEnvironment(memory, calculatorIO, codeProvider, homeScreen, fontRegistry);
+    }
+
+    /**
+     * Instantiate a new environment without any preconfigured commands, but with a code provider and a home screen.
+     *
+     * @param memory
+     *         The writable memory for the new environment.
+     * @param calculatorIO
+     *         The I/O device for the new environment.
+     * @param codeProvider
+     *         The code provider for the new environment.
+     * @param homeScreen
+     *         The home screen on which should be printed.
+     * @return A new environment
+     */
+    @NotNull
+    public static InternalExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen) {
+        return new InternalExecutionEnvironment(memory, calculatorIO, codeProvider, homeScreen, new FontRegistry());
+    }
 }

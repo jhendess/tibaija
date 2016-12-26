@@ -24,6 +24,8 @@ package org.xlrnet.tibaija.graphics;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 /**
  * Spriter printers can be used for printing the content of a {@link PixelSprite} to a {@link Display}. When printing a
  * sprite, the internal pixel states returned by {@link PixelSprite#getPixelStates()} can be printed to a display with a
@@ -101,16 +103,47 @@ public class SpritePrinter {
         printSprite(pixelSprite, targetDisplay, 0, 0, false);
     }
 
+    /**
+     * Prints a list of sprites from left to right on the given display. Any sprite contents that exceed
+     * the maximum display dimensions will be truncated. Printing a sprite will not automatically trigger the {@link
+     * Display#flush()} method.
+     *
+     * @param pixelSprites
+     *         The sprites to print.
+     * @param targetDisplay
+     *         The target display where the sprite should be printed.
+     * @param offsetX
+     *         Horizontal offset on the x-axis.
+     * @param offsetY
+     *         Vertical offset on the y-axis.
+     * @param separation
+     *         The number of pixels that should be used as divider between each sprite.
+     */
+    public void printSpritesHorizontally(@NotNull List<PixelSprite> pixelSprites, @NotNull Display targetDisplay, int offsetX, int offsetY, int separation) {
+        int totalOffsetX = offsetX;
+        for (PixelSprite pixelSprite : pixelSprites) {
+            printSprite(pixelSprite, targetDisplay, totalOffsetX, offsetY);
+            totalOffsetX = totalOffsetX + pixelSprite.getXDimension() + separation;
+        }
+    }
+
     private void internalPrintPixel(@NotNull Display targetDisplay, PixelState pixelState, int yPixel, int xPixel, boolean invert) {
         if (invert) {
-            if (pixelState == PixelState.ON) {
-                pixelState = PixelState.OFF;
-            } else {
-                pixelState = PixelState.ON;
-            }
+            pixelState = invertPixelState(pixelState);
         }
 
         targetDisplay.setPixel(pixelState, xPixel, yPixel);
+    }
+
+    @NotNull
+    private PixelState invertPixelState(PixelState pixelState) {
+        PixelState invertedPixelState;
+        if (pixelState == PixelState.ON) {
+            invertedPixelState = PixelState.OFF;
+        } else {
+            invertedPixelState = PixelState.ON;
+        }
+        return invertedPixelState;
     }
 
 }

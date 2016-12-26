@@ -25,9 +25,8 @@ package org.xlrnet.tibaija.processor;
 import org.apache.commons.math3.complex.Complex;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.rules.Timeout;
-import org.mockito.Mock;
-import org.xlrnet.tibaija.VirtualCalculator;
 import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.graphics.HomeScreen;
 import org.xlrnet.tibaija.graphics.NullHomeScreen;
@@ -49,39 +48,36 @@ import static org.mockito.Mockito.*;
  */
 public class AbstractTI83PlusTest {
 
-    //@Rule
-    public Timeout globalTimeout = new Timeout(1000);
+    @Rule
+    public Timeout globalTimeout = new Timeout(5000);
 
     CalculatorMemory mockedMemory;
 
-    @Mock
-    CalculatorIO mockedIO;
+    private CalculatorIO mockedIO;
 
-    VirtualCalculator calculator;
+    private HomeScreen mockedHomeScreen;
 
-    HomeScreen mockedHomeScreen;
+    private InternalExecutionEnvironment environment;
 
-    ExecutionEnvironment environment;
-
-    DummyCodeProvider codeProvider;
+    private DummyCodeProvider codeProvider;
 
     @Before
     public void setUp() {
+        this.mockedIO = mock(CalculatorIO.class);
         this.mockedMemory = spy(new DefaultCalculatorMemory());
         this.mockedHomeScreen = spy(new NullHomeScreen());
         this.codeProvider = new DummyCodeProvider();
-        this.environment = ExecutionEnvironment.newEnvironment(this.mockedMemory, this.mockedIO, this.codeProvider, this.mockedHomeScreen);
+        this.environment = ExecutionEnvironmentFactory.newEnvironment(this.mockedMemory, this.mockedIO, this.codeProvider, this.mockedHomeScreen);
         ExecutionEnvironmentFactory.registerDefaultCommands(this.environment);
-        this.calculator = new TI83Plus(this.environment);
     }
 
-    protected ExecutionEnvironment getEnvironment() {
+    protected InternalExecutionEnvironment getEnvironment() {
         return this.environment;
     }
 
     protected void storeAndExecute(String snippet) {
-        this.calculator.loadProgram("TEST", snippet);
-        this.calculator.executeProgram("TEST");
+        this.environment.loadProgram("TEST", snippet);
+        this.environment.executeProgram("TEST");
     }
 
     protected void verifyElementInListVariable(String variable, int element, double realPart) {
@@ -89,7 +85,7 @@ public class AbstractTI83PlusTest {
     }
 
     protected void verifyElementInListVariable(String variable, int element, double realPart, double complexPart) {
-        Complex actual = this.calculator.getMemory().getListVariableValue(ListVariable.fromName(variable)).list().get(element);
+        Complex actual = environment.getMemory().getListVariableValue(ListVariable.fromName(variable)).list().get(element);
         assertThat(Value.of(actual), new EqualsWithComplexDeltaMatcher(realPart, complexPart, TestUtils.DEFAULT_TOLERANCE));
     }
 
@@ -121,7 +117,7 @@ public class AbstractTI83PlusTest {
     }
 
     protected void verifyListVariableSize(String variable, int expected) {
-        int actual = this.calculator.getMemory().getListVariableValue(ListVariable.fromName(variable)).list().size();
+        int actual = environment.getMemory().getListVariableValue(ListVariable.fromName(variable)).list().size();
         assertEquals(expected, actual);
     }
 

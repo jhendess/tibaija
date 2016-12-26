@@ -23,15 +23,12 @@
 package org.xlrnet.tibaija.processor;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.xlrnet.tibaija.exception.IllegalTypeException;
 import org.xlrnet.tibaija.exception.TIArgumentException;
 
 /**
  * Tests for interpreting logical expressions
  */
-@RunWith(MockitoJUnitRunner.class)
 public class InterpretComparisonTest extends AbstractTI83PlusTest {
 
     /**
@@ -39,7 +36,7 @@ public class InterpretComparisonTest extends AbstractTI83PlusTest {
      */
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_comparison_equals_complex_left() {
-        calculator.interpret("123456.789i=123456.789");
+        getEnvironment().interpret("123456.789i=123456.789");
     }
 
     /**
@@ -47,27 +44,27 @@ public class InterpretComparisonTest extends AbstractTI83PlusTest {
      */
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_comparison_equals_complex_right() {
-        calculator.interpret("123.789=123456.789i");
+        getEnvironment().interpret("123.789=123456.789i");
     }
 
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_comparison_greater_equals_complex() {
-        calculator.interpret("456i≥456i");
+        getEnvironment().interpret("456i≥456i");
     }
 
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_comparison_greater_than_complex() {
-        calculator.interpret("456>123i");
+        getEnvironment().interpret("456>123i");
     }
 
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_comparison_less_equals_complex() {
-        calculator.interpret("123i≤123i");
+        getEnvironment().interpret("123i≤123i");
     }
 
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_comparison_less_than_complex() {
-        calculator.interpret("123i<456");
+        getEnvironment().interpret("123i<456");
     }
 
     /**
@@ -75,18 +72,18 @@ public class InterpretComparisonTest extends AbstractTI83PlusTest {
      */
     @Test(expected = TIArgumentException.class)
     public void testInterpret_invalidProgram_comparison_not_equals_complex() {
-        calculator.interpret("12345.678i≠3.14");
+        getEnvironment().interpret("12345.678i≠3.14");
     }
 
     @Test
     public void testInterpret_validProgram_comparison_equals_1() {
-        calculator.interpret("1=1");
+        getEnvironment().interpret("1=1");
         verifyLastResultValue(1);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_equals_2() {
-        calculator.interpret("0=0");
+        getEnvironment().interpret("0=0");
         verifyLastResultValue(1);
     }
 
@@ -95,126 +92,126 @@ public class InterpretComparisonTest extends AbstractTI83PlusTest {
      */
     @Test
     public void testInterpret_validProgram_comparison_equals_complex() {
-        calculator.interpret("123456.789i=123456.789i");
+        getEnvironment().interpret("123456.789i=123456.789i");
         verifyLastResultValue(1);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_equals_list_both() {
-        calculator.interpret("{1,2,3}={3,2,1");
+        getEnvironment().interpret("{1,2,3}={3,2,1");
         verifyLastResultValueList(0d, 1d, 0d);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_greater_equals_1() {
-        calculator.interpret("123≥456");
+        getEnvironment().interpret("123≥456");
         verifyLastResultValue(0);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_greater_equals_2() {
-        calculator.interpret("123≥123");
+        getEnvironment().interpret("123≥123");
         verifyLastResultValue(1);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_greater_equals_3() {
-        calculator.interpret("456≥123");
+        getEnvironment().interpret("456≥123");
         verifyLastResultValue(1);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_greater_than_1() {
-        calculator.interpret("123>456");
+        getEnvironment().interpret("123>456");
         verifyLastResultValue(0);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_greater_than_2() {
-        calculator.interpret("123>123");
+        getEnvironment().interpret("123>123");
         verifyLastResultValue(0);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_greater_than_3() {
-        calculator.interpret("456>123");
+        getEnvironment().interpret("456>123");
         verifyLastResultValue(1);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_greater_than_list_both() {
-        calculator.interpret("{1,5,9}>{1,6,3}");
+        getEnvironment().interpret("{1,5,9}>{1,6,3}");
         verifyLastResultValueList(0d, 0d, 1d);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_greater_than_list_left() {
-        calculator.interpret("{1,5,9}>2");
+        getEnvironment().interpret("{1,5,9}>2");
         verifyLastResultValueList(0d, 1d, 1d);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_greater_than_list_right() {
-        calculator.interpret("3>{1,5,9}");
+        getEnvironment().interpret("3>{1,5,9}");
         verifyLastResultValueList(1d, 0d, 0d);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_less_equals_1() {
-        calculator.interpret("123≤456");
+        getEnvironment().interpret("123≤456");
         verifyLastResultValue(1);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_less_equals_2() {
-        calculator.interpret("123≤123");
+        getEnvironment().interpret("123≤123");
         verifyLastResultValue(1);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_less_equals_3() {
-        calculator.interpret("456≤123");
+        getEnvironment().interpret("456≤123");
         verifyLastResultValue(0);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_less_than_1() {
-        calculator.interpret("123<456");
+        getEnvironment().interpret("123<456");
         verifyLastResultValue(1);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_less_than_2() {
-        calculator.interpret("123<123");
+        getEnvironment().interpret("123<123");
         verifyLastResultValue(0);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_less_than_3() {
-        calculator.interpret("456<123");
+        getEnvironment().interpret("456<123");
         verifyLastResultValue(0);
     }
 
     @Test(expected = IllegalTypeException.class)
     public void testInterpret_validProgram_comparison_list_string() {
-        calculator.interpret("{1,2}=\"Hello\"");
+        getEnvironment().interpret("{1,2}=\"Hello\"");
     }
 
     @Test
     public void testInterpret_validProgram_comparison_not_equals_1() {
-        calculator.interpret("1≠0");
+        getEnvironment().interpret("1≠0");
         verifyLastResultValue(1);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_not_equals_2() {
-        calculator.interpret("1≠1");
+        getEnvironment().interpret("1≠1");
         verifyLastResultValue(0);
     }
 
     @Test
     public void testInterpret_validProgram_comparison_not_equals_3() {
-        calculator.interpret("1234.567≠1234.567");
+        getEnvironment().interpret("1234.567≠1234.567");
         verifyLastResultValue(0);
     }
 
@@ -223,23 +220,23 @@ public class InterpretComparisonTest extends AbstractTI83PlusTest {
      */
     @Test
     public void testInterpret_validProgram_comparison_not_equals_complex() {
-        calculator.interpret("12345.678i≠3.14i");
+        getEnvironment().interpret("12345.678i≠3.14i");
         verifyLastResultValue(1);
     }
 
     @Test(expected = IllegalTypeException.class)
     public void testInterpret_validProgram_comparison_number_string() {
-        calculator.interpret("1=\"Hello\"");
+        getEnvironment().interpret("1=\"Hello\"");
     }
 
     @Test(expected = IllegalTypeException.class)
     public void testInterpret_validProgram_comparison_string_list() {
-        calculator.interpret("\"Hello\"={1,2");
+        getEnvironment().interpret("\"Hello\"={1,2");
     }
 
     @Test(expected = IllegalTypeException.class)
     public void testInterpret_validProgram_comparison_string_number() {
-        calculator.interpret("\"Hello\"=1");
+        getEnvironment().interpret("\"Hello\"=1");
     }
 
 }

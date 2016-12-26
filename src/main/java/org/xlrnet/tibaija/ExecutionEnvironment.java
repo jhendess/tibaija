@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Jakob Hendeß
+ * Copyright (c) 2016 Jakob Hendeß
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,41 +22,90 @@
 
 package org.xlrnet.tibaija;
 
+import org.jetbrains.annotations.NotNull;
+import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.ProgramNotFoundException;
+import org.xlrnet.tibaija.graphics.DecimalDisplayMode;
+import org.xlrnet.tibaija.graphics.FontRegistry;
+import org.xlrnet.tibaija.graphics.HomeScreen;
+import org.xlrnet.tibaija.graphics.NumberDisplayFormat;
 import org.xlrnet.tibaija.io.CalculatorIO;
-import org.xlrnet.tibaija.memory.CalculatorMemory;
+import org.xlrnet.tibaija.io.CodeProvider;
+import org.xlrnet.tibaija.memory.ReadOnlyCalculatorMemory;
 
 /**
- * This is the basic interface for accessing the virtual hardware of a TI-Basic capable calculator.
- * It provides methods for accessing the internal memory model, I/O, calc settings and built-in functions.
- * <p/>
- * Created by xolor on 17.01.15.
+ * Created by xolor on 26.12.16.
  */
-public interface VirtualCalculator {
+public interface ExecutionEnvironment {
 
     /**
      * Executes a program with the given name from memory. If the program does not exist in memory, the default {@link
-     * org.xlrnet.tibaija.io.CodeProvider} will be used for loading the file into memory.
+     * CodeProvider} will be used for loading the file into memory.
      *
      * @param programName
      *         name of the program to execute.
      * @throws ProgramNotFoundException
-     *         thrown if the program exists not in memory and can't be found using the default {@link
-     *         org.xlrnet.tibaija.io.CodeProvider}.
+     *         thrown if the program exists not in memory and can't be found using the default {@link CodeProvider}.
      */
     void executeProgram(String programName) throws ProgramNotFoundException;
 
     /**
-     * Returns a reference to the IODevice of the virtual device. The IO device provides methods for reading
-     * inputs and printing output.
+     * Formats a given {@link Value} object according to the currently configured {@link DecimalDisplayMode}. The
+     * current configuration can be changed through {@link #setDecimalDisplayMode(DecimalDisplayMode)}
+     *
+     * @param value
+     *         The value to format.
+     * @return The formatted value.
      */
-    CalculatorIO getIODevice();
+    String formatValue(Value value);
 
     /**
-     * Returns a reference to internal memory model of the virtual calculator. The memory model provides
-     * methods for both reading from and writing to the calculator's variables and programs.
+     * Get access to the I/O device of the environment.
+     *
+     * @return Reference to the I/O device of the environment.
      */
-    CalculatorMemory getMemory();
+    @NotNull
+    CalculatorIO getCalculatorIO();
+
+    @NotNull
+    CodeProvider getCodeProvider();
+
+    @NotNull
+    DecimalDisplayMode getDecimalDisplayMode();
+
+    /**
+     * Set the current mode of how decimals should be displayed. Setting this value will affect all formatting through
+     * {@link #formatValue(Value)}.
+     *
+     * @param decimalDisplayMode
+     *         The display mode to set.
+     */
+    void setDecimalDisplayMode(@NotNull DecimalDisplayMode decimalDisplayMode);
+
+    @NotNull
+    FontRegistry getFontRegistry();
+
+    /**
+     * Returns the currently registered {@link HomeScreen} implementation for this environment. The home screen should
+     * be used for printing out basic texts and data without any graphical components.
+     *
+     * @return the currently registered home screen for this environment.
+     */
+    @NotNull
+    HomeScreen getHomeScreen();
+
+    /**
+     * Get readable access to the calculator memory.
+     *
+     * @return Reference to the readable memory of the calculator.
+     */
+    @NotNull
+    ReadOnlyCalculatorMemory getMemory();
+
+    @NotNull
+    NumberDisplayFormat getNumberDisplayFormat();
+
+    void setNumberDisplayFormat(NumberDisplayFormat numberDisplayFormat);
 
     /**
      * Execute and the given input string on the virtual calculator. This will execute in a stateful manner and
@@ -78,5 +127,4 @@ public interface VirtualCalculator {
      *         Valid TI-Basic code
      */
     void loadProgram(String programName, CharSequence programCode);
-
 }

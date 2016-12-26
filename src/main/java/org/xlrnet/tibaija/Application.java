@@ -29,17 +29,14 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.exception.TIRuntimeException;
-import org.xlrnet.tibaija.graphics.FontConstants;
-import org.xlrnet.tibaija.graphics.FontRegistry;
-import org.xlrnet.tibaija.graphics.HomeScreen;
-import org.xlrnet.tibaija.graphics.NullHomeScreen;
-import org.xlrnet.tibaija.io.*;
-import org.xlrnet.tibaija.memory.CalculatorMemory;
-import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
-import org.xlrnet.tibaija.processor.ExecutionEnvironment;
-import org.xlrnet.tibaija.processor.TI83Plus;
+import org.xlrnet.tibaija.io.CalculatorIO;
+import org.xlrnet.tibaija.io.FileSystemCodeProvider;
+import org.xlrnet.tibaija.memory.ReadOnlyCalculatorMemory;
+import org.xlrnet.tibaija.processor.ExecutionEnvironmentFactory;
+import org.xlrnet.tibaija.processor.InternalExecutionEnvironment;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -54,36 +51,6 @@ public class Application {
 
     public static void main(String[] args) {
         new Application().run(args);
-    }
-
-    private static VirtualCalculator getDefaultCalculator(CodeProvider codeProvider) throws IOException {
-        Reader reader;
-        Writer writer;
-
-        if (System.console() != null) {
-            Console console = System.console();
-            reader = console.reader();
-            writer = console.writer();
-            LOGGER.debug("Initialised native system console");
-        } else {
-            reader = new InputStreamReader(System.in);
-            writer = new OutputStreamWriter(System.out);
-            LOGGER.debug("Initialised system I/O streams");
-        }
-
-        CalculatorIO io = new ConsoleIO(reader, writer);
-        CalculatorMemory memory = new DefaultCalculatorMemory();
-        HomeScreen homeScreen = new NullHomeScreen();
-        FontRegistry fontRegistry = new FontRegistry();
-        fontRegistry.registerFont(Paths.get("largeFont.json"), FontConstants.FONT_LARGE);
-        fontRegistry.registerFont(Paths.get("smallFont.json"), FontConstants.FONT_SMALL);
-
-        ExecutionEnvironment.newEnvironment(memory, io, codeProvider, homeScreen, fontRegistry);
-        return new TI83Plus(memory, io, codeProvider);
-    }
-
-    public boolean isConfigured() {
-        return this.configured;
     }
 
     private void configureRootLogger(ApplicationConfiguration config) {
@@ -113,7 +80,7 @@ public class Application {
                 runInteractiveMode();
             } else if (config.getStartFile() != null) {
                 runFileMode(config.getStartFile());
-            } else if (config.isShowHelp() || !isConfigured()) {
+            } else if (config.isShowHelp() || !configured) {
                 printUsage(parser);
             }
 
@@ -142,56 +109,56 @@ public class Application {
             Path filePath = startFile.toPath();
             Path parentDirectory = filePath.toAbsolutePath().getParent();
             FileSystemCodeProvider codeProvider = new FileSystemCodeProvider(parentDirectory);
+            InternalExecutionEnvironment environment = ExecutionEnvironmentFactory.newDefaultEnvironment(codeProvider);
             String bootFile = codeProvider.registerFile(filePath);
-            VirtualCalculator calculator = getDefaultCalculator(codeProvider);
 
             LOGGER.info("System booted");
 
-            calculator.executeProgram(bootFile);
+            environment.executeProgram(bootFile);
         } catch (IOException e) {
             LOGGER.error("Program load error", e);
         }
-
     }
 
     private void runInteractiveMode() throws IOException {
         LOGGER.info("Starting interpreter in interactive mode ...");
 
-        VirtualCalculator calculator = getDefaultCalculator(new DummyCodeProvider());
-        CalculatorIO io = calculator.getIODevice();
-        CalculatorMemory memory = calculator.getMemory();
+        FileSystemCodeProvider codeProvider = new FileSystemCodeProvider(Paths.get(""));
+        InternalExecutionEnvironment environment = ExecutionEnvironmentFactory.newDefaultEnvironment(codeProvider);
+        CalculatorIO io = environment.getCalculatorIO();
+        ReadOnlyCalculatorMemory memory = environment.getMemory();
 
-        showWelcome();
+        showWelcome(io);
         String input;
+        boolean isRunning = true;
 
-        while (true) {
+        while (isRunning) {
             try {
                 input = io.readInput();
 
                 if (input == null || StringUtils.equalsIgnoreCase("exit", input)) {
-                    break;
+                    isRunning = false;
                 }
 
-                calculator.interpret(input);
+                environment.interpret(input);
                 io.printLine(memory.getLastResult());
 
             } catch (TIRuntimeException ti) {
                 io.printLine("ERR: " + ti.getMessage());
             } catch (Exception e) {
                 LOGGER.error("An internal error occurred", e);
-                break;
+                isRunning = false;
             }
         }
 
         LOGGER.info("Exiting interpreter ...");
-        System.exit(0);
     }
 
-    private void showWelcome() {
+    private void showWelcome(CalculatorIO io) {
         LOGGER.info("Started tibaija in interactive mode");
-        System.out.println("#############################################################################");
-        System.out.println("#################### Tibaija started in interactive mode ####################");
-        System.out.println("####################   Type 'exit' to stop interpreter   ####################");
-        System.out.println("#############################################################################");
+        io.printLine("#############################################################################");
+        io.printLine("#################### Tibaija started in interactive mode ####################");
+        io.printLine("####################   Type 'exit' to stop interpreter   ####################");
+        io.printLine("#############################################################################");
     }
 }

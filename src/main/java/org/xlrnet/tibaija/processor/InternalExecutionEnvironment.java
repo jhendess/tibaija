@@ -28,20 +28,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xlrnet.tibaija.VirtualCalculator;
+import org.xlrnet.tibaija.ExecutionEnvironment;
+import org.xlrnet.tibaija.commons.ValidationUtil;
 import org.xlrnet.tibaija.commons.Value;
-import org.xlrnet.tibaija.exception.CommandNotFoundException;
-import org.xlrnet.tibaija.exception.DuplicateCommandException;
-import org.xlrnet.tibaija.exception.TIRuntimeException;
-import org.xlrnet.tibaija.graphics.*;
+import org.xlrnet.tibaija.exception.*;
+import org.xlrnet.tibaija.graphics.DecimalDisplayMode;
+import org.xlrnet.tibaija.graphics.FontRegistry;
+import org.xlrnet.tibaija.graphics.HomeScreen;
+import org.xlrnet.tibaija.graphics.NumberDisplayFormat;
 import org.xlrnet.tibaija.io.CalculatorIO;
 import org.xlrnet.tibaija.io.CodeProvider;
-import org.xlrnet.tibaija.io.DummyCodeProvider;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.ReadOnlyCalculatorMemory;
 import org.xlrnet.tibaija.memory.ValueFormatUtils;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -51,11 +53,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * This class provides the main environment where programs and functions get executed.
+ * Main
  */
-public class ExecutionEnvironment {
+public class InternalExecutionEnvironment implements ExecutionEnvironment {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionEnvironment.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InternalExecutionEnvironment.class);
 
     private final HomeScreen homeScreen;
 
@@ -75,11 +77,13 @@ public class ExecutionEnvironment {
 
     private final Map<String, Command> commandStatementMap = new HashMap<>();
 
+    private final Preprocessor preprocessor = new Preprocessor();
+
     private DecimalDisplayMode decimalDisplayMode;
 
     private NumberDisplayFormat numberDisplayFormat;
 
-    private ExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry) {
+    protected InternalExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry) {
         this.memory = memory;
         this.calculatorIO = calculatorIO;
         this.codeProvider = codeProvider;
@@ -87,158 +91,77 @@ public class ExecutionEnvironment {
         this.fontRegistry = fontRegistry;
     }
 
-    /**
-     * Instantiate a new environment without any preconfigured commands and no font registry.
-     *
-     * @param memory
-     *         The writable memory for the new environment.
-     * @param calculatorIO
-     *         The I/O device for the new environment.
-     * @return A new environment
-     */
-    @NotNull
-    public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO) {
-        return new ExecutionEnvironment(memory, calculatorIO, new DummyCodeProvider(), new NullHomeScreen(), new FontRegistry());
+    @Override
+    public void executeProgram(String programName) throws ProgramNotFoundException {
+        String upperCaseProgramName = programName.toUpperCase();
+        if (!getMemory().containsProgram(upperCaseProgramName)) {
+            try {
+                loadProgram(upperCaseProgramName, this.codeProvider.getProgramCode(upperCaseProgramName));
+            } catch (IOException e) {
+                LOGGER.error("Loading external code failed", e);
+            }
+        }
+
+        ExecutableProgram executableProgram = getMemory().getStoredProgram(upperCaseProgramName);
+
+        LOGGER.info("Starting program '{}'", upperCaseProgramName);
+
+        run(executableProgram, new FullTIBasicVisitor());
     }
 
-    /**
-     * Instantiate a new environment without any preconfigured commands, no code provider and no font registry.
-     *
-     * @param memory
-     *         The writable memory for the new environment.
-     * @param calculatorIO
-     *         The I/O device for the new environment.
-     * @param codeProvider
-     *         The code provider for the new environment.
-     * @return A new environment
-     */
-    @NotNull
-    public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider) {
-        return new ExecutionEnvironment(memory, calculatorIO, codeProvider, new NullHomeScreen(), new FontRegistry());
-    }
-
-    /**
-     * Instantiate a new environment without any preconfigured commands, but with an existing code provider, home screen
-     * and font registry.
-     *
-     * @param memory
-     *         The writable memory for the new environment.
-     * @param calculatorIO
-     *         The I/O device for the new environment.
-     * @param codeProvider
-     *         The code provider for the new environment.
-     * @param homeScreen
-     *         The home screen on which should be printed.
-     * @param fontRegistry
-     *         The registry with already configured fonts.
-     * @return A new environment
-     */
-    @NotNull
-    public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry) {
-        return new ExecutionEnvironment(memory, calculatorIO, codeProvider, homeScreen, fontRegistry);
-    }
-
-    /**
-     * Instantiate a new environment without any preconfigured commands, but with a code provider and a home screen.
-     *
-     * @param memory
-     *         The writable memory for the new environment.
-     * @param calculatorIO
-     *         The I/O device for the new environment.
-     * @param codeProvider
-     *         The code provider for the new environment.
-     * @param homeScreen
-     *         The home screen on which should be printed.
-     * @return A new environment
-     */
-    @NotNull
-    public static ExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen) {
-        return new ExecutionEnvironment(memory, calculatorIO, codeProvider, homeScreen, new FontRegistry());
-    }
-
-    /**
-     * Instantiate a new environment without any preconfigured commands.
-     *
-     * @param virtualCalculator
-     *         The virtual calculator with a configured I/O device and memory.
-     * @return A new environment
-     */
-    @NotNull
-    public static ExecutionEnvironment newEnvironment(@NotNull VirtualCalculator virtualCalculator) {
-        return ExecutionEnvironment.newEnvironment(virtualCalculator.getMemory(), virtualCalculator.getIODevice());
-    }
-
-    /**
-     * Formats a given {@link Value} object according to the currently configured {@link DecimalDisplayMode}. The
-     * current configuration can be changed through {@link #setDecimalDisplayMode(DecimalDisplayMode)}
-     *
-     * @param value
-     *         The value to format.
-     * @return The formatted value.
-     */
+    @Override
     public String formatValue(Value value) {
         return ValueFormatUtils.formatValue(value, this.numberDisplayFormat, this.decimalDisplayMode);
     }
 
-    /**
-     * Get access to the I/O device of the environment.
-     *
-     * @return Reference to the I/O device of the environment.
-     */
+    @Override
     @NotNull
     public CalculatorIO getCalculatorIO() {
         return this.calculatorIO;
     }
 
+    @Override
+    @NotNull
     public CodeProvider getCodeProvider() {
         return this.codeProvider;
     }
 
+    @Override
+    @NotNull
     public DecimalDisplayMode getDecimalDisplayMode() {
         return this.decimalDisplayMode;
     }
 
-    /**
-     * Set the current mode of how decimals should be displayed. Setting this value will affect all formatting through
-     * {@link #formatValue(Value)}.
-     *
-     * @param decimalDisplayMode
-     *         The display mode to set.
-     */
+    @Override
     public void setDecimalDisplayMode(@NotNull DecimalDisplayMode decimalDisplayMode) {
         this.decimalDisplayMode = decimalDisplayMode;
     }
 
+    @Override
+    @NotNull
     public FontRegistry getFontRegistry() {
         return this.fontRegistry;
     }
 
-    /**
-     * Returns the currently registered {@link HomeScreen} implementation for this environment. The home screen should
-     * be used for printing out basic texts and data without any graphical components.
-     *
-     * @return the currently registered home screen for this environment.
-     */
+    @Override
     @NotNull
     public HomeScreen getHomeScreen() {
         return this.homeScreen;
     }
 
-    /**
-     * Get readable access to the calculator memory.
-     *
-     * @return Reference to the readable memory of the calculator.
-     */
+    @Override
     @NotNull
     public ReadOnlyCalculatorMemory getMemory() {
         return this.memory;
     }
 
+    @Override
     @NotNull
     public NumberDisplayFormat getNumberDisplayFormat() {
         return this.numberDisplayFormat;
     }
 
+    @Override
     public void setNumberDisplayFormat(NumberDisplayFormat numberDisplayFormat) {
         this.numberDisplayFormat = numberDisplayFormat;
     }
@@ -253,6 +176,33 @@ public class ExecutionEnvironment {
     @NotNull
     public Stack<ExecutableProgram> getProgramStack() {
         return this.programStack;
+    }
+
+    @Override
+    public void interpret(String input) {
+        // Fix input without colon:
+        String cleanedInput = StringUtils.prependIfMissing(input, ":");
+
+        try {
+            ExecutableProgram executableProgram = internalPreprocessCode("TMP", cleanedInput);
+            run(executableProgram, new ControlflowLessTIBasicVisitor());
+        } catch (PreprocessException e) {
+            LOGGER.error("Preprocessing commands failed: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public void loadProgram(String programName, CharSequence programCode) {
+        checkArgument(ValidationUtil.isValidProgramName(programName), "Invalid program name: %s", programName);
+
+        try {
+            ExecutableProgram executableProgram = internalPreprocessCode(programName, programCode);
+            getWritableMemory().storeProgram(programName, executableProgram);
+        } catch (PreprocessException e) {
+            LOGGER.error("Loading program {} failed", programName);
+            throw e;
+        }
     }
 
     /**
@@ -478,5 +428,14 @@ public class ExecutionEnvironment {
         ImmutableList<Parameter> argumentList = ImmutableList.copyOf(arguments);
         command.checkArguments(argumentList);
         return command.execute(argumentList);
+    }
+
+    /**
+     * Run all neccessary internal routines for preprocessing a given code.
+     */
+    private ExecutableProgram internalPreprocessCode(String programName, CharSequence programCode) {
+        ExecutableProgram executableProgram;
+        executableProgram = this.preprocessor.preprocessProgramCode(programName, programCode);
+        return executableProgram;
     }
 }

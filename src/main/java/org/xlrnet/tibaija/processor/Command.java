@@ -38,7 +38,7 @@ import java.util.Optional;
  */
 public abstract class Command {
 
-    private ExecutionEnvironment environment;
+    private InternalExecutionEnvironment environment;
 
     /**
      * Checks the passed arguments for correctness. This method should be called only by the framework.
@@ -72,11 +72,11 @@ public abstract class Command {
     @NotNull
     protected abstract Optional<Value> execute(@NotNull ImmutableList<Parameter> arguments);
 
-    protected ExecutionEnvironment getEnvironment() {
+    protected InternalExecutionEnvironment getEnvironment() {
         return this.environment;
     }
 
-    public void setEnvironment(ExecutionEnvironment environment) {
+    public void setEnvironment(InternalExecutionEnvironment environment) {
         this.environment = environment;
     }
 

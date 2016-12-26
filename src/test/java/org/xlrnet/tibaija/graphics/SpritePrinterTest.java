@@ -22,11 +22,14 @@
 
 package org.xlrnet.tibaija.graphics;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -51,9 +54,9 @@ public class SpritePrinterTest {
 
     @Before
     public void setup() {
-        spritePrinter = new SpritePrinter();
-        when(mockedDisplay.getHorizontalDimension()).thenReturn(4);
-        when(mockedDisplay.getVerticalDimension()).thenReturn(3);
+        spritePrinter = spy(new SpritePrinter());
+        when(mockedDisplay.getHorizontalDimension()).thenReturn(7);
+        when(mockedDisplay.getVerticalDimension()).thenReturn(7);
     }
 
     @Test
@@ -92,17 +95,17 @@ public class SpritePrinterTest {
 
     @Test
     public void testPrintSprite_offset() {
-        spritePrinter.printSprite(TEST_SPRITE, mockedDisplay, 1, 2);
+        spritePrinter.printSprite(TEST_SPRITE, mockedDisplay, 1, 6);
 
         // Verify first column
-        verify(mockedDisplay).setPixel(PixelState.ON, 1, 2);
-        verify(mockedDisplay, never()).setPixel(PixelState.OFF, 1, 3);
-        verify(mockedDisplay, never()).setPixel(PixelState.ON, 1, 4);
+        verify(mockedDisplay).setPixel(PixelState.ON, 1, 6);
+        verify(mockedDisplay, never()).setPixel(PixelState.OFF, 1, 7);
+        verify(mockedDisplay, never()).setPixel(PixelState.ON, 1, 8);
 
         // Verify second column
-        verify(mockedDisplay).setPixel(PixelState.OFF, 2, 2);
-        verify(mockedDisplay, never()).setPixel(PixelState.ON, 2, 3);
-        verify(mockedDisplay, never()).setPixel(PixelState.OFF, 2, 4);
+        verify(mockedDisplay).setPixel(PixelState.OFF, 2, 6);
+        verify(mockedDisplay, never()).setPixel(PixelState.ON, 2, 7);
+        verify(mockedDisplay, never()).setPixel(PixelState.OFF, 2, 8);
 
         verify(mockedDisplay, never()).flush();
     }
@@ -120,6 +123,37 @@ public class SpritePrinterTest {
         verify(mockedDisplay, never()).setPixel(PixelState.OFF, 0, -2);
         verify(mockedDisplay, never()).setPixel(PixelState.ON, 0, -1);
         verify(mockedDisplay).setPixel(PixelState.OFF, 0, 0);
+
+        verify(mockedDisplay, never()).flush();
+    }
+
+    @Test
+    public void testPrintSpritesHorizontally() {
+        List<PixelSprite> pixelSpriteList = ImmutableList.of(TEST_SPRITE, TEST_SPRITE);
+        spritePrinter.printSpritesHorizontally(pixelSpriteList, mockedDisplay, 2, 3, 1);
+
+        // Verify first column
+        verify(mockedDisplay).setPixel(PixelState.ON, 2, 3);
+        verify(mockedDisplay).setPixel(PixelState.OFF, 2, 4);
+        verify(mockedDisplay).setPixel(PixelState.ON, 2, 5);
+
+        // Verify second column
+        verify(mockedDisplay).setPixel(PixelState.OFF, 3, 3);
+        verify(mockedDisplay).setPixel(PixelState.ON, 3, 4);
+        verify(mockedDisplay).setPixel(PixelState.OFF, 3, 5);
+
+        // Verify third column (empty)
+        verify(mockedDisplay, never()).setPixel(any(PixelState.class), eq(4), anyInt());
+
+        // Verify fourth column
+        verify(mockedDisplay).setPixel(PixelState.ON, 5, 3);
+        verify(mockedDisplay).setPixel(PixelState.OFF, 5, 4);
+        verify(mockedDisplay).setPixel(PixelState.ON, 5, 5);
+
+        // Verify fifth column
+        verify(mockedDisplay).setPixel(PixelState.OFF, 6, 3);
+        verify(mockedDisplay).setPixel(PixelState.ON, 6, 4);
+        verify(mockedDisplay).setPixel(PixelState.OFF, 6, 5);
 
         verify(mockedDisplay, never()).flush();
     }

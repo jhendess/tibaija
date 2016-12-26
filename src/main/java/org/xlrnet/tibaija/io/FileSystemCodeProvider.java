@@ -52,7 +52,7 @@ public class FileSystemCodeProvider implements CodeProvider {
     private Map<String, String> registeredFiles = new HashMap<>();
 
     public FileSystemCodeProvider(@NotNull Path defaultPath) {
-        LOGGER.debug("Initialized default path '{}' for new programs", defaultPath);
+        LOGGER.debug("Initialized default path '{}' for new programs", defaultPath.toAbsolutePath());
 
         checkArgument(Files.isDirectory(defaultPath), "Path must be directory");
         this.defaultPath = defaultPath;

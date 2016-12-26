@@ -31,7 +31,7 @@ package org.xlrnet.tibaija.graphics;
 public interface Display {
 
     /**
-     * Resets the screen and turns all pixels off.
+     * Resets the screen and turns all pixels off. Flushing is done automatically afterwards.
      */
     void clearScreen();
 
