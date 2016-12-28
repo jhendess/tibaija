@@ -422,7 +422,6 @@ FOR: 'For';
 WHILE: 'While';
 REPEAT: 'Repeat';
 END: 'End';
-PAUSE: 'Pause';
 LABEL: 'Lbl';
 GOTO: 'Goto';
 INCREMENT_SKIP_GREATER: 'IS>(';

@@ -33,9 +33,7 @@ import org.xlrnet.tibaija.commands.math.BinaryCommandOperator;
 import org.xlrnet.tibaija.commands.math.UnaryCommand;
 import org.xlrnet.tibaija.commands.math.UnaryCommandOperator;
 import org.xlrnet.tibaija.graphics.*;
-import org.xlrnet.tibaija.io.CalculatorIO;
-import org.xlrnet.tibaija.io.CodeProvider;
-import org.xlrnet.tibaija.io.ConsoleIO;
+import org.xlrnet.tibaija.io.*;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.DefaultCalculatorMemory;
 
@@ -48,6 +46,10 @@ import java.nio.file.Paths;
 public class ExecutionEnvironmentFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionEnvironmentFactory.class);
+
+    private ExecutionEnvironmentFactory() {
+
+    }
 
     /**
      * Creates a new {@link InternalExecutionEnvironment} using the given {@link CodeProvider} and configures it. All
@@ -77,11 +79,11 @@ public class ExecutionEnvironmentFactory {
         CalculatorMemory memory = new DefaultCalculatorMemory();
         HomeScreen homeScreen = new TI83PlusHomeScreen();
         FontRegistry fontRegistry = new FontRegistry();
-        Display display = new LanternaDisplay();
+        LanternaDisplay display = new LanternaDisplay();
         fontRegistry.registerFont(Paths.get("largeFont.json"), FontConstants.FONT_LARGE);
         fontRegistry.registerFont(Paths.get("smallFont.json"), FontConstants.FONT_SMALL);
 
-        InternalExecutionEnvironment internalExecutionEnvironment = ExecutionEnvironmentFactory.newEnvironment(memory, io, codeProvider, homeScreen, fontRegistry, display);
+        InternalExecutionEnvironment internalExecutionEnvironment = ExecutionEnvironmentFactory.newEnvironment(memory, io, codeProvider, homeScreen, fontRegistry, display, display, null);
         registerDefaultCommands(internalExecutionEnvironment);
         return internalExecutionEnvironment;
     }
@@ -140,12 +142,12 @@ public class ExecutionEnvironmentFactory {
      *         The home screen on which should be printed.
      * @param fontRegistry
      *         The registry with already configured fonts.
-     * @param display
+     * @param display The display used for this environment.
      * @return A new environment
      */
     @NotNull
-    public static InternalExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry, @NotNull Display display) {
-        InternalExecutionEnvironment environment = new InternalExecutionEnvironment(memory, calculatorIO, codeProvider, homeScreen, fontRegistry, display);
+    public static InternalExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry, @NotNull Display display, @NotNull KeyProvider keyProvider, @NotNull KeyMapper keyMapper) {
+        InternalExecutionEnvironment environment = new InternalExecutionEnvironment(memory, calculatorIO, codeProvider, homeScreen, fontRegistry, display, keyProvider, keyMapper);
         return environment;
     }
 
@@ -164,6 +166,6 @@ public class ExecutionEnvironmentFactory {
      */
     @NotNull
     public static InternalExecutionEnvironment newEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen) {
-        return newEnvironment(memory, calculatorIO, codeProvider, homeScreen, new FontRegistry(), new LanternaDisplay());
+        return newEnvironment(memory, calculatorIO, codeProvider, homeScreen, new FontRegistry(), new LanternaDisplay(), new DummyKeyProvider(), null);   // TODO: User dummy components
     }
 }

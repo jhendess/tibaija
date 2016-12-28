@@ -120,7 +120,7 @@ public interface ExecutionEnvironment {
      * @param input
      *         The commands to be interpreted. The leading colon may be omitted.
      */
-    void interpret(String input);
+    void interpret(@NotNull String input);
 
     /**
      * Load the given program with the given program code into main memory and do all neccessary steps to make it

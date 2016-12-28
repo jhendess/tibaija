@@ -24,6 +24,7 @@ package org.xlrnet.tibaija.graphics;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextCharacter;
+import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
@@ -31,6 +32,8 @@ import com.googlecode.lanterna.terminal.Terminal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlrnet.tibaija.exception.TIGraphicsException;
+import org.xlrnet.tibaija.io.Key;
+import org.xlrnet.tibaija.io.KeyProvider;
 
 import java.io.IOException;
 
@@ -39,7 +42,7 @@ import static com.google.common.base.Preconditions.checkState;
 /**
  * Display using the lanterna {@link com.googlecode.lanterna.screen.Screen} UI.
  */
-public class LanternaDisplay implements Display {
+public class LanternaDisplay implements Display, KeyProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LanternaDisplay.class);
 
@@ -94,6 +97,21 @@ public class LanternaDisplay implements Display {
     }
 
     @Override
+    public Key getLastPressedKey() {
+        checkInternalState();
+
+        Key key = null;
+
+        try {
+            KeyStroke keyStroke = screen.pollInput();
+        } catch (IOException e) {
+            LOGGER.error("Unexpected IOException while trying to poll last input", e);
+        }
+
+        return key;
+    }
+
+    @Override
     public int getVerticalDimension() {
         return TI_83_PLUS_HEIGHT;
     }
@@ -122,6 +140,7 @@ public class LanternaDisplay implements Display {
         LOGGER.debug("Booting display");
         Terminal terminal = new DefaultTerminalFactory()
                 .setInitialTerminalSize(new TerminalSize(getHorizontalDimension(), getVerticalDimension()))
+                .setTerminalEmulatorTitle("Tibaija")
                 .createTerminalEmulator();
         screen = new TerminalScreen(terminal);
         screen.startScreen();

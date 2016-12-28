@@ -33,8 +33,7 @@ import org.xlrnet.tibaija.commons.ValidationUtil;
 import org.xlrnet.tibaija.commons.Value;
 import org.xlrnet.tibaija.exception.*;
 import org.xlrnet.tibaija.graphics.*;
-import org.xlrnet.tibaija.io.CalculatorIO;
-import org.xlrnet.tibaija.io.CodeProvider;
+import org.xlrnet.tibaija.io.*;
 import org.xlrnet.tibaija.memory.CalculatorMemory;
 import org.xlrnet.tibaija.memory.Parameter;
 import org.xlrnet.tibaija.memory.ReadOnlyCalculatorMemory;
@@ -50,7 +49,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Main
+ * Internal implementation of the {@link ExecutionEnvironment}.
  */
 public class InternalExecutionEnvironment implements ExecutionEnvironment {
 
@@ -78,17 +77,23 @@ public class InternalExecutionEnvironment implements ExecutionEnvironment {
 
     private final Display display;
 
+    private final KeyProvider keyProvider;
+
+    private final KeyMapper keyMapper;
+
     private DecimalDisplayMode decimalDisplayMode = DecimalDisplayMode.FLOAT;
 
     private NumberDisplayFormat numberDisplayFormat = NumberDisplayFormat.NORMAL;
 
-    protected InternalExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry, Display display) {
+    protected InternalExecutionEnvironment(@NotNull CalculatorMemory memory, @NotNull CalculatorIO calculatorIO, @NotNull CodeProvider codeProvider, @NotNull HomeScreen homeScreen, @NotNull FontRegistry fontRegistry, @NotNull Display display, @NotNull KeyProvider keyProvider, @NotNull KeyMapper keyMapper) {
         this.memory = memory;
         this.calculatorIO = calculatorIO;
         this.codeProvider = codeProvider;
         this.homeScreen = homeScreen;
         this.fontRegistry = fontRegistry;
         this.display = display;
+        this.keyProvider = keyProvider;
+        this.keyMapper = keyMapper;
     }
 
     @Override
@@ -160,6 +165,23 @@ public class InternalExecutionEnvironment implements ExecutionEnvironment {
     @NotNull
     public HomeScreen getHomeScreen() {
         return this.homeScreen;
+    }
+
+    /**
+     * Queries the configured {@link KeyProvider} for the last pressed key and maps its value using the configured
+     * {@link KeyMapper} to an integer. If no key has been pressed since the last call of this method, zero will be
+     * returned.
+     *
+     * @return The last pressed key or zero if none has been pressed since the last method call.
+     */
+    public int getLastPressedKey() {
+        LOGGER.trace("Fetching last pressed key");
+        int lastPressedKey = 0;
+        Key lastPressedKeyObject = keyProvider.getLastPressedKey();
+        if (lastPressedKeyObject != null) {
+            lastPressedKey = keyMapper.mapRealKey(lastPressedKeyObject);
+        }
+        return lastPressedKey;
     }
 
     @Override

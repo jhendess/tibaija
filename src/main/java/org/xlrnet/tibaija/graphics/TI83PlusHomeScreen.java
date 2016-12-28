@@ -108,15 +108,17 @@ public class TI83PlusHomeScreen implements HomeScreen {
 
         int printBegin = 0;
         while (printBegin < text.length()) {
-            int printableCharsOnCurrentLine = getMaxRows() - x - 1;
+            int printableCharsOnCurrentLine = getMaxColumns() - x - 1;
             String textOnCurrentLine = StringUtils.substring(text, printBegin, printableCharsOnCurrentLine);
             printBegin += textOnCurrentLine.length();
             List<PixelSprite> spritesForText = environment.getFontRegistry().getSpritesForText(FontConstants.FONT_LARGE, text);
             int effectiveOffsetX = (x - 1) * getColumnWidth();
             int effectiveOffsetY = (y - 1) * getRowHeight();
             spritePrinter.printSpritesHorizontally(spritesForText, display, effectiveOffsetX, effectiveOffsetY, SEPARATION);
+            text = StringUtils.substring(text, printableCharsOnCurrentLine);
             y++;
         }
+        display.flush();
     }
 
     /**
